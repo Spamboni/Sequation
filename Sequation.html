@@ -164,7 +164,7 @@ window.onerror=function(msg,src,line,col,err){
   <div class="info-bar"><span class="blbl">Tap a square · then a number · tap placed to return · pinch to zoom · double-tap resets zoom</span></div>
   <div class="gscroll"><div class="grid-clip" id="gridClip"><div class="grid" id="grid"></div></div></div>
   <div class="bank-outer"><div class="bsize-wrap"><div class="bsize-col" id="sizeBar"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><div class="sizebar-lock" id="sizeBarLock">🔓</div><div class="seq-btns"><button class="seq-btn" id="seqRec" title="Record">⏺</button><button class="seq-btn" id="seqPlay" title="Play">▶</button><button class="seq-btn" id="seqStop" title="Stop">⏹</button><button class="seq-btn" id="seqLoop" title="Loop">🔁</button><button class="seq-btn" id="seqClear" title="Clear">🗑</button><button class="seq-btn seq-pro-btn" id="seqPro" title="Pro Mode">PRO</button><button class="seq-btn seq-save-btn" id="seqSave" title="Save Sequence">💾</button><button class="seq-btn seq-save-btn" id="seqLoad" title="Load Sequence">📂</button><button class="seq-btn" id="seqErase" title="Erase Beats">✂</button></div></div><div class="bank"><div class="btiles" id="bank"></div></div></div>
-<div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row pro-top" style="justify-content:space-between;"><div class="pro-beats" id="proBeats"></div><div style="display:flex;gap:4px;"><button id="undockBeats" title="Undock beats" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div></div><div class="pro-row"><span class="pro-lbl">BARS</span><div class="pro-bar-btns"><button class="pro-btn active" data-bars="2">2</button><button class="pro-btn" data-bars="4">4</button><button class="pro-btn" data-bars="8">8</button><button class="pro-btn" data-bars="16">16</button></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"><button class="pro-btn pro-slot active" data-slot="0">1</button><button class="pro-btn pro-slot" data-slot="1">2</button><button class="pro-btn pro-slot" data-slot="2">3</button><button class="pro-btn pro-slot" data-slot="3">4</button><button class="pro-btn pro-slot" data-slot="4">5</button><button class="pro-btn pro-slot" data-slot="5">6</button><button class="pro-btn pro-slot" data-slot="6">7</button><button class="pro-btn pro-slot" data-slot="7">8</button></div></div><div class="pro-row" style="justify-content:flex-end;gap:6px;"><span class="pro-lbl" style="font-size:7px;white-space:nowrap;">REC VOL</span><input type="range" id="_recVolSlider" min="0" max="2" step="0.05" value="1" style="width:130px;accent-color:#ef4444;"><span class="pro-lbl" id="_recVolLbl" style="font-size:7px;min-width:28px;">100%</span><button id="undockRecVol" title="Undock REC VOL" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:8px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;"><div style="display:flex;align-items:center;justify-content:space-between;"><span class="pro-lbl">MASTER EQ</span><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div class="pro-row" id="eraseRow" style="display:none;background:#fff3e0;border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#c2410c;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:#555;font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:#f97316;border-color:#c2410c;color:#fff;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:#666;"></span></div></div></div>
+<div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row pro-top" style="justify-content:space-between;"><div class="pro-beats" id="proBeats"></div><div style="display:flex;gap:4px;"><button id="undockBeats" title="Undock beats" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div></div><div class="pro-row"><span class="pro-lbl">BARS</span><div class="pro-bar-btns"><button class="pro-btn active" data-bars="2">2</button><button class="pro-btn" data-bars="4">4</button><button class="pro-btn" data-bars="8">8</button><button class="pro-btn" data-bars="16">16</button></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"><button class="pro-btn pro-slot active" data-slot="0">1</button><button class="pro-btn pro-slot" data-slot="1">2</button><button class="pro-btn pro-slot" data-slot="2">3</button><button class="pro-btn pro-slot" data-slot="3">4</button><button class="pro-btn pro-slot" data-slot="4">5</button><button class="pro-btn pro-slot" data-slot="5">6</button><button class="pro-btn pro-slot" data-slot="6">7</button><button class="pro-btn pro-slot" data-slot="7">8</button></div></div><div class="pro-row" id="recVolRow" style="justify-content:flex-end;gap:6px;"><span class="pro-lbl" style="font-size:7px;white-space:nowrap;">REC VOL</span><input type="range" id="_recVolSlider" min="0" max="2" step="0.05" value="1" style="width:130px;accent-color:#ef4444;"><span class="pro-lbl" id="_recVolLbl" style="font-size:7px;min-width:28px;">100%</span><button id="undockRecVol" title="Undock REC VOL" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:8px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;"><div style="display:flex;align-items:center;justify-content:space-between;"><span class="pro-lbl">MASTER EQ</span><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div class="pro-row" id="eraseRow" style="display:none;background:#fff3e0;border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#c2410c;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:#555;font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:#f97316;border-color:#c2410c;color:#fff;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:#666;"></span></div></div></div>
   <div class="bot">
     <button class="bbtn bundo" id="undo" disabled>Undo</button>
     <button class="bbtn bnew" id="newp">New Puzzle</button>
@@ -5544,125 +5544,142 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
 // ── DRAGGABLE FLOATING PANELS ────────────────────────────────
 (function(){
-  // Generic make-floatable function
-  // Takes an element and undock button, creates a floating clone
-  function makeFloatable(elId, undockBtnId, titleText){
-    var btn=document.getElementById(undockBtnId);
-    if(!btn) return;
-    var floatEl=null; // the floating div when undocked
-    var locked=false;
-    var lastTap=0;
+  var _drag={active:false,el:null,locked:false,ox:0,oy:0,sx:0,sy:0,hdr:null};
 
-    btn.addEventListener('click',function(){
-      if(floatEl){
-        // Re-dock: move content back and remove float
-        dock();
-      } else {
-        undock();
-      }
+  document.addEventListener('mousemove',function(e){
+    if(!_drag.active||!_drag.el||_drag.locked) return;
+    var nx=_drag.ox+(e.clientX-_drag.sx), ny=_drag.oy+(e.clientY-_drag.sy);
+    nx=Math.max(0,Math.min(window.innerWidth-80,nx));
+    ny=Math.max(0,Math.min(window.innerHeight-40,ny));
+    _drag.el.style.left=nx+'px'; _drag.el.style.top=ny+'px';
+  });
+  document.addEventListener('mouseup',function(){
+    _drag.active=false;
+    if(_drag.hdr&&!_drag.locked) _drag.hdr.style.cursor='grab';
+  });
+  document.addEventListener('touchmove',function(e){
+    if(!_drag.active||!_drag.el||_drag.locked) return;
+    var nx=_drag.ox+(e.touches[0].clientX-_drag.sx), ny=_drag.oy+(e.touches[0].clientY-_drag.sy);
+    nx=Math.max(0,Math.min(window.innerWidth-80,nx));
+    ny=Math.max(0,Math.min(window.innerHeight-40,ny));
+    _drag.el.style.left=nx+'px'; _drag.el.style.top=ny+'px';
+  },{passive:true});
+  document.addEventListener('touchend',function(){
+    _drag.active=false;
+    if(_drag.hdr&&!_drag.locked) _drag.hdr.style.cursor='grab';
+  },{passive:true});
+
+  function makeFloatable(elId, undockBtnId, titleText){
+    var undockBtn=document.getElementById(undockBtnId);
+    if(!undockBtn) return;
+    var floatEl=null, locked=false, origParent=null, origNext=null;
+
+    undockBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(floatEl) redock(); else undock();
     });
 
     function undock(){
-      var orig=document.getElementById(elId);
-      if(!orig) return;
-      var rect=orig.getBoundingClientRect();
-
-      // Build float container
-      floatEl=document.createElement('div');
-      floatEl.style.cssText='position:fixed;z-index:400;background:#e8e2d6;border:2px solid #1c1c1c;border-radius:6px;box-shadow:3px 3px 0 #1c1c1c;font-family:monospace;min-width:80px;';
-      floatEl.style.left=Math.max(4,rect.left-2)+'px';
-      floatEl.style.top=Math.max(60,rect.top-2)+'px';
-
-      // Header bar (drag handle + title + lock + close)
-      var header=document.createElement('div');
-      header.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:4px 6px;background:#1c1c1c;color:#f5f0e8;border-radius:4px 4px 0 0;cursor:grab;user-select:none;gap:6px;';
-      var titleEl=document.createElement('span');
-      titleEl.style.cssText='font-size:8px;letter-spacing:1px;font-weight:700;flex:1;';
-      titleEl.textContent=titleText;
-      var lockBtn=document.createElement('button');
-      lockBtn.style.cssText='font-size:10px;padding:0 4px;border:1px solid #888;border-radius:2px;background:transparent;color:#aaa;cursor:pointer;line-height:1.4;';
-      lockBtn.textContent='🔓';
-      lockBtn.title='Double-tap to lock/unlock';
-      var closeBtn=document.createElement('button');
-      closeBtn.style.cssText='font-size:10px;padding:0 4px;border:none;background:transparent;color:#f5f0e8;cursor:pointer;';
-      closeBtn.textContent='✕';
-      header.appendChild(titleEl); header.appendChild(lockBtn); header.appendChild(closeBtn);
-      floatEl.appendChild(header);
-
-      // Content: clone the original element's content
-      var content=document.createElement('div');
-      content.style.cssText='padding:6px;';
-      // Move original element into float
       var origEl=document.getElementById(elId);
-      origEl._origParent=origEl.parentElement;
-      origEl._origNextSibling=origEl.nextSibling;
-      origEl.style.border='none'; origEl.style.background='transparent';
-      origEl.style.padding='0'; origEl.style.margin='0';
-      content.appendChild(origEl);
-      floatEl.appendChild(content);
+      if(!origEl||floatEl) return;
+
+      // Remember where it came from
+      origParent=origEl.parentElement;
+      origNext=origEl.nextSibling;
+      // If the undock button is inside the element, skip past it as next sibling
+      if(origNext===undockBtn) origNext=undockBtn.nextSibling;
+
+      var rect=origEl.getBoundingClientRect();
+      floatEl=document.createElement('div');
+      floatEl.style.cssText='position:fixed;z-index:500;background:#e8e2d6;border:2px solid #1c1c1c;border-radius:6px;box-shadow:3px 3px 0 #1c1c1c;font-family:monospace;min-width:120px;';
+      floatEl.style.left=Math.max(4,rect.left)+'px';
+      floatEl.style.top=Math.max(64,rect.top-36)+'px';
+
+      // Header bar
+      var hdr=document.createElement('div');
+      hdr.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 8px;background:#1c1c1c;color:#f5f0e8;border-radius:4px 4px 0 0;cursor:grab;user-select:none;-webkit-user-select:none;';
+
+      var titleSpan=document.createElement('span');
+      titleSpan.textContent=titleText;
+      titleSpan.style.cssText='font-size:9px;font-weight:700;letter-spacing:1px;flex:1;pointer-events:none;';
+
+      var lockBtn=document.createElement('button');
+      lockBtn.textContent='🔓';
+      lockBtn.style.cssText='background:transparent;border:1.5px solid #666;border-radius:3px;color:#aaa;cursor:pointer;font-size:12px;line-height:1;padding:2px 4px;flex-shrink:0;';
+      lockBtn.title='Double-tap to lock';
+
+      var closeBtn=document.createElement('button');
+      closeBtn.textContent='✕';
+      closeBtn.style.cssText='background:transparent;border:none;color:#f5f0e8;cursor:pointer;font-size:16px;line-height:1;padding:0 2px;flex-shrink:0;';
+      closeBtn.title='Close';
+
+      hdr.appendChild(titleSpan); hdr.appendChild(lockBtn); hdr.appendChild(closeBtn);
+      floatEl.appendChild(hdr);
+
+      // Body
+      var body=document.createElement('div');
+      body.style.cssText='padding:8px;';
+      body.appendChild(origEl);
+      floatEl.appendChild(body);
       document.body.appendChild(floatEl);
 
-      btn.textContent='⊟'; btn.title='Re-dock';
+      undockBtn.textContent='⊟';
 
-      // ── Lock / double-tap ──
-      var lockTaps=0, lockTimer=null;
-      lockBtn.addEventListener('click',function(){
-        lockTaps++;
-        clearTimeout(lockTimer);
-        lockTimer=setTimeout(function(){ lockTaps=0; },400);
-        if(lockTaps>=2){
-          lockTaps=0;
-          locked=!locked;
+      // Lock: double-tap
+      var taps=0, tapT=null;
+      lockBtn.addEventListener('click',function(e){
+        e.stopPropagation();
+        taps++; clearTimeout(tapT);
+        tapT=setTimeout(function(){ taps=0; },380);
+        if(taps>=2){
+          taps=0; locked=!locked; _drag.locked=locked;
           lockBtn.textContent=locked?'🔒':'🔓';
+          lockBtn.style.borderColor=locked?'#fbbf24':'#666';
           lockBtn.style.color=locked?'#fbbf24':'#aaa';
-          header.style.cursor=locked?'default':'grab';
+          hdr.style.cursor=locked?'default':'grab';
         }
       });
 
-      closeBtn.addEventListener('click', dock);
+      // Close
+      closeBtn.addEventListener('click',function(e){ e.stopPropagation(); redock(); });
 
-      // ── Drag ──
-      var dragging=false,ox=0,oy=0,sx=0,sy=0;
-      function startDrag(cx,cy){
-        if(locked) return;
-        dragging=true; sx=cx; sy=cy;
+      // Drag — mouse
+      hdr.addEventListener('mousedown',function(e){
+        if(locked||e.target===lockBtn||e.target===closeBtn) return;
+        e.preventDefault();
         var r=floatEl.getBoundingClientRect();
-        ox=r.left; oy=r.top;
-        header.style.cursor='grabbing';
-      }
-      function moveDrag(cx,cy){
-        if(!dragging) return;
-        var nx=ox+(cx-sx), ny=oy+(cy-sy);
-        nx=Math.max(0,Math.min(window.innerWidth-60,nx));
-        ny=Math.max(0,Math.min(window.innerHeight-40,ny));
-        floatEl.style.left=nx+'px'; floatEl.style.top=ny+'px';
-      }
-      function endDrag(){ dragging=false; header.style.cursor=locked?'default':'grab'; }
-      header.addEventListener('mousedown',function(e){ startDrag(e.clientX,e.clientY); e.preventDefault(); });
-      document.addEventListener('mousemove',function(e){ moveDrag(e.clientX,e.clientY); });
-      document.addEventListener('mouseup',endDrag);
-      header.addEventListener('touchstart',function(e){ startDrag(e.touches[0].clientX,e.touches[0].clientY); e.preventDefault(); },{passive:false});
-      document.addEventListener('touchmove',function(e){ if(dragging) moveDrag(e.touches[0].clientX,e.touches[0].clientY); },{passive:true});
-      document.addEventListener('touchend',endDrag,{passive:true});
+        _drag.active=true; _drag.el=floatEl; _drag.hdr=hdr; _drag.locked=locked;
+        _drag.ox=r.left; _drag.oy=r.top; _drag.sx=e.clientX; _drag.sy=e.clientY;
+        hdr.style.cursor='grabbing';
+      });
+
+      // Drag — touch
+      hdr.addEventListener('touchstart',function(e){
+        if(locked||e.target===lockBtn||e.target===closeBtn) return;
+        e.preventDefault();
+        var r=floatEl.getBoundingClientRect();
+        _drag.active=true; _drag.el=floatEl; _drag.hdr=hdr; _drag.locked=locked;
+        _drag.ox=r.left; _drag.oy=r.top;
+        _drag.sx=e.touches[0].clientX; _drag.sy=e.touches[0].clientY;
+        hdr.style.cursor='grabbing';
+      },{passive:false});
     }
 
-    function dock(){
+    function redock(){
       if(!floatEl) return;
       var origEl=document.getElementById(elId);
-      if(origEl && origEl._origParent){
-        origEl.style.border=''; origEl.style.background=''; origEl.style.padding=''; origEl.style.margin='';
-        if(origEl._origNextSibling) origEl._origParent.insertBefore(origEl, origEl._origNextSibling);
-        else origEl._origParent.appendChild(origEl);
+      if(origEl&&origParent){
+        if(origNext&&origParent.contains(origNext)) origParent.insertBefore(origEl,origNext);
+        else origParent.appendChild(origEl);
       }
-      document.body.removeChild(floatEl);
-      floatEl=null; locked=false;
-      btn.textContent='⊞'; btn.title='Undock';
+      if(document.body.contains(floatEl)) document.body.removeChild(floatEl);
+      floatEl=null; locked=false; _drag.locked=false;
+      undockBtn.textContent='⊞';
     }
   }
 
-  // Wire up undockable panels
-  makeFloatable('proBeats',    'undockBeats',   'BEAT LIGHTS');
-  makeFloatable('masterEQRow', 'undockRecVol',  'REC VOL + EQ');
+  makeFloatable('proBeats',  'undockBeats',  'BEAT LIGHTS');
+  makeFloatable('recVolRow', 'undockRecVol', 'REC VOL');
 })();
 
 // Greeting sound on first interaction
