@@ -79,6 +79,8 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .pro-slot{min-width:20px;padding:3px 4px;font-size:8px;}
 .pro-slot.active{background:var(--bk);color:var(--bg);}
 .pro-slot.has-data{border-color:var(--ac);color:var(--ac);}
+.pro-slot.clone-src{background:#7c3aed!important;border-color:#4c1d95!important;color:#fff!important;}
+.pro-slot.clone-tgt{border-color:#7c3aed!important;border-style:dashed!important;}
 .pro-beat{width:10px;height:10px;border-radius:50%;background:#ccc;border:1.5px solid var(--br);transition:background .05s;flex-shrink:0;}
 .pro-beat.accent{background:#aaa;border-color:var(--bk);}
 .pro-beat.active{background:#ef4444;border-color:#991b1b;box-shadow:0 0 4px #ef4444;}
@@ -92,6 +94,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .sizebar-arrows{position:absolute;left:50%;transform:translate(-50%,50%);width:22px;height:20px;border:1.5px solid var(--bk);border-radius:3px;background:var(--w);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;line-height:1.1;color:var(--bk);pointer-events:none;transition:bottom .05s;z-index:4;}
 .sizebar-lbl{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--bk);text-align:center;line-height:1.6;pointer-events:none;user-select:none;}
 .bt{min-width:44px;height:44px;padding:0 8px;border:2px solid var(--br);background:var(--w);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:2px 2px 0 var(--br);transition:all .1s;}
+.bt-mic{position:absolute;top:1px;right:2px;font-size:7px;line-height:1;pointer-events:none;opacity:0.6;}
 .bt:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--br);}
 .bt.used{opacity:.20;cursor:pointer;pointer-events:all;box-shadow:none;}
 .bt.lit{border-color:#c9a800;color:var(--bk);background:#ffe250;box-shadow:2px 2px 0 rgba(180,148,0,.3);}
@@ -2614,8 +2617,22 @@ function playGreeting(){
 // ═══════════════════════════════════════════════════════════
 // BANK TILE SOUNDS — 70 per style, dispatched by SOUND_STYLE
 // ═══════════════════════════════════════════════════════════
+// User-recorded samples: index -> AudioBuffer
+var userSamples = {};
+
 function playBankSound(idx){
   if(!AC)return; resumeAC();
+  // User sample overrides synth sound
+  if(userSamples[idx]){
+    try{
+      var src=AC.createBufferSource();
+      src.buffer=userSamples[idx];
+      var g=AC.createGain();g.gain.value=0.9;
+      src.connect(g);g.connect(AC.destination);
+      src.start(AC.currentTime);
+    }catch(e){}
+    return;
+  }
   if(SOUND_STYLE==='B') playBankB(idx);
   else if(SOUND_STYLE==='C') playBankC(idx);
   else if(SOUND_STYLE==='D') playBankD(idx);
@@ -3387,6 +3404,8 @@ function renderBank(){
           el.style.background='';el.style.color='';el.style.borderColor='';
         },180);
       }
+      // Long-press timer for sample recording
+      var _sampleHoldTimer=null;
       // touchstart — fires independently per finger, enables multi-touch drumming
       el.addEventListener('touchstart',function(e){
         // Erase mode: toggle tile selection instantly on touchstart
@@ -3395,11 +3414,22 @@ function renderBank(){
           window._eraseToggleBank(idx);
           return;
         }
-        if(!SEL&&!PZ.bank[idx].used){
+        // Long-press to record sample
+        _sampleHoldTimer=setTimeout(function(){
+          _sampleHoldTimer=null;
+          if(window._startSampleRecord) window._startSampleRecord(idx);
+        },600);
+        if(!SEL){
           e.preventDefault(); // prevent ghost click
-          doSound();
+          doSound(); // play sound regardless of used state
         }
       },{passive:false});
+      el.addEventListener('touchend',function(){
+        if(_sampleHoldTimer){ clearTimeout(_sampleHoldTimer); _sampleHoldTimer=null; }
+      },{passive:true});
+      el.addEventListener('touchmove',function(){
+        if(_sampleHoldTimer){ clearTimeout(_sampleHoldTimer); _sampleHoldTimer=null; }
+      },{passive:true});
       // click — fallback for mouse and cases where touchstart didn't prevent default
       el.addEventListener('click',function(e){
         // Erase mode: toggle selection
@@ -3407,38 +3437,44 @@ function renderBank(){
           window._eraseToggleBank(idx);
           return;
         }
-        // If no cell selected — play percussive sound and flash red
-        if(!SEL&&!PZ.bank[idx].used){
+        // If no cell selected — play sound (works on used tiles too for sequencer)
+        if(!SEL){
           // touchstart already handled this on touch devices
           return;
         }
-        // If tile is used, find the cell on the grid that holds it and return it
-        if(PZ.bank[idx].used){
-          var bankVal=PZ.bank[idx].value;
-          var targetK=null;
-          // Search HIST in reverse for most recent placement from this bank slot
-          for(var hi=HIST.length-1;hi>=0;hi--){
-            if(HIST[hi].bi===idx&&PZ.CM[HIST[hi].k]&&PZ.CM[HIST[hi].k].value===bankVal){
-              targetK=HIST[hi].k;break;
-            }
-          }
-          // Fallback: scan CM for any placed blank cell with this value
-          if(!targetK){
-            for(var ck in PZ.CM){
-              var cc=PZ.CM[ck];
-              if(cc.isBlank&&!cc.isGiven&&cc.value===bankVal){targetK=ck;break;}
-            }
-          }
-          if(targetK)selCell(targetK);
-          return;
-        }
+        // Used tiles do nothing for puzzle placement
+        if(PZ.bank[idx].used) return;
         place(idx);
       });
     })(i,i,tile);
+    // Mic icon if sample assigned
+    if(userSamples[i]){
+      tile.style.position='relative';
+      var mic=document.createElement('span');
+      mic.className='bt-mic'; mic.textContent='🎤';
+      tile.appendChild(mic);
+    }
     be.appendChild(tile);
   }
   document.getElementById('undo').disabled=HIST.length===0;
 }
+
+// Re-render bank tile mic icons after sample load
+window._updateSampleIcons=function(){
+  var tiles=document.querySelectorAll('.bt');
+  tiles.forEach(function(t){
+    var idx=parseInt(t.dataset.bankIdx);
+    var existing=t.querySelector('.bt-mic');
+    if(userSamples[idx]&&!existing){
+      t.style.position='relative';
+      var mic=document.createElement('span');
+      mic.className='bt-mic'; mic.textContent='🎤';
+      t.appendChild(mic);
+    } else if(!userSamples[idx]&&existing){
+      t.removeChild(existing);
+    }
+  });
+};
 
 function render(){
   if(!PZ)return;
@@ -3990,6 +4026,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   var isLooping = false;
   var playTimers = [];
   var playDuration = 0;
+  var loopStartTime = 0; // Date.now() when current loop began
   var waitingForFirstNote = false; // armed+playing but no note yet
 
   // Pro mode state
@@ -4092,7 +4129,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   // ── Rec helpers ──────────────────────────────────────────
   function startRec(){
     recTrack = [];
-    recStart = Date.now();
+    // recStart is now loopStartTime so notes land at correct loop position
+    recStart = loopStartTime;
   }
   function stopRec(){
     if(recTrack && recTrack.length > 0){
@@ -4105,35 +4143,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   // Called by bank sound triggers
   window._seqNoteOn = function(sndIdx, bankIdx){
-    // If waiting for first note to start recording, do so now
-    if(waitingForFirstNote){
-      waitingForFirstNote = false;
-      startRec();
-      if(proMode) startBeatClock();
-      // If looping with no tracks yet, schedule the loop-end timer NOW
-      if(isLooping && tracks.length===0){
-        var loopMs = getLoopMs();
-        var loopEndHandle = setTimeout(function(){
-          if(!isPlaying) return;
-          // Save the recording
-          if(recTrack && recTrack.length>0){
-            slotTracks[currentSlot].push(recTrack);
-            syncTracks(); updateSlotUI();
-            recTrack=null;
-          }
-          if(pendingSlot>=0){
-            var ps=pendingSlot; pendingSlot=-1;
-            currentSlot=ps; syncTracks(); updateSlotUI();
-          }
-          if(isRecArmed) startRec();
-          // Now schedule playback of what was just recorded
-          schedulePlayback();
-        }, loopMs);
-        playTimers.push(loopEndHandle);
-      }
-    }
     if(recTrack !== null){
-      var rawTime = Date.now() - recStart;
+      // Time relative to loop start — so notes land at correct position on playback
+      var rawTime = Date.now() - loopStartTime;
+      // Clamp to loop length so notes don't spill into next loop
+      var loopMs = getLoopMs();
+      rawTime = Math.max(0, Math.min(loopMs - 1, rawTime));
       recTrack.push({ sndIdx:sndIdx, bankIdx:bankIdx, time:quantizeTime(rawTime) });
     }
   };
@@ -4192,6 +4207,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(tracks.length===0) return;
     var loopMs = getLoopMs();
     playDuration = loopMs;
+    loopStartTime = Date.now();
 
     tracks.forEach(function(tr){
       tr.forEach(function(ev){
@@ -4228,6 +4244,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   function startPlayback(){
     clearTimers();
+    loopStartTime = Date.now();
     isPlaying=true; waitingForFirstNote=false;
     updateUI();
     if(isRecArmed) startRec();
@@ -4238,7 +4255,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   function stopAll(){
     clearTimers();
     stopBeatClock();
-    isPlaying=false; waitingForFirstNote=false;
+    isPlaying=false;
     stopRec();
     updateUI();
   }
@@ -4246,7 +4263,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   // ── UI update ─────────────────────────────────────────────
   function updateUI(){
     if(btnRec){ btnRec.classList.toggle('active',isRecArmed); }
-    if(btnPlay){ btnPlay.classList.toggle('playing', isPlaying||waitingForFirstNote); }
+    if(btnPlay){ btnPlay.classList.toggle('playing', isPlaying); }
     if(btnLoop){ btnLoop.classList.toggle('active',isLooping); }
     if(btnPro){ btnPro.classList.toggle('active',proMode); }
   }
@@ -4255,8 +4272,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   if(btnRec) btnRec.addEventListener('click',function(){
     btnFx('rec');
     isRecArmed=!isRecArmed; updateUI();
-    if(isRecArmed && !isPlaying && !waitingForFirstNote && recTrack===null) startRec();
-    if(isRecArmed && isPlaying && recTrack===null) startRec();
+    if(isRecArmed && recTrack===null) startRec(); // start immediately wherever in the loop we are
     if(!isRecArmed && recTrack!==null) stopRec();
   });
 
@@ -4267,16 +4283,28 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       btnFx('play');
       isPlaying=true; updateUI();
       if(isRecArmed){
-        // Wait for first note to start recording, but start clock immediately if tracks exist
-        waitingForFirstNote=true;
-        if(proMode){
-          if(tracks.length>0) startBeatClock(); // sync dots to existing playback
-          else updateBeatDot(-1); // pure first record — wait for first tap
-        }
+        startRec(); // start recording immediately, timestamped to loop start
+        if(proMode) startBeatClock();
       } else {
         if(proMode) startBeatClock();
       }
       if(tracks.length>0) schedulePlayback();
+      else if(isRecArmed && isLooping){
+        // No existing tracks — schedule loop-end timer so first recording loops
+        var _loopMs = getLoopMs();
+        var _loopEndH = setTimeout(function(){
+          if(!isPlaying) return;
+          if(recTrack && recTrack.length>0){
+            slotTracks[currentSlot].push(recTrack);
+            syncTracks(); updateSlotUI();
+            recTrack=null;
+          }
+          if(pendingSlot>=0){ var ps=pendingSlot; pendingSlot=-1; currentSlot=ps; syncTracks(); updateSlotUI(); }
+          if(isRecArmed) startRec();
+          schedulePlayback();
+        }, _loopMs);
+        playTimers.push(_loopEndH);
+      }
     }
   });
 
@@ -4345,14 +4373,113 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     updateSlotUI();
   }
 
-  document.querySelectorAll('.pro-slot').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var slot=parseInt(this.dataset.slot);
-      if(slot===currentSlot && pendingSlot<0) return;
-      if(slot===pendingSlot){ pendingSlot=-1; updateSlotUI(); return; } // cancel pending
-      btnFx('play');
-      switchSlotWhenReady(slot);
+  var cloneSourceSlot = -1; // -1 = not in clone mode
+
+  function enterCloneMode(slot){
+    cloneSourceSlot = slot;
+    updateSlotUI();
+    // Show brief status hint
+    var status = document.getElementById('eraseStatus');
+    if(status) status.textContent = 'Clone mode: tap destination slot · tap source again to cancel';
+    var eraseRow = document.getElementById('eraseRow');
+    if(eraseRow && eraseRow.style.display==='none'){
+      // Flash a small toast instead
+      var toast = document.getElementById('_cloneToast');
+      if(!toast){
+        toast = document.createElement('div');
+        toast.id = '_cloneToast';
+        toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;font-family:monospace;font-size:11px;padding:7px 14px;border-radius:20px;z-index:600;pointer-events:none;letter-spacing:.5px;';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = 'CLONE: tap destination slot · tap '+slot+' again to cancel';
+      toast.style.opacity='1';
+      clearTimeout(toast._t);
+      toast._t = setTimeout(function(){ toast.style.opacity='0'; },3000);
+    }
+  }
+
+  function exitCloneMode(){
+    cloneSourceSlot = -1;
+    updateSlotUI();
+  }
+
+  function cloneTo(destSlot){
+    // Deep copy all tracks from source to dest
+    slotTracks[destSlot] = JSON.parse(JSON.stringify(slotTracks[cloneSourceSlot]));
+    btnFx('play');
+    exitCloneMode();
+    updateSlotUI();
+    // If we just cloned to current slot, sync tracks
+    if(destSlot === currentSlot) syncTracks();
+  }
+
+  // Update updateSlotUI to show clone states
+  var _origUpdateSlotUI = updateSlotUI;
+  updateSlotUI = function(){
+    _origUpdateSlotUI();
+    document.querySelectorAll('.pro-slot').forEach(function(btn){
+      var slot=parseInt(btn.dataset.slot);
+      btn.classList.toggle('clone-src', slot===cloneSourceSlot);
+      btn.classList.toggle('clone-tgt', cloneSourceSlot>=0 && slot!==cloneSourceSlot);
     });
+  };
+
+  document.querySelectorAll('.pro-slot').forEach(function(btn){
+    var holdTimer = null;
+
+    function onHoldStart(e){
+      var slot=parseInt(btn.dataset.slot);
+      holdTimer = setTimeout(function(){
+        holdTimer=null;
+        btnFx('rec');
+        enterCloneMode(slot);
+      }, 500);
+    }
+    function onHoldEnd(){
+      if(holdTimer){ clearTimeout(holdTimer); holdTimer=null; }
+    }
+
+    btn.addEventListener('touchstart', function(e){
+      e.preventDefault();
+      onHoldStart();
+    },{passive:false});
+    btn.addEventListener('touchend', function(e){
+      e.preventDefault();
+      var slot=parseInt(this.dataset.slot);
+      if(holdTimer){
+        // Short tap — normal slot switch or clone destination
+        clearTimeout(holdTimer); holdTimer=null;
+        if(cloneSourceSlot>=0){
+          if(slot===cloneSourceSlot){ exitCloneMode(); return; }
+          cloneTo(slot);
+        } else {
+          if(slot===currentSlot && pendingSlot<0) return;
+          if(slot===pendingSlot){ pendingSlot=-1; updateSlotUI(); return; }
+          btnFx('play');
+          switchSlotWhenReady(slot);
+        }
+      }
+      // else: hold was consumed by enterCloneMode
+    },{passive:false});
+
+    // Mouse support
+    btn.addEventListener('mousedown', onHoldStart);
+    btn.addEventListener('mouseup', function(){
+      var slot=parseInt(this.dataset.slot);
+      if(holdTimer){
+        clearTimeout(holdTimer); holdTimer=null;
+        if(cloneSourceSlot>=0){
+          if(slot===cloneSourceSlot){ exitCloneMode(); return; }
+          cloneTo(slot);
+        } else {
+          if(slot===currentSlot && pendingSlot<0) return;
+          if(slot===pendingSlot){ pendingSlot=-1; updateSlotUI(); return; }
+          btnFx('play');
+          switchSlotWhenReady(slot);
+        }
+      }
+    });
+    btn.addEventListener('mouseleave', onHoldEnd);
   });
 
   document.querySelectorAll('[data-bars]').forEach(function(btn){
@@ -4445,16 +4572,51 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       return changed;
     },
     getState: function(){
+      // Encode userSamples as base64 strings for saving
+      var samplesB64={};
+      Object.keys(userSamples).forEach(function(idx){
+        try{
+          var buf=userSamples[idx];
+          var len=buf.length*buf.numberOfChannels;
+          var interleaved=new Float32Array(len);
+          for(var ch=0;ch<buf.numberOfChannels;ch++){
+            var data=buf.getChannelData(ch);
+            for(var i=0;i<buf.length;i++) interleaved[i*buf.numberOfChannels+ch]=data[i];
+          }
+          var bytes=new Uint8Array(interleaved.buffer);
+          var b64=btoa(String.fromCharCode.apply(null,bytes));
+          samplesB64[idx]={b64:b64,sr:buf.sampleRate,ch:buf.numberOfChannels,len:buf.length};
+        }catch(e){}
+      });
       return {
         v:1,
         bpm:bpm, bars:bars, quantize:quantize,
         isLooping:isLooping, clickOn:clickOn, accentOn:accentOn,
         currentSlot:currentSlot,
-        slotTracks:JSON.parse(JSON.stringify(slotTracks))
+        slotTracks:JSON.parse(JSON.stringify(slotTracks)),
+        userSamples:samplesB64
       };
     },
     loadState: function(data){
       stopAll();
+      // Restore user samples
+      userSamples={};
+      if(data.userSamples && AC){
+        Object.keys(data.userSamples).forEach(function(idx){
+          try{
+            var s=data.userSamples[idx];
+            var bytes=Uint8Array.from(atob(s.b64),function(c){return c.charCodeAt(0);});
+            var floats=new Float32Array(bytes.buffer);
+            var buf=AC.createBuffer(s.ch,s.len,s.sr);
+            for(var ch=0;ch<s.ch;ch++){
+              var out=buf.getChannelData(ch);
+              for(var i=0;i<s.len;i++) out[i]=floats[i*s.ch+ch];
+            }
+            userSamples[parseInt(idx)]=buf;
+          }catch(e){}
+        });
+        if(window._updateSampleIcons) window._updateSampleIcons();
+      }
       bpm = data.bpm||120; bars = data.bars||8;
       quantize = data.quantize||'none';
       isLooping = !!data.isLooping; clickOn = !!data.clickOn;
@@ -4833,6 +4995,120 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     updateStatus();
   });
 })();
+// ── SAMPLE RECORDER ──────────────────────────────────────────
+(function(){
+  var mediaStream=null, mediaRecorder=null, recordingIdx=-1, chunks=[];
+  var MAX_SECONDS=4;
+
+  window._startSampleRecord=function(tileIdx){
+    if(!AC){ alert('Audio not ready'); return; }
+    if(mediaRecorder){ stopRecording(); return; }
+
+    // Request mic
+    navigator.mediaDevices.getUserMedia({audio:true,video:false})
+    .then(function(stream){
+      mediaStream=stream;
+      recordingIdx=tileIdx;
+      chunks=[];
+
+      // Build overlay
+      var ov=document.createElement('div');
+      ov.id='_sampleOv';
+      ov.style.cssText='position:fixed;inset:0;z-index:800;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.82);font-family:monospace;color:#fff;gap:14px;';
+
+      var ttl=document.createElement('div');
+      ttl.style.cssText='font-size:14px;font-weight:700;letter-spacing:1px;';
+      ttl.textContent='RECORDING SAMPLE FOR TILE '+(tileIdx+1);
+
+      var indicator=document.createElement('div');
+      indicator.id='_sampleDot';
+      indicator.style.cssText='width:18px;height:18px;border-radius:50%;background:#ef4444;box-shadow:0 0 12px #ef4444;';
+
+      var timer=document.createElement('div');
+      timer.id='_sampleTimer';
+      timer.style.cssText='font-size:28px;font-weight:700;';
+      timer.textContent=MAX_SECONDS+'.0';
+
+      var hint=document.createElement('div');
+      hint.style.cssText='font-size:10px;opacity:.7;';
+      hint.textContent='Recording up to '+MAX_SECONDS+'s · tap STOP to finish';
+
+      var stopBtn=document.createElement('button');
+      stopBtn.textContent='⏹ STOP';
+      stopBtn.style.cssText='font-family:monospace;font-size:13px;font-weight:700;padding:10px 28px;border:2px solid #fff;border-radius:4px;background:transparent;color:#fff;cursor:pointer;letter-spacing:1px;';
+      stopBtn.onclick=function(){ stopRecording(); };
+
+      var clearBtn=document.createElement('button');
+      clearBtn.textContent='🗑 CLEAR SAMPLE';
+      clearBtn.style.cssText='font-family:monospace;font-size:11px;padding:6px 16px;border:1.5px solid #888;border-radius:4px;background:transparent;color:#aaa;cursor:pointer;';
+      clearBtn.onclick=function(){
+        delete userSamples[tileIdx];
+        if(window._updateSampleIcons) window._updateSampleIcons();
+        cancelRecording();
+      };
+
+      ov.appendChild(ttl); ov.appendChild(indicator); ov.appendChild(timer);
+      ov.appendChild(hint); ov.appendChild(stopBtn); ov.appendChild(clearBtn);
+      document.body.appendChild(ov);
+
+      // Countdown
+      var elapsed=0;
+      var countInterval=setInterval(function(){
+        elapsed+=0.1;
+        var remaining=Math.max(0,MAX_SECONDS-elapsed);
+        var timerEl=document.getElementById('_sampleTimer');
+        if(timerEl) timerEl.textContent=remaining.toFixed(1);
+        // Pulse dot
+        var dot=document.getElementById('_sampleDot');
+        if(dot) dot.style.opacity=(Math.sin(elapsed*8)>0)?'1':'0.3';
+        if(elapsed>=MAX_SECONDS){ clearInterval(countInterval); stopRecording(); }
+      },100);
+      ov._interval=countInterval;
+
+      // Start MediaRecorder
+      mediaRecorder=new MediaRecorder(stream);
+      mediaRecorder.ondataavailable=function(e){ if(e.data.size>0) chunks.push(e.data); };
+      mediaRecorder.onstop=function(){
+        var blob=new Blob(chunks,{type:'audio/webm'});
+        var url=URL.createObjectURL(blob);
+        var xhr=new XMLHttpRequest();
+        xhr.open('GET',url,true); xhr.responseType='arraybuffer';
+        xhr.onload=function(){
+          URL.revokeObjectURL(url);
+          AC.decodeAudioData(xhr.response,function(buffer){
+            userSamples[tileIdx]=buffer;
+            if(window._updateSampleIcons) window._updateSampleIcons();
+          },function(){ alert('Could not decode audio'); });
+        };
+        xhr.send();
+        cleanup();
+      };
+      mediaRecorder.start();
+    })
+    .catch(function(e){
+      alert('Mic access denied. Allow microphone access when prompted. Works on GitHub Pages over HTTPS.');
+    });
+  };
+
+  function stopRecording(){
+    if(mediaRecorder && mediaRecorder.state==='recording') mediaRecorder.stop();
+    var ov=document.getElementById('_sampleOv');
+    if(ov && ov._interval) clearInterval(ov._interval);
+  }
+
+  function cancelRecording(){
+    stopRecording();
+    cleanup();
+  }
+
+  function cleanup(){
+    if(mediaStream){ mediaStream.getTracks().forEach(function(t){t.stop();}); mediaStream=null; }
+    mediaRecorder=null; chunks=[];
+    var ov=document.getElementById('_sampleOv');
+    if(ov && document.body.contains(ov)) document.body.removeChild(ov);
+  }
+})();
+
 // Greeting sound on first interaction
 document.addEventListener('click',function _greetOnce(){
   if(_greetingPlayed)return;
