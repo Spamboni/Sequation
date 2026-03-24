@@ -2,7 +2,7 @@
   "name": "Sequation",
   "short_name": "Sequation",
   "description": "Math crossword puzzle with sequencer",
-  "start_url": "./MathcrossWorking2.html",
+  "start_url": "./Sequation1.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f5f0e8",
@@ -17,6 +17,12 @@
     {
       "src": "icon-512.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-1024.png",
+      "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any maskable"
     }
