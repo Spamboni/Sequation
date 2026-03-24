@@ -2592,7 +2592,7 @@ function playScaleNote(freq){
       o2.connect(g2);o2.start(t);o2.stop(t+0.1);
     } else {
       // Style A (Classic): soft triangle tone with smooth decay
-      var g=AC.createGain();g.connect(AC.destination);
+      var g=AC.createGain();g.connect(getMasterDest());
       g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.18,t+0.02);
       g.gain.exponentialRampToValueAtTime(0.001,t+0.22);
       var o=AC.createOscillator();o.type='triangle';o.frequency.setValueAtTime(freq,t);
@@ -2710,8 +2710,9 @@ function _bsN(vol,dec,lpFreq){
   var d=buf.getChannelData(0);
   for(var i=0;i<d.length;i++)d[i]=Math.random()*2-1;
   var s=AC.createBufferSource();s.buffer=buf;
-  var g=AC.createGain();g.connect(AC.destination);
-  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.001,t+dec);
+  var g=AC.createGain();g.connect(getMasterDest());
+  var v=vol*(window._bsNVol||1.0);
+  g.gain.setValueAtTime(Math.max(0.0001,v),t);g.gain.exponentialRampToValueAtTime(0.0001,t+dec);
   if(lpFreq){var f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=lpFreq;s.connect(f);f.connect(g);}
   else s.connect(g);
   s.start(t);s.stop(t+dec);
@@ -2739,7 +2740,7 @@ function playBankA(idx,_bankVol){
     function G(v,d){return _bsG(v*_bv,d);}
     function O(tp,fr,g,d){_bsO(tp,fr,g,d);}
     function S(tp,f1,f2,v,d){_bsS(tp,f1,f2,v,d);}
-    function N(v,d,lp){_bsN(v,d,lp);}
+    function N(v,d,lp){window._bsNVol=_bv;_bsN(v,d,lp);window._bsNVol=1.0;}
     switch(idx){
       case 0: S('sine',120,40,0.8,0.35);N(0.3,0.04,200);break; // Kick
       case 1: N(0.7,0.18,3000);S('triangle',220,180,0.3,0.12);break; // Snare
@@ -2825,7 +2826,7 @@ function playBankB(idx,_bankVol){
     function S(tp,f1,f2,v,d){_bsS(tp,f1,f2,v*_bv,d);}
     function G(v,d){return _bsG(v*_bv,d);}
     function O(tp,fr,g,d){_bsO(tp,fr,g,d);}
-    function N(v,d,lp){_bsN(v,d,lp);}
+    function N(v,d,lp){window._bsNVol=_bv;_bsN(v,d,lp);window._bsNVol=1.0;}
     switch(idx){
       case 0: S('square',80,30,0.6,0.15);N(0.4,0.05,500);break; // 8-bit kick
       case 1: N(0.8,0.08,6000);break; // 8-bit snare
@@ -2911,7 +2912,7 @@ function playBankC(idx,_bankVol){
     function S(tp,f1,f2,v,d){_bsS(tp,f1,f2,v*_bv,d);}
     function G(v,d){return _bsG(v*_bv,d);}
     function O(tp,fr,g,d){_bsO(tp,fr,g,d);}
-    function N(v,d,lp){_bsN(v,d,lp);}
+    function N(v,d,lp){window._bsNVol=_bv;_bsN(v,d,lp);window._bsNVol=1.0;}
     switch(idx){
       case 0: S('sine',60,20,0.9,0.4);N(0.2,0.04,300);break; // Sub kick
       case 1: N(0.6,0.1,5000);S('sawtooth',200,100,0.15,0.08);break; // Glitch snare
@@ -3006,7 +3007,7 @@ function playBankD(idx,_bankVol){
     function S(tp,f1,f2,v,d){_bsS(tp,f1,f2,v*_bv,d);}
     function G(v,d){return _bsG(v*_bv,d);}
     function O(tp,fr,g,d){_bsO(tp,fr,g,d);}
-    function N(v,d,lp){_bsN(v,d,lp);}
+    function N(v,d,lp){window._bsNVol=_bv;_bsN(v,d,lp);window._bsNVol=1.0;}
     switch(idx){
       // ── Core nature percussion ──
       case 0: // Hollow log bass
@@ -3235,7 +3236,7 @@ function playBankE(idx,_bankVol){
     function S(tp,f1,f2,v,d){_bsS(tp,f1,f2,v*_bv,d);}
     function G(v,d){return _bsG(v*_bv,d);}
     function O(tp,fr,g,d){_bsO(tp,fr,g,d);}
-    function N(v,d,lp){_bsN(v,d,lp);}
+    function N(v,d,lp){window._bsNVol=_bv;_bsN(v,d,lp);window._bsNVol=1.0;}
     switch(idx){
       case 0: // Heavy metal kick
         S('sine',80,25,0.95,0.4);N(0.5,0.06,1000);break;
@@ -5295,6 +5296,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     waveWrap.appendChild(shadeL); waveWrap.appendChild(shadeR);
     waveWrap.appendChild(handleL); waveWrap.appendChild(handleR);
 
+    function curvePt(x,type){
+      if(type==='slow-fast') return x*x;
+      if(type==='fast-slow') return 1-(1-x)*(1-x);
+      return x;
+    }
+
     function drawWaveform(){
       var ctx2=waveCanvas.getContext('2d');
       var W=280,H=60;
@@ -5305,17 +5312,70 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         ctx2.beginPath(); ctx2.moveTo(0,H/2); ctx2.lineTo(W,H/2); ctx2.stroke();
         updateTrimHandles(); return;
       }
+
+      // Trim region in pixels
+      var tS=Math.round((meta.trimStart||0)*W);
+      var tE=Math.round((meta.trimEnd!==undefined?meta.trimEnd:1)*W);
+      var trimW=Math.max(1,tE-tS);
+
+      // ── Waveform bars ──
       var data=buf.getChannelData(0);
       var step=Math.max(1,Math.ceil(data.length/W));
-      ctx2.strokeStyle='#4ade80'; ctx2.lineWidth=1;
+      ctx2.strokeStyle='rgba(74,222,128,0.75)'; ctx2.lineWidth=1;
       ctx2.beginPath();
       for(var x=0;x<W;x++){
-        var s=x*step,e=Math.min(s+step,data.length),max=0;
-        for(var j=s;j<e;j++) if(Math.abs(data[j])>max) max=Math.abs(data[j]);
-        var h=max*(H/2-2);
+        var s2=x*step,e2=Math.min(s2+step,data.length),maxA=0;
+        for(var j=s2;j<e2;j++) if(Math.abs(data[j])>maxA) maxA=Math.abs(data[j]);
+        var h=maxA*(H/2-3);
         ctx2.moveTo(x+0.5,H/2-h); ctx2.lineTo(x+0.5,H/2+h);
       }
       ctx2.stroke();
+
+      // ── Attack curve (yellow) — from tS rising to full ──
+      var atk=meta.attack||0;
+      if(atk>0){
+        var atkPx=Math.round(atk*trimW);
+        ctx2.strokeStyle='rgba(251,191,36,0.95)';
+        ctx2.lineWidth=2;
+        ctx2.beginPath();
+        for(var px=0;px<=atkPx;px++){
+          var g=curvePt(px/Math.max(1,atkPx),meta.atkCurve||'linear');
+          var y=H-2-(g*(H-4));
+          if(px===0) ctx2.moveTo(tS+px,H-2); else ctx2.lineTo(tS+px,y);
+        }
+        ctx2.stroke();
+      }
+
+      // ── Release curve (orange) — from tE-relPx fading to bottom ──
+      var rel=meta.release||0;
+      if(rel>0){
+        var relPx=Math.round(rel*trimW);
+        ctx2.strokeStyle='rgba(251,146,60,0.95)';
+        ctx2.lineWidth=2;
+        ctx2.beginPath();
+        for(var px=0;px<=relPx;px++){
+          var g=curvePt(1-(px/Math.max(1,relPx)),meta.relCurve||'linear');
+          var y=H-2-(g*(H-4));
+          var rx=tE-relPx+px;
+          if(px===0) ctx2.moveTo(rx,y); else ctx2.lineTo(rx,y);
+        }
+        ctx2.stroke();
+      }
+
+      // ── Volume line (cyan dashed) ──
+      var vol=meta.volume!==undefined?meta.volume:1.0;
+      var volY=Math.round(H - Math.min(vol,2)/2*H);
+      volY=Math.max(3,Math.min(H-3,volY));
+      ctx2.strokeStyle='rgba(6,182,212,0.9)';
+      ctx2.lineWidth=1.5;
+      ctx2.setLineDash([5,4]);
+      ctx2.beginPath(); ctx2.moveTo(tS,volY); ctx2.lineTo(tE,volY);
+      ctx2.stroke();
+      ctx2.setLineDash([]);
+      ctx2.fillStyle='rgba(6,182,212,0.9)';
+      ctx2.font='8px monospace';
+      ctx2.fillText(Math.round(vol*100)+'%',tS+2,volY>12?volY-2:volY+9);
+
       updateTrimHandles();
     }
 
@@ -5708,11 +5768,32 @@ function _greetOnce(){
   _greetingPlayed=true;
   document.removeEventListener('touchstart',_greetOnce,true);
   document.removeEventListener('click',_greetOnce,true);
+  // Remove tap overlay if present
+  var tap=document.getElementById('_tapOverlay');
+  if(tap&&tap.parentElement) tap.parentElement.removeChild(tap);
   resumeAC();
   setTimeout(playGreeting,50);
 }
 document.addEventListener('touchstart',_greetOnce,true);
 document.addEventListener('click',_greetOnce,true);
+
+// Show "tap to start" overlay so greeting plays on very first interaction
+(function(){
+  var sel=document.getElementById('selScreen');
+  if(!sel) return;
+  var tap=document.createElement('div');
+  tap.id='_tapOverlay';
+  tap.style.cssText='position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:24px;pointer-events:none;';
+  var hint=document.createElement('div');
+  hint.style.cssText='font-family:monospace;font-size:10px;color:#888;letter-spacing:1px;animation:_tapPulse 1.5s ease-in-out infinite;';
+  hint.textContent='tap anywhere to start';
+  var style=document.createElement('style');
+  style.textContent='@keyframes _tapPulse{0%,100%{opacity:.3}50%{opacity:1}}';
+  document.head.appendChild(style);
+  tap.appendChild(hint);
+  sel.style.position='relative';
+  sel.appendChild(tap);
+})();
 // Difficulty buttons
 document.querySelectorAll('[data-diff]').forEach(function(b){
   b.addEventListener('click',function(){
