@@ -164,7 +164,7 @@ window.onerror=function(msg,src,line,col,err){
   <div class="info-bar"><span class="blbl">Tap a square · then a number · tap placed to return · pinch to zoom · double-tap resets zoom</span></div>
   <div class="gscroll"><div class="grid-clip" id="gridClip"><div class="grid" id="grid"></div></div></div>
   <div class="bank-outer"><div class="bsize-wrap"><div class="bsize-col" id="sizeBar"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><div class="sizebar-lock" id="sizeBarLock">🔓</div><div class="seq-btns"><button class="seq-btn" id="seqRec" title="Record">⏺</button><button class="seq-btn" id="seqPlay" title="Play">▶</button><button class="seq-btn" id="seqStop" title="Stop">⏹</button><button class="seq-btn" id="seqLoop" title="Loop">🔁</button><button class="seq-btn" id="seqClear" title="Clear">🗑</button><button class="seq-btn seq-pro-btn" id="seqPro" title="Pro Mode">PRO</button><button class="seq-btn seq-save-btn" id="seqSave" title="Save Sequence">💾</button><button class="seq-btn seq-save-btn" id="seqLoad" title="Load Sequence">📂</button><button class="seq-btn" id="seqErase" title="Erase Beats">✂</button></div></div><div class="bank"><div class="btiles" id="bank"></div></div></div>
-<div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row pro-top"><div class="pro-beats" id="proBeats"></div></div><div class="pro-row"><span class="pro-lbl">BARS</span><div class="pro-bar-btns"><button class="pro-btn active" data-bars="2">2</button><button class="pro-btn" data-bars="4">4</button><button class="pro-btn" data-bars="8">8</button><button class="pro-btn" data-bars="16">16</button></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"><button class="pro-btn pro-slot active" data-slot="0">1</button><button class="pro-btn pro-slot" data-slot="1">2</button><button class="pro-btn pro-slot" data-slot="2">3</button><button class="pro-btn pro-slot" data-slot="3">4</button><button class="pro-btn pro-slot" data-slot="4">5</button><button class="pro-btn pro-slot" data-slot="5">6</button><button class="pro-btn pro-slot" data-slot="6">7</button><button class="pro-btn pro-slot" data-slot="7">8</button></div><div style="display:flex;align-items:center;gap:4px;margin-left:6px;"><span class="pro-lbl" style="font-size:7px;white-space:nowrap;">REC VOL</span><input type="range" id="_recVolSlider" min="0" max="2" step="0.05" value="1" style="width:60px;accent-color:#ef4444;"><span class="pro-lbl" id="_recVolLbl" style="font-size:7px;min-width:28px;">100%</span></div></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:8px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="eraseRow" style="display:none;background:#fff3e0;border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#c2410c;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:#555;font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:#f97316;border-color:#c2410c;color:#fff;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:#666;"></span></div></div></div>
+<div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row pro-top" style="justify-content:space-between;"><div class="pro-beats" id="proBeats"></div><div style="display:flex;gap:4px;"><button id="undockBeats" title="Undock beats" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div></div><div class="pro-row"><span class="pro-lbl">BARS</span><div class="pro-bar-btns"><button class="pro-btn active" data-bars="2">2</button><button class="pro-btn" data-bars="4">4</button><button class="pro-btn" data-bars="8">8</button><button class="pro-btn" data-bars="16">16</button></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"><button class="pro-btn pro-slot active" data-slot="0">1</button><button class="pro-btn pro-slot" data-slot="1">2</button><button class="pro-btn pro-slot" data-slot="2">3</button><button class="pro-btn pro-slot" data-slot="3">4</button><button class="pro-btn pro-slot" data-slot="4">5</button><button class="pro-btn pro-slot" data-slot="5">6</button><button class="pro-btn pro-slot" data-slot="6">7</button><button class="pro-btn pro-slot" data-slot="7">8</button></div></div><div class="pro-row" style="justify-content:flex-end;gap:6px;"><span class="pro-lbl" style="font-size:7px;white-space:nowrap;">REC VOL</span><input type="range" id="_recVolSlider" min="0" max="2" step="0.05" value="1" style="width:130px;accent-color:#ef4444;"><span class="pro-lbl" id="_recVolLbl" style="font-size:7px;min-width:28px;">100%</span><button id="undockRecVol" title="Undock REC VOL" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:8px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;"><div style="display:flex;align-items:center;justify-content:space-between;"><span class="pro-lbl">MASTER EQ</span><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div class="pro-row" id="eraseRow" style="display:none;background:#fff3e0;border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#c2410c;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:#555;font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:#f97316;border-color:#c2410c;color:#fff;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:#666;"></span></div></div></div>
   <div class="bot">
     <button class="bbtn bundo" id="undo" disabled>Undo</button>
     <button class="bbtn bnew" id="newp">New Puzzle</button>
@@ -1847,6 +1847,30 @@ function winCheck(pz){
 // ═══════════════════════════════════════════════════════════
 var AC=(function(){try{return new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}})();
 var _greetingPlayed=false;
+
+// ── Master EQ chain — all sounds connect here instead of AC.destination ──
+var masterEQ={};
+var masterEQInput=null;
+(function(){
+  if(!AC) return;
+  var defs=[
+    {id:'sub', type:'lowshelf', freq:60,   Q:0.7},
+    {id:'bass',type:'peaking',  freq:200,  Q:1.0},
+    {id:'mid', type:'peaking',  freq:1000, Q:1.0},
+    {id:'pres',type:'peaking',  freq:4000, Q:1.0},
+    {id:'hi',  type:'highshelf',freq:8000, Q:0.7},
+  ];
+  var prev=AC.destination;
+  for(var i=defs.length-1;i>=0;i--){
+    var d=defs[i],f=AC.createBiquadFilter();
+    f.type=d.type; f.frequency.value=d.freq; f.gain.value=0;
+    if(d.Q) f.Q.value=d.Q;
+    f.connect(prev); masterEQ[d.id]=f; prev=f;
+  }
+  masterEQInput=prev;
+})();
+function getMasterDest(){ return masterEQInput||(AC?AC.destination:null); }
+
 function resumeAC(){if(AC&&AC.state==='suspended')AC.resume();}
 var SOUND_STYLE='A';
 
@@ -2643,7 +2667,7 @@ function playBankSound(idx, eventVol){
       var sampleVol=(meta.volume!==undefined)?meta.volume:1.0;
       var evVol=(eventVol!==undefined)?eventVol:1.0;
       g.gain.value=sampleVol*evVol;
-      src.connect(g);g.connect(AC.destination);
+      src.connect(g);g.connect(getMasterDest());
       src.start(AC.currentTime);
     }catch(e){}
     return;
@@ -2660,7 +2684,7 @@ function playBankSound(idx, eventVol){
 
 // ── SHARED HELPERS ───────────────────────────────────────────
 function _bsG(vol,dec){
-  var g=AC.createGain();g.connect(AC.destination);
+  var g=AC.createGain();g.connect(getMasterDest());
   var t=AC.currentTime;
   var v=vol*(window._synthVol||1.0);
   g.gain.setValueAtTime(Math.max(0.0001,v),t);
@@ -5072,6 +5096,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   function buildOverlay(tileIdx){
     var recording=false;
     var rawBuffer=null; // unprocessed mic audio
+    var history=[]; // undo/redo stack of {rawBuffer, meta snapshot}
+    var historyIdx=-1; // current position in history
     // Load persisted settings for this tile
     var meta=sampleMeta[tileIdx]||(sampleMeta[tileIdx]={attack:0,release:0,atkCurve:'linear',relCurve:'linear',volume:1.0,bass:0,treble:0,trimStart:0,trimEnd:1});
 
@@ -5109,8 +5135,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       presetRow.appendChild(pb);
     });
 
-    // ── Test ──
-    var testBtn=mkBtn('▶  TEST','font-size:12px;padding:7px 18px;border:1.5px solid #4ade80;border-radius:4px;background:transparent;color:#4ade80;'+(userSamples[tileIdx]?'':'display:none;'));
+    // ── Test + Undo/Redo row ──
+    var actionRow=mk('div','display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;');
+    var testBtn=mkBtn('▶  TEST','font-size:12px;padding:7px 14px;border:1.5px solid #4ade80;border-radius:4px;background:transparent;color:#4ade80;'+(userSamples[tileIdx]?'':'display:none;'));
     testBtn.onclick=function(){
       var buf=userSamples[tileIdx]; if(!buf||!AC) return;
       try{
@@ -5120,6 +5147,37 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         testBtn.style.background='#4ade80'; testBtn.style.color='#000';
         setTimeout(function(){ testBtn.style.background='transparent'; testBtn.style.color='#4ade80'; },(buf.duration*1000)+100);
       }catch(e){}
+    };
+    var undoBtn=mkBtn('↩ UNDO','font-size:11px;padding:6px 12px;border:1.5px solid #888;border-radius:4px;background:transparent;color:#aaa;opacity:0.4;');
+    var redoBtn=mkBtn('↪ REDO','font-size:11px;padding:6px 12px;border:1.5px solid #888;border-radius:4px;background:transparent;color:#aaa;opacity:0.4;');
+    actionRow.appendChild(undoBtn); actionRow.appendChild(testBtn); actionRow.appendChild(redoBtn);
+
+    function pushHistory(){
+      // Trim history forward of current position
+      history = history.slice(0, historyIdx+1);
+      history.push({ raw: rawBuffer, meta: JSON.parse(JSON.stringify(meta)) });
+      historyIdx = history.length-1;
+      updateHistoryBtns();
+    }
+    function updateHistoryBtns(){
+      undoBtn.style.opacity = historyIdx > 0 ? '1' : '0.3';
+      redoBtn.style.opacity = historyIdx < history.length-1 ? '1' : '0.3';
+    }
+    undoBtn.onclick=function(){
+      if(historyIdx<=0) return;
+      historyIdx--;
+      var h=history[historyIdx];
+      rawBuffer=h.raw;
+      Object.assign(meta,h.meta); sampleMeta[tileIdx]=meta;
+      applyProcessing(); drawWaveform(); updateHistoryBtns(); refreshEnvSliders();
+    };
+    redoBtn.onclick=function(){
+      if(historyIdx>=history.length-1) return;
+      historyIdx++;
+      var h=history[historyIdx];
+      rawBuffer=h.raw;
+      Object.assign(meta,h.meta); sampleMeta[tileIdx]=meta;
+      applyProcessing(); drawWaveform(); updateHistoryBtns(); refreshEnvSliders();
     };
 
     // ── Envelope helper ──
@@ -5131,7 +5189,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       inp.value=Math.round((meta[pctKey]||0)*100);
       inp.style.cssText='width:80px;accent-color:#7c3aed;';
       var valLbl=mk('div','font-size:10px;color:#ccc;min-width:30px;',inp.value+'%');
-      inp.oninput=function(){ valLbl.textContent=inp.value+'%'; meta[pctKey]=parseInt(inp.value)/100; applyEnvelope(); };
+      inp.oninput=function(){ valLbl.textContent=inp.value+'%'; meta[pctKey]=parseInt(inp.value)/100; drawWaveform(); applyEnvelope(); };
       row.appendChild(inp); row.appendChild(valLbl);
       // Curve selector
       var curveRow=mk('div','display:flex;gap:4px;');
@@ -5141,7 +5199,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
           meta[curveKey]=pair[1];
           curveRow.querySelectorAll('button').forEach(function(b){ b.style.background='transparent'; b.style.color='#aaa'; });
           cb.style.background='#7c3aed'; cb.style.color='#fff';
-          applyEnvelope();
+          drawWaveform(); applyEnvelope();
         };
         curveRow.appendChild(cb);
       });
@@ -5194,12 +5252,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     volInp.oninput=function(){
   meta.volume=parseInt(volInp.value)/100;
   volValLbl.textContent=volInp.value+'%';
+  drawWaveform(); // update volume line on waveform
   // Play a quick preview blip so user hears the volume change immediately
   if(userSamples[tileIdx]&&AC){
     try{
       var src=AC.createBufferSource(); src.buffer=userSamples[tileIdx];
       var g=AC.createGain(); g.gain.value=meta.volume;
-      // Only play first 0.3s as preview
       src.connect(g); g.connect(AC.destination);
       src.start(AC.currentTime);
       src.stop(AC.currentTime+Math.min(0.3,userSamples[tileIdx].duration));
@@ -5217,7 +5275,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     ov.appendChild(ttl); ov.appendChild(existingLbl);
     ov.appendChild(dot); ov.appendChild(timerEl); ov.appendChild(statusEl);
     ov.appendChild(recRow); ov.appendChild(presetLbl); ov.appendChild(presetRow);
-    ov.appendChild(testBtn);
+    ov.appendChild(actionRow);
 
     // ── Waveform + Trim ──
     var trimLbl=mk('div','font-size:9px;letter-spacing:1px;color:#888;','TRIM  (drag red handles)');
@@ -5283,14 +5341,14 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var x=getTrimX(e);
       if(draggingHandle==='L') meta.trimStart=Math.max(0,Math.min(x,(meta.trimEnd||1)-0.02));
       else meta.trimEnd=Math.max((meta.trimStart||0)+0.02,Math.min(x,1));
-      updateTrimHandles();
+      drawWaveform();
     },{passive:false});
     waveWrap.addEventListener('mousemove',function(e){
       if(!draggingHandle)return;
       var x=getTrimX(e);
       if(draggingHandle==='L') meta.trimStart=Math.max(0,Math.min(x,(meta.trimEnd||1)-0.02));
       else meta.trimEnd=Math.max((meta.trimStart||0)+0.02,Math.min(x,1));
-      updateTrimHandles();
+      drawWaveform();
     });
     function onTrimRelease(){ if(draggingHandle){ draggingHandle=null; applyProcessing(); } }
     waveWrap.addEventListener('touchend',onTrimRelease,{passive:true});
@@ -5324,11 +5382,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var envBuf=AC.createBuffer(nch,len,sr);
       var atkSamples=Math.floor((meta.attack||0)*len); // % of trimmed length
       var relSamples=Math.floor((meta.release||0)*len);
-      function curve(x,type){
-        if(type==='slow-fast') return x*x;
-        if(type==='fast-slow') return 1-(1-x)*(1-x);
-        return x;
-      }
+      // curve() defined in drawWaveform outer scope
       for(var ch=0;ch<nch;ch++){
         var inp=rawBuffer.getChannelData(ch);
         var dst=envBuf.getChannelData(ch);
@@ -5386,6 +5440,11 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     }
 
     // ── Record ──
+    function refreshEnvSliders(){
+      if(volInp){ volInp.value=Math.round(meta.volume*100); volValLbl.textContent=volInp.value+'%'; }
+      drawWaveform();
+    }
+
     function doRecord(maxSec){
       if(recording) return;
       recording=true; chunks=[];
@@ -5417,6 +5476,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
           AC.decodeAudioData(xhr.response,function(buffer){
             rawBuffer=buffer;
             drawWaveform();
+            pushHistory();
             applyEnvelope();
             statusEl.textContent='Tap TEST to preview · REC to re-record';
           },function(){
@@ -5454,6 +5514,155 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     drawWaveform();
     if(userSamples[tileIdx]) testBtn.style.display='';
   }
+})();
+
+// ── MASTER EQ WIRING ────────────────────────────────────────
+(function(){
+  var bands=['sub','bass','mid','pres','hi'];
+  bands.forEach(function(id){
+    var sl=document.getElementById('eq_'+id);
+    var vl=document.getElementById('eqVal_'+id);
+    if(!sl) return;
+    sl.addEventListener('input',function(){
+      var db=parseFloat(this.value);
+      if(vl) vl.textContent=(db>0?'+':'')+db;
+      vl.style.color=db===0?'#aaa':db>0?'#4ade80':'#f87171';
+      if(masterEQ[id]) masterEQ[id].gain.setValueAtTime(db, AC?AC.currentTime:0);
+    });
+  });
+  var resetBtn=document.getElementById('eqResetBtn');
+  if(resetBtn) resetBtn.addEventListener('click',function(){
+    bands.forEach(function(id){
+      var sl=document.getElementById('eq_'+id);
+      var vl=document.getElementById('eqVal_'+id);
+      if(sl){ sl.value=0; }
+      if(vl){ vl.textContent='0'; vl.style.color='#aaa'; }
+      if(masterEQ[id]) masterEQ[id].gain.setValueAtTime(0, AC?AC.currentTime:0);
+    });
+  });
+})();
+
+// ── DRAGGABLE FLOATING PANELS ────────────────────────────────
+(function(){
+  // Generic make-floatable function
+  // Takes an element and undock button, creates a floating clone
+  function makeFloatable(elId, undockBtnId, titleText){
+    var btn=document.getElementById(undockBtnId);
+    if(!btn) return;
+    var floatEl=null; // the floating div when undocked
+    var locked=false;
+    var lastTap=0;
+
+    btn.addEventListener('click',function(){
+      if(floatEl){
+        // Re-dock: move content back and remove float
+        dock();
+      } else {
+        undock();
+      }
+    });
+
+    function undock(){
+      var orig=document.getElementById(elId);
+      if(!orig) return;
+      var rect=orig.getBoundingClientRect();
+
+      // Build float container
+      floatEl=document.createElement('div');
+      floatEl.style.cssText='position:fixed;z-index:400;background:#e8e2d6;border:2px solid #1c1c1c;border-radius:6px;box-shadow:3px 3px 0 #1c1c1c;font-family:monospace;min-width:80px;';
+      floatEl.style.left=Math.max(4,rect.left-2)+'px';
+      floatEl.style.top=Math.max(60,rect.top-2)+'px';
+
+      // Header bar (drag handle + title + lock + close)
+      var header=document.createElement('div');
+      header.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:4px 6px;background:#1c1c1c;color:#f5f0e8;border-radius:4px 4px 0 0;cursor:grab;user-select:none;gap:6px;';
+      var titleEl=document.createElement('span');
+      titleEl.style.cssText='font-size:8px;letter-spacing:1px;font-weight:700;flex:1;';
+      titleEl.textContent=titleText;
+      var lockBtn=document.createElement('button');
+      lockBtn.style.cssText='font-size:10px;padding:0 4px;border:1px solid #888;border-radius:2px;background:transparent;color:#aaa;cursor:pointer;line-height:1.4;';
+      lockBtn.textContent='🔓';
+      lockBtn.title='Double-tap to lock/unlock';
+      var closeBtn=document.createElement('button');
+      closeBtn.style.cssText='font-size:10px;padding:0 4px;border:none;background:transparent;color:#f5f0e8;cursor:pointer;';
+      closeBtn.textContent='✕';
+      header.appendChild(titleEl); header.appendChild(lockBtn); header.appendChild(closeBtn);
+      floatEl.appendChild(header);
+
+      // Content: clone the original element's content
+      var content=document.createElement('div');
+      content.style.cssText='padding:6px;';
+      // Move original element into float
+      var origEl=document.getElementById(elId);
+      origEl._origParent=origEl.parentElement;
+      origEl._origNextSibling=origEl.nextSibling;
+      origEl.style.border='none'; origEl.style.background='transparent';
+      origEl.style.padding='0'; origEl.style.margin='0';
+      content.appendChild(origEl);
+      floatEl.appendChild(content);
+      document.body.appendChild(floatEl);
+
+      btn.textContent='⊟'; btn.title='Re-dock';
+
+      // ── Lock / double-tap ──
+      var lockTaps=0, lockTimer=null;
+      lockBtn.addEventListener('click',function(){
+        lockTaps++;
+        clearTimeout(lockTimer);
+        lockTimer=setTimeout(function(){ lockTaps=0; },400);
+        if(lockTaps>=2){
+          lockTaps=0;
+          locked=!locked;
+          lockBtn.textContent=locked?'🔒':'🔓';
+          lockBtn.style.color=locked?'#fbbf24':'#aaa';
+          header.style.cursor=locked?'default':'grab';
+        }
+      });
+
+      closeBtn.addEventListener('click', dock);
+
+      // ── Drag ──
+      var dragging=false,ox=0,oy=0,sx=0,sy=0;
+      function startDrag(cx,cy){
+        if(locked) return;
+        dragging=true; sx=cx; sy=cy;
+        var r=floatEl.getBoundingClientRect();
+        ox=r.left; oy=r.top;
+        header.style.cursor='grabbing';
+      }
+      function moveDrag(cx,cy){
+        if(!dragging) return;
+        var nx=ox+(cx-sx), ny=oy+(cy-sy);
+        nx=Math.max(0,Math.min(window.innerWidth-60,nx));
+        ny=Math.max(0,Math.min(window.innerHeight-40,ny));
+        floatEl.style.left=nx+'px'; floatEl.style.top=ny+'px';
+      }
+      function endDrag(){ dragging=false; header.style.cursor=locked?'default':'grab'; }
+      header.addEventListener('mousedown',function(e){ startDrag(e.clientX,e.clientY); e.preventDefault(); });
+      document.addEventListener('mousemove',function(e){ moveDrag(e.clientX,e.clientY); });
+      document.addEventListener('mouseup',endDrag);
+      header.addEventListener('touchstart',function(e){ startDrag(e.touches[0].clientX,e.touches[0].clientY); e.preventDefault(); },{passive:false});
+      document.addEventListener('touchmove',function(e){ if(dragging) moveDrag(e.touches[0].clientX,e.touches[0].clientY); },{passive:true});
+      document.addEventListener('touchend',endDrag,{passive:true});
+    }
+
+    function dock(){
+      if(!floatEl) return;
+      var origEl=document.getElementById(elId);
+      if(origEl && origEl._origParent){
+        origEl.style.border=''; origEl.style.background=''; origEl.style.padding=''; origEl.style.margin='';
+        if(origEl._origNextSibling) origEl._origParent.insertBefore(origEl, origEl._origNextSibling);
+        else origEl._origParent.appendChild(origEl);
+      }
+      document.body.removeChild(floatEl);
+      floatEl=null; locked=false;
+      btn.textContent='⊞'; btn.title='Undock';
+    }
+  }
+
+  // Wire up undockable panels
+  makeFloatable('proBeats',    'undockBeats',   'BEAT LIGHTS');
+  makeFloatable('masterEQRow', 'undockRecVol',  'REC VOL + EQ');
 })();
 
 // Greeting sound on first interaction
