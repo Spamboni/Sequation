@@ -5717,37 +5717,58 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
 // ── DRAGGABLE FLOATING PANELS ────────────────────────────────
 (function(){
-  var _drag={active:false,el:null,locked:false,ox:0,oy:0,sx:0,sy:0,hdr:null};
+  // Each panel has its own locked state — no shared _drag.locked confusion
+  var _active=false, _el=null, _hdr=null, _ox=0,_oy=0,_sx=0,_sy=0;
+  var _getLockedFn=null; // function returning current panel's locked state
 
   document.addEventListener('mousemove',function(e){
-    if(!_drag.active||!_drag.el||_drag.locked) return;
-    var nx=_drag.ox+(e.clientX-_drag.sx), ny=_drag.oy+(e.clientY-_drag.sy);
+    if(!_active||!_el) return;
+    if(_getLockedFn&&_getLockedFn()) return;
+    var nx=_ox+(e.clientX-_sx), ny=_oy+(e.clientY-_sy);
     nx=Math.max(0,Math.min(window.innerWidth-80,nx));
     ny=Math.max(0,Math.min(window.innerHeight-40,ny));
-    _drag.el.style.left=nx+'px'; _drag.el.style.top=ny+'px';
+    _el.style.left=nx+'px'; _el.style.top=ny+'px';
+    checkOverBank(_el);
   });
   document.addEventListener('mouseup',function(){
-    _drag.active=false;
-    if(_drag.hdr&&!_drag.locked) _drag.hdr.style.cursor='grab';
+    _active=false; if(_hdr) _hdr.style.cursor=(_getLockedFn&&_getLockedFn())?'default':'grab';
   });
   document.addEventListener('touchmove',function(e){
-    if(!_drag.active||!_drag.el||_drag.locked) return;
-    var nx=_drag.ox+(e.touches[0].clientX-_drag.sx), ny=_drag.oy+(e.touches[0].clientY-_drag.sy);
+    if(!_active||!_el) return;
+    if(_getLockedFn&&_getLockedFn()) return;
+    var nx=_ox+(e.touches[0].clientX-_sx), ny=_oy+(e.touches[0].clientY-_sy);
     nx=Math.max(0,Math.min(window.innerWidth-80,nx));
     ny=Math.max(0,Math.min(window.innerHeight-40,ny));
-    _drag.el.style.left=nx+'px'; _drag.el.style.top=ny+'px';
+    _el.style.left=nx+'px'; _el.style.top=ny+'px';
+    checkOverBank(_el);
   },{passive:true});
   document.addEventListener('touchend',function(){
-    _drag.active=false;
-    if(_drag.hdr&&!_drag.locked) _drag.hdr.style.cursor='grab';
+    _active=false; if(_hdr) _hdr.style.cursor=(_getLockedFn&&_getLockedFn())?'default':'grab';
   },{passive:true});
+
+  // Check if float panel overlaps the bank tile area — set opacity
+  function checkOverBank(el){
+    var bank=document.getElementById('bank');
+    if(!bank) return;
+    var br=bank.getBoundingClientRect();
+    var fr=el.getBoundingClientRect();
+    var overlaps=!(fr.right<br.left||fr.left>br.right||fr.bottom<br.top||fr.top>br.bottom);
+    el.style.opacity=overlaps?'0.5':'1';
+  }
+
+  // Run overlap check periodically for locked panels
+  setInterval(function(){
+    document.querySelectorAll('._floatPanel').forEach(function(el){
+      checkOverBank(el);
+    });
+  },200);
 
   function makeFloatable(elId, undockBtnId, titleText){
     var undockBtn=document.getElementById(undockBtnId);
     if(!undockBtn) return;
     var floatEl=null, locked=false, origParent=null, origNext=null;
 
-    undockBtn.addEventListener('click', function(e){
+    undockBtn.addEventListener('click',function(e){
       e.stopPropagation();
       if(floatEl) redock(); else undock();
     });
@@ -5755,22 +5776,20 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     function undock(){
       var origEl=document.getElementById(elId);
       if(!origEl||floatEl) return;
-
-      // Remember where it came from
       origParent=origEl.parentElement;
       origNext=origEl.nextSibling;
-      // If the undock button is inside the element, skip past it as next sibling
       if(origNext===undockBtn) origNext=undockBtn.nextSibling;
 
       var rect=origEl.getBoundingClientRect();
       floatEl=document.createElement('div');
-      floatEl.style.cssText='position:fixed;z-index:500;background:#e8e2d6;border:2px solid #1c1c1c;border-radius:6px;box-shadow:3px 3px 0 #1c1c1c;font-family:monospace;min-width:120px;will-change:transform;transform:translateZ(0);';
+      floatEl.className='_floatPanel';
+      floatEl.style.cssText='position:fixed;z-index:500;background:#e8e2d6;border:2px solid #1c1c1c;border-radius:6px;box-shadow:3px 3px 0 #1c1c1c;font-family:monospace;min-width:120px;will-change:transform;transform:translateZ(0);transition:opacity 0.2s;';
       floatEl.style.left=Math.max(4,rect.left)+'px';
       floatEl.style.top=Math.max(64,rect.top-36)+'px';
 
-      // Header bar
+      // Header
       var hdr=document.createElement('div');
-      hdr.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 8px;background:#1c1c1c;color:#f5f0e8;border-radius:4px 4px 0 0;cursor:grab;user-select:none;-webkit-user-select:none;';
+      hdr.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 8px;background:#1c1c1c;color:#f5f0e8;border-radius:4px 4px 0 0;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;';
 
       var titleSpan=document.createElement('span');
       titleSpan.textContent=titleText;
@@ -5778,81 +5797,87 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
       var lockBtn=document.createElement('button');
       lockBtn.textContent='🔓';
-      lockBtn.style.cssText='background:transparent;border:1.5px solid #666;border-radius:3px;color:#aaa;cursor:pointer;font-size:12px;line-height:1;padding:2px 4px;flex-shrink:0;';
-      lockBtn.title='Double-tap to lock';
+      lockBtn.style.cssText='background:transparent;border:1.5px solid #666;border-radius:3px;color:#aaa;cursor:pointer;font-size:12px;line-height:1;padding:2px 5px;flex-shrink:0;touch-action:none;';
+      lockBtn.title='Tap to lock · hold to unlock';
 
       var closeBtn=document.createElement('button');
       closeBtn.textContent='✕';
-      closeBtn.style.cssText='background:transparent;border:none;color:#f5f0e8;cursor:pointer;font-size:16px;line-height:1;padding:0 2px;flex-shrink:0;';
-      closeBtn.title='Close';
+      closeBtn.style.cssText='background:transparent;border:none;color:#f5f0e8;cursor:pointer;font-size:16px;line-height:1;padding:0 3px;flex-shrink:0;';
 
       hdr.appendChild(titleSpan); hdr.appendChild(lockBtn); hdr.appendChild(closeBtn);
       floatEl.appendChild(hdr);
 
-      // Body
       var body=document.createElement('div');
       body.style.cssText='padding:8px;';
       body.appendChild(origEl);
       floatEl.appendChild(body);
       document.body.appendChild(floatEl);
-
       undockBtn.textContent='⊟';
 
-      // Lock: single tap to lock, long-press (500ms) to unlock
+      // ── Lock: tap to lock, hold 500ms to unlock ──
       var lockHoldTimer=null;
+
+      function setLocked(val){
+        locked=val;
+        lockBtn.textContent=locked?'🔒':'🔓';
+        lockBtn.style.borderColor=locked?'#fbbf24':'#666';
+        lockBtn.style.color=locked?'#fbbf24':'#aaa';
+        hdr.style.cursor=locked?'default':'grab';
+      }
+
       lockBtn.addEventListener('click',function(e){
-        e.stopPropagation();
-        if(!locked){
-          locked=true; _drag.locked=true;
-          lockBtn.textContent='🔒';
-          lockBtn.style.borderColor='#fbbf24';
-          lockBtn.style.color='#fbbf24';
-          hdr.style.cursor='default';
-        }
+        e.stopPropagation(); e.preventDefault();
+        if(!locked) setLocked(true);
       });
-      function lockHoldStart(e){
+
+      lockBtn.addEventListener('mousedown',function(e){
         e.stopPropagation();
         if(!locked) return;
         lockHoldTimer=setTimeout(function(){
           lockHoldTimer=null;
-          locked=false; _drag.locked=false;
-          lockBtn.textContent='🔓';
-          lockBtn.style.borderColor='#666';
-          lockBtn.style.color='#aaa';
-          hdr.style.cursor='grab';
-          // Brief flash to confirm unlock
+          setLocked(false);
           lockBtn.style.background='#4ade80';
           setTimeout(function(){ lockBtn.style.background='transparent'; },300);
         },500);
-      }
-      function lockHoldEnd(e){ e.stopPropagation(); if(lockHoldTimer){ clearTimeout(lockHoldTimer); lockHoldTimer=null; } }
-      lockBtn.addEventListener('mousedown',lockHoldStart);
-      lockBtn.addEventListener('mouseup',lockHoldEnd);
-      lockBtn.addEventListener('touchstart',function(e){ e.stopPropagation(); e.preventDefault(); lockHoldStart(e); },{passive:false});
-      lockBtn.addEventListener('touchend',function(e){ e.stopPropagation(); lockHoldEnd(e); },{passive:true});
+      });
+      lockBtn.addEventListener('mouseup',function(e){
+        e.stopPropagation();
+        if(lockHoldTimer){ clearTimeout(lockHoldTimer); lockHoldTimer=null; }
+      });
+      lockBtn.addEventListener('touchstart',function(e){
+        e.stopPropagation(); e.preventDefault();
+        if(!locked){ setLocked(true); return; }
+        lockHoldTimer=setTimeout(function(){
+          lockHoldTimer=null;
+          setLocked(false);
+          lockBtn.style.background='#4ade80';
+          setTimeout(function(){ lockBtn.style.background='transparent'; },300);
+        },500);
+      },{passive:false});
+      lockBtn.addEventListener('touchend',function(e){
+        e.stopPropagation(); e.preventDefault();
+        if(lockHoldTimer){ clearTimeout(lockHoldTimer); lockHoldTimer=null; }
+      },{passive:false});
 
       // Close
       closeBtn.addEventListener('click',function(e){ e.stopPropagation(); redock(); });
 
-      // Drag — mouse
+      // Drag
+      function startDrag(cx,cy){
+        if(locked) return;
+        var r=floatEl.getBoundingClientRect();
+        _active=true; _el=floatEl; _hdr=hdr;
+        _getLockedFn=function(){ return locked; };
+        _ox=r.left; _oy=r.top; _sx=cx; _sy=cy;
+        hdr.style.cursor='grabbing';
+      }
       hdr.addEventListener('mousedown',function(e){
-        if(locked||e.target===lockBtn||e.target===closeBtn) return;
-        e.preventDefault();
-        var r=floatEl.getBoundingClientRect();
-        _drag.active=true; _drag.el=floatEl; _drag.hdr=hdr; _drag.locked=locked;
-        _drag.ox=r.left; _drag.oy=r.top; _drag.sx=e.clientX; _drag.sy=e.clientY;
-        hdr.style.cursor='grabbing';
+        if(e.target===lockBtn||e.target===closeBtn) return;
+        e.preventDefault(); startDrag(e.clientX,e.clientY);
       });
-
-      // Drag — touch
       hdr.addEventListener('touchstart',function(e){
-        if(locked||e.target===lockBtn||e.target===closeBtn) return;
-        e.preventDefault();
-        var r=floatEl.getBoundingClientRect();
-        _drag.active=true; _drag.el=floatEl; _drag.hdr=hdr; _drag.locked=locked;
-        _drag.ox=r.left; _drag.oy=r.top;
-        _drag.sx=e.touches[0].clientX; _drag.sy=e.touches[0].clientY;
-        hdr.style.cursor='grabbing';
+        if(e.target===lockBtn||e.target===closeBtn) return;
+        e.preventDefault(); startDrag(e.touches[0].clientX,e.touches[0].clientY);
       },{passive:false});
     }
 
@@ -5864,7 +5889,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         else origParent.appendChild(origEl);
       }
       if(document.body.contains(floatEl)) document.body.removeChild(floatEl);
-      floatEl=null; locked=false; _drag.locked=false;
+      floatEl=null; locked=false;
       undockBtn.textContent='⊞';
     }
   }
@@ -5872,7 +5897,6 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   makeFloatable('proBeats',  'undockBeats',  'BEAT LIGHTS');
   makeFloatable('recVolRow', 'undockRecVol', 'REC VOL');
 })();
-
 // Greeting sound on first interaction
 // Play greeting on first touch or click — touchstart fires before click
 // so the sound starts as early as possible
