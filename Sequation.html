@@ -5179,7 +5179,15 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // If overlay already open, ignore
     if(document.getElementById('_sampleOv')) return;
     // Show the screen — request mic permission first, then show UI
-    navigator.mediaDevices.getUserMedia({audio:true,video:false})
+    navigator.mediaDevices.getUserMedia({
+      audio:{
+        echoCancellation:false,
+        noiseSuppression:false,
+        autoGainControl:false,
+        sampleRate:44100
+      },
+      video:false
+    })
     .then(function(stream){
       mediaStream=stream;
       chunks=[];
