@@ -53,6 +53,9 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .btiles{display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px 6px 8px;flex:1;touch-action:pan-y;}
 .info-bar{width:100%;max-width:520px;padding:4px 14px 2px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
 .bsize-wrap{display:flex;flex-direction:column;align-items:stretch;flex-shrink:0;gap:4px;padding-bottom:4px;border-right:2px solid var(--bk);}
+.bright-bar{display:flex;flex-direction:column;align-items:stretch;flex-shrink:0;gap:4px;padding:4px 3px;border-left:2px solid var(--bk);min-width:34px;}
+.bright-btn{width:28px;height:28px;font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--bk);border-radius:3px;background:var(--w);cursor:pointer;user-select:none;touch-action:manipulation;padding:0;letter-spacing:0;}
+.bright-btn.active{background:#7c3aed;border-color:#4c1d95;color:#fff;}
 .bank-outer{width:100%;max-width:520px;border-top:2px solid var(--bk);background:#ede8dc;flex-shrink:0;display:flex;flex-direction:row;align-items:flex-start;}
 .bsize-col{position:relative;flex-shrink:0;width:28px;height:96px;cursor:pointer;touch-action:none;border-bottom:2px solid var(--bk);display:flex;align-items:stretch;}
 .sizebar-lock{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;border:2px solid var(--bk);border-radius:3px;background:#16a34a;user-select:none;touch-action:none;flex-shrink:0;transition:background .15s;}
@@ -163,7 +166,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
   <div class="info-bar"><span class="blbl">Tap a square · then a number · tap placed to return · pinch to zoom · double-tap resets zoom</span></div>
   <div class="gscroll"><div class="grid-clip" id="gridClip"><div class="grid" id="grid"></div></div></div>
-  <div class="bank-outer"><div class="bsize-wrap"><div class="bsize-col" id="sizeBar"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><div class="sizebar-lock" id="sizeBarLock">🔓</div><div class="seq-btns"><button class="seq-btn" id="seqRec" title="Record" style="display:none;">⏺</button><button class="seq-btn" id="seqPlay" title="Play" style="display:none;">▶</button><button class="seq-btn" id="seqStop" title="Stop" style="display:none;">⏹</button><button class="seq-btn" id="seqClear" title="Clear" style="display:none;">🗑</button><button class="seq-btn seq-pro-btn" id="seqPro" title="Toggle Sequencer">SEQ</button><button class="seq-btn seq-save-btn" id="seqSave" title="Save Sequence" style="display:none;">💾</button><button class="seq-btn seq-save-btn" id="seqLoad" title="Load Sequence" style="display:none;">📂</button><button class="seq-btn" id="seqErase" title="Erase Beats" style="display:none;">✂</button></div></div><div class="bank"><div class="btiles" id="bank"></div></div></div>
+  <div class="bank-outer"><div class="bsize-wrap"><div class="bsize-col" id="sizeBar"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><div class="sizebar-lock" id="sizeBarLock">🔓</div><div class="seq-btns"><button class="seq-btn" id="seqRec" title="Record" style="display:none;">⏺</button><button class="seq-btn" id="seqPlay" title="Play" style="display:none;">▶</button><button class="seq-btn" id="seqStop" title="Stop" style="display:none;">⏹</button><button class="seq-btn" id="seqClear" title="Clear" style="display:none;">🗑</button><button class="seq-btn seq-pro-btn" id="seqPro" title="Toggle Sequencer">SEQ</button><button class="seq-btn seq-save-btn" id="seqSave" title="Save Sequence" style="display:none;">💾</button><button class="seq-btn seq-save-btn" id="seqLoad" title="Load Sequence" style="display:none;">📂</button><button class="seq-btn" id="seqErase" title="Erase Beats" style="display:none;">✂</button></div></div><div class="bank"><div class="btiles" id="bank"></div></div><div class="bright-bar" id="brightBar"><button class="bright-btn" id="copyModeBtn" title="Copy sample to tiles">📋</button></div></div>
 <div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row pro-top" style="justify-content:space-between;"><div class="pro-beats" id="proBeats"></div><div style="display:flex;gap:4px;"><button id="undockBeats" title="Undock beats" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div></div><div class="pro-row"><span class="pro-lbl">BARS</span><div class="pro-bar-btns"><button class="pro-btn active" data-bars="2">2</button><button class="pro-btn" data-bars="4">4</button><button class="pro-btn" data-bars="8">8</button><button class="pro-btn" data-bars="16">16</button></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"><button class="pro-btn pro-slot active" data-slot="0">1</button><button class="pro-btn pro-slot" data-slot="1">2</button><button class="pro-btn pro-slot" data-slot="2">3</button><button class="pro-btn pro-slot" data-slot="3">4</button><button class="pro-btn pro-slot" data-slot="4">5</button><button class="pro-btn pro-slot" data-slot="5">6</button><button class="pro-btn pro-slot" data-slot="6">7</button><button class="pro-btn pro-slot" data-slot="7">8</button></div></div><div class="pro-row" id="recVolRow" style="justify-content:flex-end;gap:6px;"><span class="pro-lbl" style="font-size:7px;white-space:nowrap;">REC VOL</span><input type="range" id="_recVolSlider" min="0.05" max="1" step="0.05" value="1" style="width:130px;accent-color:#ef4444;"><span class="pro-lbl" id="_recVolLbl" style="font-size:7px;min-width:28px;">100%</span><button id="_recVolBoost" title="Enable boost above 100%" style="font-family:monospace;font-size:7px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">+</button><button id="undockRecVol" title="Undock REC VOL" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:8px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;"><div style="display:flex;align-items:center;justify-content:space-between;"><span class="pro-lbl">MASTER EQ</span><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div class="pro-row" id="eraseRow" style="display:none;background:#fff3e0;border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#c2410c;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:#555;font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:#f97316;border-color:#c2410c;color:#fff;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:#666;"></span></div></div></div>
   <div class="bot">
     <button class="bbtn bundo" id="undo" disabled>Undo</button>
@@ -3459,6 +3462,12 @@ function renderBank(){
           e.preventDefault(); e.stopPropagation();
           window._eraseToggleBank(idx); return;
         }
+        // Copy mode intercept — tap routes to copy, no sound, no hold
+        if(window._copyModeActive && window._copyModeActive()){
+          e.preventDefault(); e.stopPropagation();
+          if(window._copyModeTap) window._copyModeTap(idx);
+          return;
+        }
         _holdStartX=e.touches[0].clientX;
         _holdStartY=e.touches[0].clientY;
         _holdFired=false;
@@ -5523,56 +5532,6 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     ov.appendChild(envLbl); ov.appendChild(envRow);
     ov.appendChild(eqLbl); ov.appendChild(eqRow);
     ov.appendChild(volLbl); ov.appendChild(volRow);
-
-    // ── Copy To ──
-    var copyLbl=mk('div','font-size:9px;letter-spacing:1px;color:#888;margin-top:2px;','COPY TO TILE');
-    var copyRow=mk('div','display:flex;gap:5px;flex-wrap:wrap;justify-content:center;');
-
-    function buildCopyButtons(){
-      copyRow.innerHTML='';
-      var bankSize=(PZ&&PZ.bank)?PZ.bank.length:9;
-      // Also include any tile that already has a sample
-      Object.keys(userSamples).forEach(function(k){ if(parseInt(k)+1>bankSize) bankSize=parseInt(k)+1; });
-      bankSize=Math.min(bankSize,20);
-      for(var ti=0;ti<bankSize;ti++){
-        (function(destIdx){
-          if(destIdx===tileIdx) return; // skip self
-          var hasSample=!!userSamples[destIdx];
-          var cb=mkBtn(String(destIdx+1),
-            'font-size:11px;padding:5px 9px;min-width:30px;border-radius:4px;cursor:pointer;'+
-            'border:1.5px solid '+(hasSample?'#7c3aed':'#888')+';'+
-            'background:transparent;'+
-            'color:'+(hasSample?'#c4b5fd':'#ccc')+';'
-          );
-          cb.title='Copy to tile '+(destIdx+1)+(hasSample?' (replaces existing)':'');
-          cb.onclick=function(){
-            if(!userSamples[tileIdx]){
-              statusEl.textContent='Record a sample first!';
-              statusEl.style.color='#f87171';
-              return;
-            }
-            // Copy buffer reference and deep-clone meta
-            userSamples[destIdx]=userSamples[tileIdx];
-            sampleMeta[destIdx]=JSON.parse(JSON.stringify(meta));
-            if(window._updateSampleIcons) window._updateSampleIcons();
-            // Flash green
-            var origBg=cb.style.background, origCol=cb.style.color, origBdr=cb.style.borderColor;
-            cb.style.background='#4ade80'; cb.style.color='#000'; cb.style.borderColor='#4ade80';
-            setTimeout(function(){
-              cb.style.background=origBg; cb.style.color='#c4b5fd'; cb.style.borderColor='#7c3aed';
-            },500);
-            statusEl.textContent='Copied to tile '+(destIdx+1)+'!';
-            statusEl.style.color='#4ade80';
-            setTimeout(function(){ buildCopyButtons(); },550);
-          };
-          copyRow.appendChild(cb);
-        })(ti);
-      }
-    }
-    buildCopyButtons();
-
-    ov.appendChild(copyLbl);
-    ov.appendChild(copyRow);
     ov.appendChild(bottomRow);
     document.body.appendChild(ov);
 
@@ -5623,7 +5582,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         existingLbl.textContent='🎤 Sample saved!'; existingLbl.style.color='#4ade80';
         testBtn.style.display='';
         statusEl.textContent='Tap TEST to preview · REC to re-record'; statusEl.style.color='#aaa';
-        drawWaveform(); if(typeof buildCopyButtons==='function') buildCopyButtons();
+        drawWaveform();
         return;
       }
       // Use OfflineAudioContext to run EQ filters
@@ -5645,7 +5604,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
           existingLbl.textContent='🎤 Sample saved!'; existingLbl.style.color='#4ade80';
           testBtn.style.display='';
           statusEl.textContent='Tap TEST to preview · REC to re-record'; statusEl.style.color='#aaa';
-          drawWaveform(); if(typeof buildCopyButtons==='function') buildCopyButtons();
+          drawWaveform();
         }).catch(function(){
           // Fallback — save without EQ
           userSamples[tileIdx]=envBuf;
@@ -5743,9 +5702,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       if(document.body.contains(ov)) document.body.removeChild(ov);
     };
 
-    // Init waveform on open
+    // Init waveform on open — load existing sample as rawBuffer for display
+    if(userSamples[tileIdx] && !rawBuffer){
+      rawBuffer = userSamples[tileIdx]; // use processed buffer for waveform display
+      testBtn.style.display='';
+    }
     drawWaveform();
-    if(userSamples[tileIdx]) testBtn.style.display='';
+    buildCopyButtons();
   }
 })();
 
@@ -6076,7 +6039,141 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   makeBeatsFloatable();
   makeRecVolFloatable();
-})();// Greeting sound on first interaction
+})();// ── COPY MODE ────────────────────────────────────────────────
+(function(){
+  var copyMode = false;
+  var copySourceIdx = -1; // which tile is selected as source
+  var btn = document.getElementById('copyModeBtn');
+  if(!btn) return;
+
+  function enterCopyMode(){
+    copyMode = true;
+    copySourceIdx = -1;
+    btn.classList.add('active');
+    btn.title = 'Tap source tile · tap again to deselect · tap COPY to finish';
+    showCopyHint('TAP a number to copy FROM');
+  }
+
+  function exitCopyMode(){
+    copyMode = false;
+    copySourceIdx = -1;
+    btn.classList.remove('active');
+    btn.title = 'Copy sample to tiles';
+    clearCopyHint();
+    clearTileHighlights();
+    if(window._updateSampleIcons) window._updateSampleIcons();
+    // Play completion sound
+    if(AC){ try{
+      var t=AC.currentTime;
+      var g=AC.createGain(); g.connect(getMasterDest());
+      g.gain.setValueAtTime(0.2,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.25);
+      var o=AC.createOscillator(); o.type='sine';
+      o.frequency.setValueAtTime(440,t); o.frequency.exponentialRampToValueAtTime(880,t+0.15);
+      o.connect(g); o.start(t); o.stop(t+0.25);
+    }catch(e){} }
+  }
+
+  function showCopyHint(msg){
+    var h=document.getElementById('_copyHint');
+    if(!h){
+      h=document.createElement('div');
+      h.id='_copyHint';
+      h.style.cssText='position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;font-family:monospace;font-size:10px;padding:6px 14px;border-radius:20px;z-index:600;pointer-events:none;letter-spacing:.5px;white-space:nowrap;';
+      document.body.appendChild(h);
+    }
+    h.textContent=msg; h.style.display='block';
+  }
+
+  function clearCopyHint(){
+    var h=document.getElementById('_copyHint');
+    if(h) h.style.display='none';
+  }
+
+  function clearTileHighlights(){
+    document.querySelectorAll('.bt').forEach(function(t){
+      t.style.outline=''; t.style.background=''; t.style.color='';
+    });
+  }
+
+  function highlightTiles(){
+    clearTileHighlights();
+    var tiles=document.querySelectorAll('.bt');
+    tiles.forEach(function(t){
+      var idx=parseInt(t.dataset.bankIdx);
+      if(idx===copySourceIdx){
+        // Source tile — bright purple
+        t.style.outline='3px solid #7c3aed';
+        t.style.background='#7c3aed';
+        t.style.color='#fff';
+      } else {
+        // Destination tiles — subtle tint
+        t.style.outline='2px dashed #a78bfa';
+      }
+    });
+  }
+
+  btn.addEventListener('click',function(){
+    if(!copyMode){
+      enterCopyMode();
+    } else {
+      exitCopyMode();
+    }
+  });
+
+  // Hook into tile touchend to intercept copy mode taps
+  window._copyModeActive = function(){ return copyMode; };
+  window._copyModeTap = function(idx){
+    if(!copyMode) return false;
+    if(copySourceIdx < 0){
+      // Select source
+      copySourceIdx = idx;
+      highlightTiles();
+      showCopyHint('NOW tap tiles to paste · tap source again to deselect');
+    } else if(idx === copySourceIdx){
+      // Deselect source
+      copySourceIdx = -1;
+      clearTileHighlights();
+      showCopyHint('TAP a number to copy FROM');
+    } else {
+      // Copy to destination
+      // Source can be userSamples OR stock sound (no sample = null, that's fine — just copy meta)
+      var srcBuf = userSamples[copySourceIdx] || null;
+      var srcMeta = sampleMeta[copySourceIdx] ? JSON.parse(JSON.stringify(sampleMeta[copySourceIdx])) : null;
+      if(srcBuf){
+        userSamples[idx] = srcBuf;
+        sampleMeta[idx] = srcMeta || {attack:0,release:0,atkCurve:'linear',relCurve:'linear',volume:1.0,bass:0,treble:0,trimStart:0,trimEnd:1};
+      } else {
+        // Copying a stock (non-recorded) sound — just clear any existing sample on dest
+        // so it also uses the stock sound
+        delete userSamples[idx];
+        delete sampleMeta[idx];
+      }
+      if(window._updateSampleIcons) window._updateSampleIcons();
+      // Flash destination tile green briefly
+      var destTile=document.querySelector('.bt[data-bank-idx="'+idx+'"]');
+      if(destTile){
+        destTile.style.outline='3px solid #4ade80';
+        destTile.style.background='#4ade80';
+        destTile.style.color='#000';
+        setTimeout(function(){
+          if(copyMode) highlightTiles(); // restore highlights
+        },400);
+      }
+      // Small tick sound
+      if(AC){ try{
+        var t2=AC.currentTime;
+        var g2=AC.createGain(); g2.connect(getMasterDest());
+        g2.gain.setValueAtTime(0.15,t2); g2.gain.exponentialRampToValueAtTime(0.001,t2+0.06);
+        var o2=AC.createOscillator(); o2.type='sine'; o2.frequency.value=660;
+        o2.connect(g2); o2.start(t2); o2.stop(t2+0.06);
+      }catch(e){} }
+      showCopyHint('Copied! Tap more tiles · tap 📋 to finish');
+    }
+    return true; // consumed
+  };
+})();
+
+// Greeting sound on first interaction
 // Play greeting on first touch or click — touchstart fires before click
 // so the sound starts as early as possible
 function _greetOnce(){
