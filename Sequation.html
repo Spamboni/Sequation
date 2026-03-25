@@ -5523,6 +5523,56 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     ov.appendChild(envLbl); ov.appendChild(envRow);
     ov.appendChild(eqLbl); ov.appendChild(eqRow);
     ov.appendChild(volLbl); ov.appendChild(volRow);
+
+    // ── Copy To ──
+    var copyLbl=mk('div','font-size:9px;letter-spacing:1px;color:#888;margin-top:2px;','COPY TO TILE');
+    var copyRow=mk('div','display:flex;gap:5px;flex-wrap:wrap;justify-content:center;');
+
+    function buildCopyButtons(){
+      copyRow.innerHTML='';
+      var bankSize=(PZ&&PZ.bank)?PZ.bank.length:9;
+      // Also include any tile that already has a sample
+      Object.keys(userSamples).forEach(function(k){ if(parseInt(k)+1>bankSize) bankSize=parseInt(k)+1; });
+      bankSize=Math.min(bankSize,20);
+      for(var ti=0;ti<bankSize;ti++){
+        (function(destIdx){
+          if(destIdx===tileIdx) return; // skip self
+          var hasSample=!!userSamples[destIdx];
+          var cb=mkBtn(String(destIdx+1),
+            'font-size:11px;padding:5px 9px;min-width:30px;border-radius:4px;cursor:pointer;'+
+            'border:1.5px solid '+(hasSample?'#7c3aed':'#888')+';'+
+            'background:transparent;'+
+            'color:'+(hasSample?'#c4b5fd':'#ccc')+';'
+          );
+          cb.title='Copy to tile '+(destIdx+1)+(hasSample?' (replaces existing)':'');
+          cb.onclick=function(){
+            if(!userSamples[tileIdx]){
+              statusEl.textContent='Record a sample first!';
+              statusEl.style.color='#f87171';
+              return;
+            }
+            // Copy buffer reference and deep-clone meta
+            userSamples[destIdx]=userSamples[tileIdx];
+            sampleMeta[destIdx]=JSON.parse(JSON.stringify(meta));
+            if(window._updateSampleIcons) window._updateSampleIcons();
+            // Flash green
+            var origBg=cb.style.background, origCol=cb.style.color, origBdr=cb.style.borderColor;
+            cb.style.background='#4ade80'; cb.style.color='#000'; cb.style.borderColor='#4ade80';
+            setTimeout(function(){
+              cb.style.background=origBg; cb.style.color='#c4b5fd'; cb.style.borderColor='#7c3aed';
+            },500);
+            statusEl.textContent='Copied to tile '+(destIdx+1)+'!';
+            statusEl.style.color='#4ade80';
+            setTimeout(function(){ buildCopyButtons(); },550);
+          };
+          copyRow.appendChild(cb);
+        })(ti);
+      }
+    }
+    buildCopyButtons();
+
+    ov.appendChild(copyLbl);
+    ov.appendChild(copyRow);
     ov.appendChild(bottomRow);
     document.body.appendChild(ov);
 
@@ -5573,6 +5623,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         existingLbl.textContent='🎤 Sample saved!'; existingLbl.style.color='#4ade80';
         testBtn.style.display='';
         statusEl.textContent='Tap TEST to preview · REC to re-record'; statusEl.style.color='#aaa';
+        drawWaveform(); if(typeof buildCopyButtons==='function') buildCopyButtons();
         return;
       }
       // Use OfflineAudioContext to run EQ filters
@@ -5594,6 +5645,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
           existingLbl.textContent='🎤 Sample saved!'; existingLbl.style.color='#4ade80';
           testBtn.style.display='';
           statusEl.textContent='Tap TEST to preview · REC to re-record'; statusEl.style.color='#aaa';
+          drawWaveform(); if(typeof buildCopyButtons==='function') buildCopyButtons();
         }).catch(function(){
           // Fallback — save without EQ
           userSamples[tileIdx]=envBuf;
