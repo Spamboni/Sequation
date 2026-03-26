@@ -166,7 +166,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
   <div class="info-bar"><span class="blbl">Tap a square · then a number · tap placed to return · pinch to zoom · double-tap resets zoom</span></div>
   <div class="gscroll"><div class="grid-clip" id="gridClip"><div class="grid" id="grid"></div></div></div>
-  <div class="bank-outer"><div class="bsize-wrap"><div class="bsize-col" id="sizeBar"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><div class="sizebar-lock" id="sizeBarLock">🔓</div><div class="seq-btns"><button class="seq-btn" id="seqRec" title="Record" style="display:none;">⏺</button><button class="seq-btn" id="seqPlay" title="Play" style="display:none;">▶</button><button class="seq-btn" id="seqStop" title="Stop" style="display:none;">⏹</button><button class="seq-btn" id="seqClear" title="Clear" style="display:none;">🗑</button><button class="seq-btn seq-pro-btn" id="seqPro" title="Toggle Sequencer">SEQ</button><button class="seq-btn seq-save-btn" id="seqSave" title="Save Sequence" style="display:none;">💾</button><button class="seq-btn seq-save-btn" id="seqLoad" title="Load Sequence" style="display:none;">📂</button><button class="seq-btn" id="seqErase" title="Erase Beats" style="display:none;">✂</button></div></div><div class="bank"><div class="btiles" id="bank"></div></div><div class="bright-bar" id="brightBar"><button class="bright-btn" id="copyModeBtn" title="Copy sample to tiles">📋</button><button class="bright-btn" id="colorTagBtn" title="Color tag tiles">🎨</button></div></div>
+  <div class="bank-outer"><div class="bsize-wrap"><div class="bsize-col" id="sizeBar"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><div class="sizebar-lock" id="sizeBarLock">🔓</div><button class="seq-btn seq-pro-btn" id="seqPro" title="Toggle Sequencer" style="width:28px;margin-top:2px;">SEQ</button><div class="seq-btns"><button class="seq-btn" id="seqRec" title="Record" style="display:none;">⏺</button><button class="seq-btn" id="seqPlay" title="Play" style="display:none;">▶</button><button class="seq-btn" id="seqStop" title="Stop" style="display:none;">⏹</button><button class="seq-btn" id="seqClear" title="Clear" style="display:none;">🗑</button></div></div><div class="bank"><div class="btiles" id="bank"></div></div><div class="bright-bar" id="brightBar"><button class="bright-btn" id="seqSave" title="Save Sequence" style="display:none;">💾</button><button class="bright-btn" id="seqLoad" title="Load Sequence" style="display:none;">📂</button><button class="bright-btn" id="seqErase" title="Erase Beats" style="display:none;">✂</button><button class="bright-btn" id="copyModeBtn" title="Copy sample to tiles">📋</button><button class="bright-btn" id="colorTagBtn" title="Color tag tiles">🎨</button></div></div>
 <div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row pro-top" style="justify-content:space-between;"><div class="pro-beats" id="proBeats"></div><div style="display:flex;gap:4px;"><button id="undockBeats" title="Undock beats" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div></div><div class="pro-row"><span class="pro-lbl">BARS</span><div class="pro-bar-btns"><button class="pro-btn active" data-bars="2">2</button><button class="pro-btn" data-bars="4">4</button><button class="pro-btn" data-bars="8">8</button><button class="pro-btn" data-bars="16">16</button></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"><button class="pro-btn pro-slot active" data-slot="0">1</button><button class="pro-btn pro-slot" data-slot="1">2</button><button class="pro-btn pro-slot" data-slot="2">3</button><button class="pro-btn pro-slot" data-slot="3">4</button><button class="pro-btn pro-slot" data-slot="4">5</button><button class="pro-btn pro-slot" data-slot="5">6</button><button class="pro-btn pro-slot" data-slot="6">7</button><button class="pro-btn pro-slot" data-slot="7">8</button></div></div><div class="pro-row" id="recVolRow" style="justify-content:flex-end;gap:6px;"><span class="pro-lbl" style="font-size:7px;white-space:nowrap;">REC VOL</span><input type="range" id="_recVolSlider" min="0.05" max="1" step="0.05" value="1" style="width:130px;accent-color:#ef4444;"><span class="pro-lbl" id="_recVolLbl" style="font-size:7px;min-width:28px;">100%</span><button id="_recVolBoost" title="Enable boost above 100%" style="font-family:monospace;font-size:7px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">+</button><button id="undockRecVol" title="Undock REC VOL" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:8px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;"><div style="display:flex;align-items:center;justify-content:space-between;"><span class="pro-lbl">MASTER EQ</span><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div class="pro-row" id="eraseRow" style="display:none;background:#fff3e0;border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#c2410c;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:#555;font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:#f97316;border-color:#c2410c;color:#fff;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:#666;"></span></div></div></div>
   <div class="bot">
     <button class="bbtn bundo" id="undo" disabled>Undo</button>
@@ -4475,7 +4475,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   function showSeq(){
     seqVisible = true;
-    ['seqRec','seqPlay','seqStop','seqClear','seqSave','seqLoad','seqErase'].forEach(function(id){
+    ['seqRec','seqPlay','seqStop','seqClear','seqSave','seqLoad','seqErase','copyModeBtn','colorTagBtn'].forEach(function(id){
       var el=document.getElementById(id); if(el) el.style.display='';
     });
     var sl=document.getElementById('sndLabel'); if(sl) sl.style.display='';
@@ -4488,7 +4488,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   function hideSeq(){
     seqVisible = false;
-    ['seqRec','seqPlay','seqStop','seqClear','seqSave','seqLoad','seqErase'].forEach(function(id){
+    ['seqRec','seqPlay','seqStop','seqClear','seqSave','seqLoad','seqErase','copyModeBtn','colorTagBtn'].forEach(function(id){
       var el=document.getElementById(id); if(el) el.style.display='none';
     });
     var sl=document.getElementById('sndLabel'); if(sl) sl.style.display='none';
@@ -5110,6 +5110,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     eraseActive = true; eraseRanges = []; eraseTargetBanks = {}; dragging = false;
     eraseRow.style.display = 'flex';
     btnErase.classList.add('active');
+    // Re-enable pointer events on beat dots so drag-select works
+    var pb=document.getElementById('proBeats');
+    if(pb){ pb.style.pointerEvents='auto'; pb.style.opacity='1'; }
     updateStatus(); refreshDots();
   }
 
@@ -5117,6 +5120,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     eraseActive = false; eraseRanges = []; eraseTargetBanks = {}; dragging = false;
     if(eraseRow) eraseRow.style.display = 'none';
     if(btnErase) btnErase.classList.remove('active');
+    // Restore semi-transparent pass-through when docked
+    var pb=document.getElementById('proBeats');
+    if(pb){ pb.style.pointerEvents=''; pb.style.opacity=''; }
     refreshDots();
     document.querySelectorAll('.bt').forEach(function(t){
       var x=t.querySelector('.erase-x'); if(x) t.removeChild(x);
@@ -6075,164 +6081,182 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 })();// ── COLOR TAG MODE ──────────────────────────────────────────
 (function(){
   var colorMode = false;
-  var activeColor = '#ef4444'; // default red
+  var activeColor = '#ef4444';
   var btn = document.getElementById('colorTagBtn');
   if(!btn) return;
 
   var palette = [
-    {col:'#ef4444',name:'Red'},
-    {col:'#f97316',name:'Orange'},
-    {col:'#eab308',name:'Yellow'},
-    {col:'#22c55e',name:'Green'},
-    {col:'#06b6d4',name:'Cyan'},
-    {col:'#3b82f6',name:'Blue'},
-    {col:'#7c3aed',name:'Purple'},
-    {col:'#ec4899',name:'Pink'},
-    {col:'#f5f0e8',name:'White'},
-    {col:'#6b7280',name:'Gray'},
-    {col:'none',  name:'Clear'},
+    '#ef4444','#f97316','#eab308','#22c55e',
+    '#06b6d4','#3b82f6','#7c3aed','#ec4899',
+    '#ffffff','#6b7280'
   ];
 
   var pickerOv = null;
 
+  // ── Flow: tap button → pick color (picker shows, button colored) →
+  //    picker closes → user paints tiles →
+  //    tap button again → borders applied, button resets ──
+
   function showPicker(){
     if(pickerOv) return;
     pickerOv = document.createElement('div');
-    pickerOv.style.cssText = 'position:fixed;z-index:600;background:#1c1c1c;border:2px solid #444;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;';
-    // Position near the button
+    pickerOv.style.cssText = 'position:fixed;z-index:600;background:#1c1c1c;border:2px solid #444;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.5);';
     var br = btn.getBoundingClientRect();
+    // Position to the left of right toolbar
     pickerOv.style.right = (window.innerWidth - br.left + 4)+'px';
-    pickerOv.style.top = br.top+'px';
+    pickerOv.style.top = Math.min(br.top, window.innerHeight-220)+'px';
 
     var lbl = document.createElement('div');
     lbl.style.cssText = 'font-family:monospace;font-size:9px;color:#888;letter-spacing:1px;';
-    lbl.textContent = 'COLOR TAG';
+    lbl.textContent = 'PICK A COLOR';
     pickerOv.appendChild(lbl);
 
     var grid = document.createElement('div');
-    grid.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:5px;';
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(5,1fr);gap:6px;';
 
-    palette.forEach(function(p){
+    palette.forEach(function(col){
       var sw = document.createElement('button');
-      sw.style.cssText = 'width:28px;height:28px;border-radius:4px;cursor:pointer;border:2px solid '+(p.col==='none'?'#555':'transparent')+';background:'+(p.col==='none'?'#333':p.col)+';position:relative;touch-action:manipulation;';
-      if(p.col==='none'){
-        sw.style.fontSize='14px'; sw.textContent='✕'; sw.style.color='#888';
-      }
-      if(p.col === activeColor){
-        sw.style.border = '2px solid #fff';
-        sw.style.transform = 'scale(1.15)';
-      }
-      sw.title = p.name;
+      sw.style.cssText = 'width:30px;height:30px;border-radius:5px;cursor:pointer;border:2px solid '+(col===activeColor?'#fff':'rgba(255,255,255,0.15)')+';background:'+col+';touch-action:manipulation;transition:transform .1s;';
+      if(col===activeColor) sw.style.transform='scale(1.2)';
       sw.addEventListener('click',function(e){
         e.stopPropagation();
-        activeColor = p.col;
-        // Update selected ring
-        grid.querySelectorAll('button').forEach(function(b){ b.style.border='2px solid '+(b===sw?'#fff':'transparent'); b.style.transform=b===sw?'scale(1.15)':''; });
-        // Update main button color indicator
-        updateBtnColor();
-        // Don't close — keep open so user can start painting
+        activeColor = col;
+        closePicker();
+        enterColorMode();
       });
       grid.appendChild(sw);
     });
     pickerOv.appendChild(grid);
 
-    // DONE button
-    var doneBtn = document.createElement('button');
-    doneBtn.textContent = colorMode ? '✓ PAINTING — tap to stop' : '▶ START PAINTING';
-    doneBtn.style.cssText = 'font-family:monospace;font-size:9px;font-weight:700;padding:6px;border:1.5px solid #888;border-radius:4px;background:'+(colorMode?'#7c3aed':'transparent')+';color:#fff;cursor:pointer;letter-spacing:1px;';
-    doneBtn.addEventListener('click',function(e){
-      e.stopPropagation();
-      if(!colorMode){
-        enterColorMode();
-        doneBtn.textContent='✓ PAINTING — tap to stop';
-        doneBtn.style.background='#7c3aed';
-      } else {
-        exitColorMode();
-        closePicker();
-      }
+    // Custom color row
+    var customRow = document.createElement('div');
+    customRow.style.cssText = 'display:flex;align-items:center;gap:6px;border-top:1px solid #333;padding-top:6px;';
+    var customLbl = document.createElement('span');
+    customLbl.style.cssText = 'font-family:monospace;font-size:9px;color:#888;';
+    customLbl.textContent = 'CUSTOM:';
+    var colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.value = activeColor.startsWith('#') ? activeColor : '#ef4444';
+    colorInput.style.cssText = 'width:36px;height:30px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px;';
+    colorInput.addEventListener('input', function(){
+      activeColor = colorInput.value;
     });
-    pickerOv.appendChild(doneBtn);
+    var useCustom = document.createElement('button');
+    useCustom.textContent = 'USE';
+    useCustom.style.cssText = 'font-family:monospace;font-size:9px;font-weight:700;padding:4px 8px;border:1.5px solid #888;border-radius:4px;background:transparent;color:#fff;cursor:pointer;';
+    useCustom.addEventListener('click',function(e){
+      e.stopPropagation();
+      activeColor = colorInput.value;
+      closePicker();
+      enterColorMode();
+    });
 
-    // Close on outside tap
+    // Clear option
+    var clearBtn2 = document.createElement('button');
+    clearBtn2.textContent = '✕ CLEAR';
+    clearBtn2.style.cssText = 'font-family:monospace;font-size:9px;padding:4px 8px;border:1.5px solid #666;border-radius:4px;background:transparent;color:#aaa;cursor:pointer;margin-left:auto;';
+    clearBtn2.addEventListener('click',function(e){
+      e.stopPropagation();
+      activeColor = 'none';
+      closePicker();
+      enterColorMode();
+    });
+
+    customRow.appendChild(customLbl); customRow.appendChild(colorInput); customRow.appendChild(useCustom); customRow.appendChild(clearBtn2);
+    pickerOv.appendChild(customRow);
+    document.body.appendChild(pickerOv);
+
     setTimeout(function(){
-      document.addEventListener('touchstart', function _closePicker(e){
+      function _closePicker(e){
         if(pickerOv && !pickerOv.contains(e.target) && e.target!==btn){
           closePicker();
           document.removeEventListener('touchstart',_closePicker,true);
+          document.removeEventListener('mousedown',_closePicker,true);
         }
-      },true);
-      document.addEventListener('click', function _closePickerC(e){
-        if(pickerOv && !pickerOv.contains(e.target) && e.target!==btn){
-          closePicker();
-          document.removeEventListener('click',_closePickerC,true);
-        }
-      },true);
-    },100);
-
-    document.body.appendChild(pickerOv);
+      }
+      document.addEventListener('touchstart',_closePicker,true);
+      document.addEventListener('mousedown',_closePicker,true);
+    },50);
   }
 
   function closePicker(){
     if(pickerOv && document.body.contains(pickerOv)) document.body.removeChild(pickerOv);
-    pickerOv = null;
-  }
-
-  function updateBtnColor(){
-    if(activeColor==='none'){
-      btn.style.background=''; btn.style.borderColor='';
-    } else if(colorMode){
-      btn.style.background=activeColor; btn.style.borderColor=activeColor;
-    }
+    pickerOv=null;
   }
 
   function enterColorMode(){
-    colorMode = true;
-    btn.classList.add('active');
-    updateBtnColor();
+    colorMode=true;
+    if(activeColor==='none'){
+      btn.style.background='#374151'; btn.style.borderColor='#6b7280'; btn.style.color='#fff';
+    } else {
+      btn.style.background=activeColor; btn.style.borderColor=activeColor;
+      btn.style.color=(activeColor==='#ffffff'||activeColor==='#eab308')?'#000':'#fff';
+    }
+    // Show hint
+    showHint(activeColor==='none'?'Drag tiles to CLEAR color · tap 🎨 to apply':'Drag tiles to PAINT · tap 🎨 to apply');
   }
 
   function exitColorMode(){
-    colorMode = false;
-    btn.classList.remove('active');
-    btn.style.background=''; btn.style.borderColor='';
+    colorMode=false;
+    btn.style.background=''; btn.style.borderColor=''; btn.style.color='';
+    clearHint();
+    // Play confirm chime
+    if(AC){ try{
+      var t=AC.currentTime;
+      var g=AC.createGain(); g.connect(getMasterDest());
+      g.gain.setValueAtTime(0.15,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.2);
+      var o=AC.createOscillator(); o.type='sine';
+      o.frequency.setValueAtTime(660,t); o.frequency.exponentialRampToValueAtTime(880,t+0.1);
+      o.connect(g); o.start(t); o.stop(t+0.2);
+    }catch(e){} }
+  }
+
+  function showHint(msg){
+    var h=document.getElementById('_colorHint');
+    if(!h){ h=document.createElement('div'); h.id='_colorHint';
+      h.style.cssText='position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#1c1c1c;color:#fff;font-family:monospace;font-size:10px;padding:6px 14px;border-radius:20px;z-index:600;pointer-events:none;letter-spacing:.5px;white-space:nowrap;border:1.5px solid #444;';
+      document.body.appendChild(h);
+    }
+    h.textContent=msg; h.style.display='block';
+    if(activeColor!=='none') h.style.borderColor=activeColor;
+  }
+  function clearHint(){
+    var h=document.getElementById('_colorHint'); if(h) h.style.display='none';
   }
 
   btn.addEventListener('click',function(e){
     e.stopPropagation();
-    if(pickerOv){ closePicker(); return; }
-    showPicker();
+    if(colorMode){
+      // Second tap: apply and exit
+      exitColorMode();
+    } else {
+      // First tap: show color picker
+      if(pickerOv) closePicker(); else showPicker();
+    }
   });
 
-  // ── Paint tiles on touch ──
-  var painting = false;
-  var lastPaintedIdx = -1;
+  // ── Paint on touch/drag ──
+  var painting=false, lastPainted=-1, _paintId=-1;
 
   function paintTile(idx){
-    if(idx===lastPaintedIdx) return;
-    lastPaintedIdx = idx;
-    if(activeColor==='none'){
-      delete tileColors[idx];
-    } else {
-      tileColors[idx] = activeColor;
-    }
-    // Apply immediately to tile element
-    var tile = document.querySelector('.bt[data-bank-idx="'+idx+'"]');
-    if(tile) applyTileColor(tile, idx);
+    if(idx===lastPainted) return;
+    lastPainted=idx;
+    if(activeColor==='none') delete tileColors[idx];
+    else tileColors[idx]=activeColor;
+    var tile=document.querySelector('.bt[data-bank-idx="'+idx+'"]');
+    if(tile) applyTileColor(tile,idx);
   }
 
-  // Hook into tile touch events for paint mode
-  window._colorModeActive = function(){ return colorMode; };
-  window._colorModePaint = function(idx){ if(colorMode) paintTile(idx); };
+  window._colorModeActive=function(){ return colorMode; };
+  window._colorModePaint=function(idx){ if(colorMode) paintTile(idx); };
 
-  // Swipe-paint across tiles
-  var _paintTouchId = -1;
   document.addEventListener('touchstart',function(e){
     if(!colorMode) return;
-    var t=e.target; 
+    var t=e.target;
     while(t&&t!==document.body){
       if(t.classList&&t.classList.contains('bt')){
         var idx=parseInt(t.dataset.bankIdx);
-        if(!isNaN(idx)){ painting=true; _paintTouchId=e.touches[0].identifier; lastPaintedIdx=-1; paintTile(idx); }
+        if(!isNaN(idx)){ painting=true; _paintId=e.touches[0].identifier; lastPainted=-1; paintTile(idx); }
         return;
       }
       t=t.parentElement;
@@ -6242,7 +6266,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   document.addEventListener('touchmove',function(e){
     if(!colorMode||!painting) return;
     for(var i=0;i<e.touches.length;i++){
-      if(e.touches[i].identifier===_paintTouchId){
+      if(e.touches[i].identifier===_paintId){
         var el=document.elementFromPoint(e.touches[i].clientX,e.touches[i].clientY);
         while(el&&el!==document.body){
           if(el.classList&&el.classList.contains('bt')){
@@ -6257,9 +6281,33 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     }
   },{passive:true});
 
-  document.addEventListener('touchend',function(e){
-    painting=false; lastPaintedIdx=-1;
-  },{passive:true});
+  // Mouse support for PC
+  document.addEventListener('mousedown',function(e){
+    if(!colorMode) return;
+    var t=e.target;
+    while(t&&t!==document.body){
+      if(t.classList&&t.classList.contains('bt')){
+        var idx=parseInt(t.dataset.bankIdx);
+        if(!isNaN(idx)){ painting=true; lastPainted=-1; paintTile(idx); }
+        return;
+      }
+      t=t.parentElement;
+    }
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!colorMode||!painting) return;
+    var el=document.elementFromPoint(e.clientX,e.clientY);
+    while(el&&el!==document.body){
+      if(el.classList&&el.classList.contains('bt')){
+        var idx=parseInt(el.dataset.bankIdx);
+        if(!isNaN(idx)) paintTile(idx);
+        break;
+      }
+      el=el.parentElement;
+    }
+  });
+  document.addEventListener('mouseup',function(){ painting=false; lastPainted=-1; });
+  document.addEventListener('touchend',function(){ painting=false; lastPainted=-1; },{passive:true});
 
 })();
 
