@@ -177,8 +177,8 @@ window.onerror=function(msg,src,line,col,err){
   </div>
   <div class="info-bar"><span class="blbl">Tap a square · then a number · tap placed to return · pinch to zoom · double-tap resets zoom</span></div>
   <div class="gscroll"><div class="grid-clip" id="gridClip"><div class="grid" id="grid"></div></div></div>
-  <div class="bank-outer"><div class="seq-toolbar" id="seqToolbar"><button class="seq-btn seq-btn-sq" id="seqPuz" style="font-size:8px;font-weight:700;flex-shrink:0;">PUZ</button><div class="bsize-col-h" id="sizeBar" style="flex:1;min-width:60px;"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">◀▶</div></div><div id="toolbarBeat" style="display:none;flex-direction:row;align-items:center;gap:2px;flex:1;overflow:visible;min-width:0;"><div id="toolbarBeatDots" style="display:flex;gap:2px;flex-wrap:wrap;align-items:center;justify-content:center;flex:1;min-width:0;"></div><button id="undockBeats2" title="Undock" style="font-family:monospace;font-size:8px;padding:2px 4px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;flex-shrink:0;">⊞</button></div><button class="seq-btn seq-btn-sq" id="seqRec" title="Record" style="display:none;flex-shrink:0;">⏺</button><button class="seq-btn seq-btn-lg" id="seqPlay" title="Play/Stop" style="display:none;flex-shrink:0;height:36px;width:36px;font-size:18px;">▶</button><button class="seq-btn seq-btn-sq" id="seqSave" title="Save" style="display:none;flex-shrink:0;">💾</button><button class="seq-btn seq-btn-sq" id="seqLoad" title="Load" style="display:none;flex-shrink:0;">📂</button><button class="seq-btn seq-btn-sq" id="seqClear" title="Clear" style="display:none;flex-shrink:0;">🗑</button><button class="seq-btn seq-btn-sq" id="seqErase" title="Erase Beats" style="display:none;flex-shrink:0;">✂</button><button class="seq-btn seq-btn-sq" id="colorTagBtn" title="Color tiles" style="display:none;flex-shrink:0;">🎨</button><button class="seq-btn seq-btn-sq" id="copyModeBtn" title="Copy sample" style="display:none;flex-shrink:0;">📋</button></div><div class="bank-row"><div class="bsize-wrap" id="sizeSideWrap"><div class="bsize-col" id="sizeBarV"><div class="sizebar-fill" id="sizeBarFillV"></div><div class="sizebar-handle" id="sizeBarHandleV"></div><div class="sizebar-arrows" id="sizeBarArrowsV">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="width:28px;font-size:8px;">SEQ</button></div><div class="bank"><div class="btiles" id="bank"></div></div></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div>
-<div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row pro-top" style="justify-content:space-between;"><div class="pro-beats" id="proBeats" style="flex:1;justify-content:center;"></div><div style="display:flex;gap:4px;"><button id="undockBeats" title="Undock beats" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div></div><div class="pro-row"><span class="pro-lbl">BARS</span><div class="pro-bar-btns"><button class="pro-btn active" data-bars="2">2</button><button class="pro-btn" data-bars="4">4</button><button class="pro-btn" data-bars="8">8</button><button class="pro-btn" data-bars="16">16</button></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"><button class="pro-btn pro-slot active" data-slot="0">1</button><button class="pro-btn pro-slot" data-slot="1">2</button><button class="pro-btn pro-slot" data-slot="2">3</button><button class="pro-btn pro-slot" data-slot="3">4</button><button class="pro-btn pro-slot" data-slot="4">5</button><button class="pro-btn pro-slot" data-slot="5">6</button><button class="pro-btn pro-slot" data-slot="6">7</button><button class="pro-btn pro-slot" data-slot="7">8</button></div></div><div class="pro-row" id="recVolRow" style="justify-content:flex-end;gap:6px;"><span class="pro-lbl" style="font-size:7px;white-space:nowrap;">REC VOL</span><input type="range" id="_recVolSlider" min="0.05" max="1" step="0.05" value="1" style="width:130px;accent-color:#ef4444;"><span class="pro-lbl" id="_recVolLbl" style="font-size:7px;min-width:28px;">100%</span><button id="_recVolBoost" title="Enable boost above 100%" style="font-family:monospace;font-size:7px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">+</button><button id="undockRecVol" title="Undock REC VOL" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:8px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;"><div style="display:flex;align-items:center;justify-content:space-between;"><span class="pro-lbl">MASTER EQ</span><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div class="pro-row" id="eraseRow" style="display:none;background:#fff3e0;border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#c2410c;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:#555;font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:#f97316;border-color:#c2410c;color:#fff;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:#666;"></span></div></div></div>
+  <div class="bank-outer"><div class="seq-toolbar" id="seqToolbar"><button class="seq-btn seq-btn-sq" id="seqPuz" style="font-size:8px;font-weight:700;flex-shrink:0;">PUZ</button><div class="bsize-col-h" id="sizeBar" style="flex:1;min-width:60px;"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">◀▶</div></div><div id="toolbarBeat" style="display:none;flex-direction:row;align-items:center;gap:2px;flex:1;overflow:hidden;min-width:0;"><div id="toolbarBeatDots" style="display:flex;gap:2px;flex-wrap:nowrap;align-items:center;justify-content:center;flex:1;min-width:0;overflow:hidden;"></div><button id="undockBeats2" title="Undock" style="font-family:monospace;font-size:8px;padding:2px 4px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;flex-shrink:0;">⊞</button></div><button class="seq-btn seq-btn-sq" id="seqRec" title="Record" style="display:none;flex-shrink:0;">⏺</button><button class="seq-btn seq-btn-lg" id="seqPlay" title="Play/Stop" style="display:none;flex-shrink:0;height:36px;width:36px;font-size:18px;">▶</button><button class="seq-btn seq-btn-sq" id="seqSave" title="Save" style="display:none;flex-shrink:0;">💾</button><button class="seq-btn seq-btn-sq" id="seqLoad" title="Load" style="display:none;flex-shrink:0;">📂</button><button class="seq-btn seq-btn-sq" id="seqClear" title="Clear" style="display:none;flex-shrink:0;">🗑</button><button class="seq-btn seq-btn-sq" id="seqErase" title="Erase Beats" style="display:none;flex-shrink:0;">✂</button><button class="seq-btn seq-btn-sq" id="colorTagBtn" title="Color tiles" style="display:none;flex-shrink:0;">🎨</button><button class="seq-btn seq-btn-sq" id="copyModeBtn" title="Copy sample" style="display:none;flex-shrink:0;">📋</button></div><div class="bank-row"><div class="bsize-wrap" id="sizeSideWrap"><div class="bsize-col" id="sizeBarV"><div class="sizebar-fill" id="sizeBarFillV"></div><div class="sizebar-handle" id="sizeBarHandleV"></div><div class="sizebar-arrows" id="sizeBarArrowsV">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="width:28px;font-size:8px;">SEQ</button></div><div class="bank"><div class="btiles" id="bank"></div></div></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div>
+<div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row pro-top" style="justify-content:space-between;"><div class="pro-beats" id="proBeats" style="flex:1;justify-content:center;"></div><div style="display:flex;gap:4px;"><button id="undockBeats" title="Undock beats" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div></div><div class="pro-row"><span class="pro-lbl">BARS</span><div class="pro-bar-btns"><button class="pro-btn active" data-bars="2">2</button><button class="pro-btn" data-bars="4">4</button><button class="pro-btn" data-bars="8">8</button><button class="pro-btn" data-bars="16">16</button></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"><button class="pro-btn pro-slot active" data-slot="0">1</button><button class="pro-btn pro-slot" data-slot="1">2</button><button class="pro-btn pro-slot" data-slot="2">3</button><button class="pro-btn pro-slot" data-slot="3">4</button><button class="pro-btn pro-slot" data-slot="4">5</button><button class="pro-btn pro-slot" data-slot="5">6</button><button class="pro-btn pro-slot" data-slot="6">7</button><button class="pro-btn pro-slot" data-slot="7">8</button></div></div><div class="pro-row" id="recVolRow" style="justify-content:flex-end;gap:6px;"><span class="pro-lbl" style="font-size:7px;white-space:nowrap;">REC VOL</span><input type="range" id="_recVolSlider" min="0.05" max="1" step="0.05" value="1" style="width:130px;accent-color:#ef4444;"><span class="pro-lbl" id="_recVolLbl" style="font-size:7px;min-width:28px;">100%</span><button id="_recVolBoost" title="Enable boost above 100%" style="font-family:monospace;font-size:7px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">+</button><button id="undockRecVol" title="Undock REC VOL" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:8px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;"><span class="pro-lbl">MASTER EQ</span><div style="display:flex;border:1.5px solid #ccc;border-radius:4px;overflow:hidden;"><button id="masterEQBasicTab" style="flex:1;font-family:monospace;font-size:8px;font-weight:700;padding:5px 0;border:none;border-right:1px solid #ccc;background:#e8e2d6;color:#888;cursor:pointer;letter-spacing:.5px;touch-action:manipulation;">BASIC</button><button id="masterEQParamTab" style="flex:1;font-family:monospace;font-size:8px;font-weight:700;padding:5px 0;border:none;background:#e8e2d6;color:#888;cursor:pointer;letter-spacing:.5px;touch-action:manipulation;">PARAMETRIC</button></div><div id="masterEQBasicBody" style="display:none;flex-direction:column;gap:4px;"><div style="display:flex;align-items:center;justify-content:flex-end;"><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div id="masterEQParamBody" style="display:none;flex-direction:column;align-items:center;gap:4px;"><canvas id="masterEQCanvas" width="280" height="80" style="width:280px;height:80px;border:1.5px solid #ccc;border-radius:4px;background:#1c1c1c;display:block;cursor:crosshair;touch-action:none;"></canvas><div id="masterEQBandControls" style="display:flex;flex-direction:column;gap:4px;width:100%;"></div></div></div><div class="pro-row" id="eraseRow" style="display:none;background:#fff3e0;border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#c2410c;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:#555;font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:#f97316;border-color:#c2410c;color:#fff;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:#666;"></span></div></div></div>
   <div class="bot">
     <button class="bbtn bundo" id="undo" disabled>Undo</button>
     <button class="bbtn bnew" id="newp">New Puzzle</button>
@@ -3516,32 +3516,23 @@ function renderBank(){
       // Long-press for sample recording — measured on touchend
       var _holdStartX=0, _holdStartY=0, _holdTimer=null, _holdFired=false;
       el.addEventListener('touchstart',function(e){
-        // Three or more fingers = native scroll gesture
-        // Two fingers: second finger can be a new tile tap — handle it
-        if(e.touches.length >= 3){ return; }
-        // If this touch is not the first, and the first is on a different tile, still play
-        // Find if this element is the target of the newest touch
-        var _thisTouch=e.changedTouches[0];
-        if(!_thisTouch) return;
-
         if(window._eraseIsActive && window._eraseIsActive()){
-          e.preventDefault(); e.stopPropagation();
           window._eraseToggleBank(idx); return;
         }
         // Copy mode intercept
         if(window._copyModeActive && window._copyModeActive()){
-          e.preventDefault(); e.stopPropagation();
           if(window._copyModeTap) window._copyModeTap(idx);
           return;
         }
         // Color tag mode — paint tile and begin drag-paint
         if(window._colorModeActive && window._colorModeActive()){
-          e.preventDefault(); e.stopPropagation();
           if(window._colorModeStart) window._colorModeStart(idx, e.touches[0].identifier, e.touches[0].clientX, e.touches[0].clientY);
           return;
         }
-        _holdStartX=e.touches[0].clientX;
-        _holdStartY=e.touches[0].clientY;
+        // Use changedTouches[0] — the finger that JUST landed on THIS tile
+        var _ct=e.changedTouches[0];
+        _holdStartX=_ct.clientX;
+        _holdStartY=_ct.clientY;
         _holdFired=false;
         // Fire after 500ms while finger is still down
         _holdTimer=setTimeout(function(){
@@ -3550,23 +3541,24 @@ function renderBank(){
           setTimeout(function(){ el.style.background=''; el.style.color=''; el.style.borderColor=''; },200);
           if(window._startSampleRecord) window._startSampleRecord(idx);
         },500);
-        if(!SEL){
-          // Don't preventDefault on touchstart — allows two-finger scroll.
-          // Sound still plays; browser may show tap highlight but that's fine.
-          doSound();
-        }
-      },{passive:false});
+        if(!SEL){ doSound(); }
+      },{passive:true});
       el.addEventListener('touchend',function(){
         if(_holdTimer){ clearTimeout(_holdTimer); _holdTimer=null; }
         if(!_holdFired){ el.style.background=''; el.style.color=''; el.style.borderColor=''; }
         _holdFired=false;
       },{passive:true});
       el.addEventListener('touchmove',function(e){
-        var dx=e.touches[0].clientX-_holdStartX;
-        var dy=e.touches[0].clientY-_holdStartY;
-        if(Math.sqrt(dx*dx+dy*dy)>10){
-          if(_holdTimer){ clearTimeout(_holdTimer); _holdTimer=null; }
-          el.style.background=''; el.style.color=''; el.style.borderColor='';
+        // Only cancel hold for the finger that started on this tile
+        for(var _mi=0;_mi<e.changedTouches.length;_mi++){
+          var _mt=e.changedTouches[_mi];
+          var dx=_mt.clientX-_holdStartX;
+          var dy=_mt.clientY-_holdStartY;
+          if(Math.sqrt(dx*dx+dy*dy)>12){
+            if(_holdTimer){ clearTimeout(_holdTimer); _holdTimer=null; }
+            el.style.background=''; el.style.color=''; el.style.borderColor='';
+            break;
+          }
         }
       },{passive:true});
       // click — fallback for mouse and cases where touchstart didn't prevent default
@@ -4603,6 +4595,18 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(btnPro){ btnPro.style.display=''; btnPro.style.background=''; btnPro.style.color=''; }
     stopAll(); stopBeatClock();
     proMode=false; if(proPanel) proPanel.style.display='none';
+    // If tile scale was pushed above 1.0 (vertical slider max), clamp back
+    if(TILE_SCALE > 1.0){
+      TILE_SCALE = 1.0;
+      if(PZ) renderBank();
+      // Sync vertical slider to 100%
+      var vfill=document.getElementById('sizeBarFillV');
+      var vhandle=document.getElementById('sizeBarHandleV');
+      var varrows=document.getElementById('sizeBarArrowsV');
+      if(vfill) vfill.style.height='100%';
+      if(vhandle) vhandle.style.bottom='100%';
+      if(varrows) varrows.style.bottom='100%';
+    }
     updateUI();
   }
 
@@ -5784,18 +5788,38 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       });
     }
 
-    // ── Collapsible EQ wrapper ──
-    var eqExpanded = false; // default minimized
+        // ── EQ mode: BASIC | PARAMETRIC tabs ──
+    var eqMode = 'none';
+    var EQ_BTN_STYLE = 'flex:1;font-size:9px;font-weight:700;padding:6px 0;border:none;border-radius:0;background:#1a1a1a;color:#888;cursor:pointer;letter-spacing:1px;touch-action:manipulation;';
 
-    var eqHeader = mk('div',
-      'display:flex;align-items:center;justify-content:space-between;width:280px;'+
-      'border:1.5px solid #444;border-radius:4px;padding:5px 8px;cursor:pointer;'+
-      'background:#1a1a1a;user-select:none;-webkit-user-select:none;');
-    var eqHeaderLbl = mk('div','font-size:9px;font-weight:700;letter-spacing:1px;color:#aaa;flex:1;','PARAMETRIC EQ');
-    var eqToggleArrow = mk('div','font-size:13px;color:#aaa;padding:0 2px;','▸');
-    eqHeader.appendChild(eqHeaderLbl); eqHeader.appendChild(eqToggleArrow);
+    var eqTabRow = mk('div','display:flex;width:280px;border:1.5px solid #444;border-radius:4px;overflow:hidden;');
+    var basicTab = mkBtn('BASIC', EQ_BTN_STYLE+'border-right:1.5px solid #444;');
+    var paramTab = mkBtn('PARAMETRIC', EQ_BTN_STYLE);
+    eqTabRow.appendChild(basicTab); eqTabRow.appendChild(paramTab);
 
-    // Flat button inside body
+    // Basic EQ (bass + treble sliders)
+    var basicEQBody = mk('div','display:none;flex-direction:column;align-items:stretch;gap:6px;width:280px;padding:6px 0;');
+    function mkBasicSlider(label, metaKey){
+      var row=mk('div','display:flex;align-items:center;gap:8px;');
+      var lbl=mk('div','font-size:9px;color:#888;min-width:44px;text-align:right;',label);
+      var inp=mk('input'); inp.type='range'; inp.min=-100; inp.max=100; inp.step=1;
+      inp.value=Math.round((meta[metaKey]||0)*100);
+      inp.style.cssText='flex:1;accent-color:#06b6d4;';
+      var val=mk('div','font-size:9px;color:#ccc;min-width:36px;',(inp.value>0?'+':'')+inp.value+'%');
+      inp.oninput=function(){
+        meta[metaKey]=parseInt(inp.value)/100;
+        val.textContent=(inp.value>0?'+':'')+inp.value+'%';
+        applyProcessing();
+      };
+      var z=mkBtn('0','font-size:8px;padding:2px 5px;border:1px solid #555;border-radius:3px;background:transparent;color:#888;');
+      z.onclick=function(){ inp.value=0; meta[metaKey]=0; val.textContent='0%'; applyProcessing(); };
+      row.appendChild(lbl); row.appendChild(inp); row.appendChild(val); row.appendChild(z);
+      return row;
+    }
+    basicEQBody.appendChild(mkBasicSlider('BASS','bass'));
+    basicEQBody.appendChild(mkBasicSlider('TREBLE','treble'));
+
+    // Parametric EQ body
     var eqResetRow2=mk('div','display:flex;justify-content:flex-end;width:100%;');
     var eqFlatBtn2=mkBtn('FLAT','font-size:8px;padding:3px 8px;border:1px solid #555;border-radius:3px;background:transparent;color:#888;');
     eqFlatBtn2.onclick=function(){
@@ -5804,25 +5828,37 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     };
     eqResetRow2.appendChild(eqFlatBtn2);
 
-    var eqBody = mk('div','display:none;flex-direction:column;align-items:center;gap:4px;width:280px;');
-    eqBody.appendChild(eqCanvas);
-    eqBody.appendChild(eqResetRow2);
-    eqBody.appendChild(bandCtrlWrap);
+    var paramEQBody = mk('div','display:none;flex-direction:column;align-items:center;gap:4px;width:280px;');
+    paramEQBody.appendChild(eqCanvas);
+    paramEQBody.appendChild(eqResetRow2);
+    paramEQBody.appendChild(bandCtrlWrap);
 
-    function toggleEQ(){
-      eqExpanded=!eqExpanded;
-      eqBody.style.display=eqExpanded?'flex':'none';
-      eqToggleArrow.textContent=eqExpanded?'▾':'▸';
-      if(eqExpanded) drawEQCurve();
+    var eqBodiesWrap = mk('div','display:flex;flex-direction:column;align-items:center;width:280px;');
+    eqBodiesWrap.appendChild(basicEQBody);
+    eqBodiesWrap.appendChild(paramEQBody);
+
+    function setEQMode(mode){
+      eqMode = (eqMode===mode) ? 'none' : mode; // toggle off if same tab tapped
+      basicEQBody.style.display = eqMode==='basic' ? 'flex' : 'none';
+      paramEQBody.style.display = eqMode==='parametric' ? 'flex' : 'none';
+      basicTab.style.background = eqMode==='basic' ? '#06b6d4' : '#1a1a1a';
+      basicTab.style.color = eqMode==='basic' ? '#000' : '#888';
+      paramTab.style.background = eqMode==='parametric' ? '#06b6d4' : '#1a1a1a';
+      paramTab.style.color = eqMode==='parametric' ? '#000' : '#888';
+      if(eqMode==='parametric') drawEQCurve();
     }
-    eqHeader.addEventListener('click', toggleEQ);
-    eqHeader.addEventListener('touchend', function(e){ e.preventDefault(); toggleEQ(); },{passive:false});
+    function onBasicTab(e){ if(e.type==='touchend'){e.preventDefault();} setEQMode('basic'); }
+    function onParamTab(e){ if(e.type==='touchend'){e.preventDefault();} setEQMode('parametric'); }
+    basicTab.addEventListener('click', onBasicTab);
+    basicTab.addEventListener('touchend', onBasicTab, {passive:false});
+    paramTab.addEventListener('click', onParamTab);
+    paramTab.addEventListener('touchend', onParamTab, {passive:false});
 
     // Init
     buildBandControls();
     drawEQCurve();
 
-    var eqRow = {_eqHeader:eqHeader, _eqBody:eqBody};
+    var eqRow = {_eqHeader:eqTabRow, _eqBody:eqBodiesWrap};
 
     // ── Sample volume ──
     var volLbl=mk('div','font-size:9px;letter-spacing:1px;color:#888;margin-top:2px;','SAMPLE VOLUME');
@@ -6007,13 +6043,16 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     function applyEnvelope(){ applyProcessing(); } // alias
 
     function applyProcessing(){
-      if(!rawBuffer) return;
+      // For stock sounds use the preserved source buffer, not rawBuffer
+      // (rawBuffer gets overwritten with processed result)
+      var sourceBuffer = (meta._isStock && meta._stockSourceBuffer) ? meta._stockSourceBuffer : rawBuffer;
+      if(!sourceBuffer) return;
       statusEl.textContent='Processing...'; statusEl.style.color='#aaa';
       sampleMeta[tileIdx]=meta; // ensure meta ref is always current
 
-      // Step 1: Apply trim — extract trimmed region from rawBuffer
-      var sr=rawBuffer.sampleRate, nch=rawBuffer.numberOfChannels;
-      var fullLen=rawBuffer.length;
+      // Step 1: Apply trim — extract trimmed region from sourceBuffer
+      var sr=sourceBuffer.sampleRate, nch=sourceBuffer.numberOfChannels;
+      var fullLen=sourceBuffer.length;
       var tStart=Math.floor((meta.trimStart||0)*fullLen);
       var tEnd=Math.floor((meta.trimEnd!==undefined?meta.trimEnd:1)*fullLen);
       tStart=Math.max(0,Math.min(tStart,fullLen-2));
@@ -6030,7 +6069,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         return x;
       }
       for(var ch=0;ch<nch;ch++){
-        var inp=rawBuffer.getChannelData(ch);
+        var inp=sourceBuffer.getChannelData(ch);
         var dst=envBuf.getChannelData(ch);
         for(var i=0;i<len;i++){
           var src=inp[tStart+i];
@@ -6201,11 +6240,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
           offCtx.startRendering().then(function(rendered){
             if(!document.getElementById('_sampleOv')) return;
             rawBuffer=rendered;
-            meta._stockRawBuffer=rendered; // keep original stock render
-            existingLbl.textContent='🎵 Stock sound';
+            meta._stockSourceBuffer=rendered; // preserved source — never overwritten
+            existingLbl.textContent='🎵 Stock sound — edit freely';
             existingLbl.style.color='#06b6d4';
             testBtn.style.display='';
             drawWaveform();
+            // Auto-apply so any already-set envelope/volume takes effect
+            applyProcessing();
           }).catch(function(){ existingLbl.textContent='🎵 Stock sound (preview unavailable)'; });
         }catch(e){ existingLbl.textContent='🎵 Stock sound'; }
       })();
@@ -6217,6 +6258,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
 // ── MASTER EQ WIRING ────────────────────────────────────────
 (function(){
+  // ── Basic EQ tab wiring ──
   var bands=['sub','bass','mid','pres','hi'];
   bands.forEach(function(id){
     var sl=document.getElementById('eq_'+id);
@@ -6225,7 +6267,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     sl.addEventListener('input',function(){
       var db=parseFloat(this.value);
       if(vl) vl.textContent=(db>0?'+':'')+db;
-      vl.style.color=db===0?'#aaa':db>0?'#4ade80':'#f87171';
+      if(vl) vl.style.color=db===0?'#aaa':db>0?'#4ade80':'#f87171';
       if(masterEQ[id]) masterEQ[id].gain.setValueAtTime(db, AC?AC.currentTime:0);
     });
   });
@@ -6234,11 +6276,136 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     bands.forEach(function(id){
       var sl=document.getElementById('eq_'+id);
       var vl=document.getElementById('eqVal_'+id);
-      if(sl){ sl.value=0; }
+      if(sl) sl.value=0;
       if(vl){ vl.textContent='0'; vl.style.color='#aaa'; }
       if(masterEQ[id]) masterEQ[id].gain.setValueAtTime(0, AC?AC.currentTime:0);
     });
   });
+
+  // ── Tab toggle ──
+  var basicTab=document.getElementById('masterEQBasicTab');
+  var paramTab=document.getElementById('masterEQParamTab');
+  var basicBody=document.getElementById('masterEQBasicBody');
+  var paramBody=document.getElementById('masterEQParamBody');
+  var masterEQMode='none';
+
+  var ACT_STYLE='background:#7c3aed;color:#fff;';
+  var INACT_STYLE='background:#e8e2d6;color:#888;';
+
+  function setMasterEQMode(mode){
+    masterEQMode=(masterEQMode===mode)?'none':mode;
+    basicBody.style.display=masterEQMode==='basic'?'flex':'none';
+    paramBody.style.display=masterEQMode==='parametric'?'flex':'none';
+    if(basicTab){ basicTab.style.cssText+=masterEQMode==='basic'?ACT_STYLE:INACT_STYLE; }
+    if(paramTab){ paramTab.style.cssText+=masterEQMode==='parametric'?ACT_STYLE:INACT_STYLE; }
+    if(masterEQMode==='basic'&&basicTab){ basicTab.style.background='#7c3aed';basicTab.style.color='#fff'; }
+    else if(basicTab){ basicTab.style.background='#e8e2d6';basicTab.style.color='#888'; }
+    if(masterEQMode==='parametric'&&paramTab){ paramTab.style.background='#7c3aed';paramTab.style.color='#fff'; buildMasterParamEQ(); }
+    else if(paramTab){ paramTab.style.background='#e8e2d6';paramTab.style.color='#888'; }
+  }
+
+  if(basicTab) basicTab.addEventListener('click',function(){ setMasterEQMode('basic'); });
+  if(paramTab) paramTab.addEventListener('click',function(){ setMasterEQMode('parametric'); });
+  if(basicTab) basicTab.addEventListener('touchend',function(e){ e.preventDefault(); setMasterEQMode('basic'); },{passive:false});
+  if(paramTab) paramTab.addEventListener('touchend',function(e){ e.preventDefault(); setMasterEQMode('parametric'); },{passive:false});
+
+  // ── Parametric master EQ ──
+  var mEQBands=[
+    {type:'lowshelf', freq:80,   gain:0, Q:0.7, label:'LOW',    color:'#22c55e'},
+    {type:'peaking',  freq:300,  gain:0, Q:1.0, label:'LO-MID', color:'#06b6d4'},
+    {type:'peaking',  freq:1000, gain:0, Q:1.0, label:'MID',    color:'#eab308'},
+    {type:'peaking',  freq:4000, gain:0, Q:1.0, label:'HI-MID', color:'#f97316'},
+    {type:'highshelf',freq:8000, gain:0, Q:0.7, label:'HIGH',   color:'#a855f7'},
+  ];
+  var mBuilt=false;
+
+  function buildMasterParamEQ(){
+    if(mBuilt) return; mBuilt=true;
+    var canvas=document.getElementById('masterEQCanvas');
+    var controls=document.getElementById('masterEQBandControls');
+    if(!canvas||!controls) return;
+    var W=canvas.width, H=canvas.height;
+
+    function fToX(f){ return W*(Math.log10(f/20)/Math.log10(20000/20)); }
+    function xToF(x){ return 20*Math.pow(10,(x/W)*Math.log10(20000/20)); }
+    function gToY(g){ return H/2-(g/20)*(H*0.4); }
+    function fToSl(f){ return Math.round((Math.log10(f/20)/Math.log10(18000/20))*100); }
+    function slToF(s){ return Math.round(20*Math.pow(10,(s/100)*Math.log10(18000/20))); }
+
+    function getResp(bds,n){
+      var fs=[],out=[];
+      for(var i=0;i<n;i++){ var f=20*Math.pow(10,(i/(n-1))*Math.log10(20000/20)); fs.push(f); out.push(0); }
+      bds.forEach(function(b){
+        if(b.gain===0) return;
+        fs.forEach(function(f,i){
+          var f0=b.freq, g=b.gain, Q=b.Q||0.7, db;
+          if(b.type==='lowshelf') db=g/(1+Math.pow(f/f0,2));
+          else if(b.type==='highshelf') db=g/(1+Math.pow(f0/f,2));
+          else db=g/(1+Math.pow((f*f-f0*f0)/(f*(f0/Q)),2));
+          out[i]+=db;
+        });
+      });
+      return {fs:fs,dbs:out};
+    }
+
+    function drawM(){
+      var ctx=canvas.getContext('2d');
+      ctx.clearRect(0,0,W,H);
+      ctx.strokeStyle='#333'; ctx.lineWidth=1;
+      [63,250,1000,4000,16000].forEach(function(f){ var x=fToX(f); ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); });
+      ctx.strokeStyle='#555'; ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(0,H/2);ctx.lineTo(W,H/2);ctx.stroke();
+      mEQBands.forEach(function(b,bi){
+        if(b.gain===0) return;
+        var r=getResp([b],80);
+        ctx.strokeStyle=mEQBands[bi].color+'88'; ctx.lineWidth=1; ctx.beginPath();
+        r.fs.forEach(function(f,i){ var x=fToX(f),y=gToY(r.dbs[i]); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+        ctx.stroke();
+      });
+      var r=getResp(mEQBands,160);
+      ctx.strokeStyle='#f5f0e8'; ctx.lineWidth=2; ctx.beginPath();
+      r.fs.forEach(function(f,i){ var x=fToX(f),y=Math.max(2,Math.min(H-2,gToY(r.dbs[i]))); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+      ctx.stroke();
+      mEQBands.forEach(function(b,bi){
+        var x=fToX(b.freq),y=gToY(b.gain);
+        ctx.fillStyle=mEQBands[bi].color; ctx.strokeStyle='#fff'; ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();ctx.stroke();
+      });
+    }
+
+    function applyMasterParam(){
+      mEQBands.forEach(function(b,bi){
+        // Map band index to masterEQ nodes: sub,bass,mid,pres,hi
+        var keys=['sub','bass','mid','pres','hi'];
+        var k=keys[bi];
+        if(masterEQ[k]) masterEQ[k].gain.setValueAtTime(b.gain, AC?AC.currentTime:0);
+      });
+    }
+
+    // Band controls
+    controls.innerHTML='';
+    mEQBands.forEach(function(b,bi){
+      var col=mEQBands[bi].color;
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:4px;';
+      var lbl=document.createElement('div');
+      lbl.style.cssText='font-size:8px;color:'+col+';min-width:36px;text-align:right;font-weight:700;font-family:monospace;';
+      lbl.textContent=b.label;
+      var gInp=document.createElement('input'); gInp.type='range'; gInp.min=-18; gInp.max=18; gInp.step=0.5; gInp.value=b.gain;
+      gInp.style.cssText='flex:1;accent-color:'+col+';';
+      var gLbl=document.createElement('div');
+      gLbl.style.cssText='font-size:8px;color:#ccc;min-width:36px;font-family:monospace;';
+      gLbl.textContent=(b.gain>0?'+':'')+b.gain+'dB';
+      gInp.addEventListener('input',function(){
+        b.gain=parseFloat(gInp.value);
+        gLbl.textContent=(b.gain>0?'+':'')+b.gain.toFixed(1)+'dB';
+        drawM(); applyMasterParam();
+      });
+      row.appendChild(lbl); row.appendChild(gInp); row.appendChild(gLbl);
+      controls.appendChild(row);
+    });
+    drawM();
+  }
 })();
 
 // ── DRAGGABLE FLOATING PANELS ────────────────────────────────
