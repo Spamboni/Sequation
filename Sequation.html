@@ -15,7 +15,7 @@
 :root{--bg:#f5f0e8;--w:#fff;--bk:#1c1c1c;--br:#b0a898;--ac:#c0392b;--bl:#1a5276;--gn:#1a6b3a;--mu:#888078;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
 html,body{width:100%;overflow-x:hidden;}
-body{font-family:'IBM Plex Mono',monospace;background:var(--bg);height:100dvh;display:flex;flex-direction:column;align-items:center;overflow:hidden;}
+body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dvh;display:flex;flex-direction:column;align-items:center;overflow-y:auto;}
 
 /* ── Selection screen ── */
 .sel-screen{width:100%;max-width:520px;display:flex;flex-direction:column;align-items:center;padding:0 16px 24px;flex:1;}
@@ -34,7 +34,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);height:100dvh;di
 .sel-play:active{opacity:.85;}
 
 /* ── Game screen ── */
-.game-screen{width:100%;max-width:520px;display:none;flex-direction:column;align-items:center;flex:1;min-height:0;overflow-y:auto;}
+.game-screen{width:100%;max-width:520px;display:none;flex-direction:column;align-items:center;flex:1;}
 .mast{width:100%;max-width:520px;padding:9px 14px 6px;border-bottom:4px double var(--bk);text-align:center;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
 .mast-title{font-family:'Abril Fatface',serif;font-size:20px;letter-spacing:2px;color:var(--bk);}
 .mast-title span{color:var(--ac);}
@@ -48,19 +48,19 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);height:100dvh;di
 @keyframes vib{0%,100%{transform:translateX(0)}15%{transform:translateX(-2px)}35%{transform:translateX(2px)}55%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
 @keyframes eqpop{0%{transform:scale(1)}40%{transform:scale(1.18)}70%{transform:scale(0.95)}100%{transform:scale(1)}}
 @keyframes givenpop{0%{transform:scale(1);background:#f0ebe0}50%{transform:scale(1.15);background:#14532d;color:#fff}100%{transform:scale(1);background:#166534;color:#e8f5e9}}
-.bank{flex:1;min-width:0;background:#ede8dc;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.bank{flex:1;min-width:0;background:#ede8dc;touch-action:pan-y;}
 .blbl{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--mu);}
-.btiles{display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px 6px 8px;flex:1;}
+.btiles{display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px 6px 8px;flex:1;touch-action:pan-y;}
 .info-bar{width:100%;max-width:520px;padding:4px 14px 2px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
 .bsize-wrap{display:flex;flex-direction:column;align-items:stretch;flex-shrink:0;gap:4px;padding-bottom:4px;border-right:2px solid var(--bk);}
 .bright-bar{display:none;}
 .bright-btn{display:none;}
 
-.bank-outer{width:100%;max-width:520px;border-top:2px solid var(--bk);background:#ede8dc;display:flex;flex-direction:column;align-items:stretch;flex:1;min-height:0;}
+.bank-outer{width:100%;max-width:520px;border-top:2px solid var(--bk);background:#ede8dc;flex-shrink:0;display:flex;flex-direction:column;align-items:stretch;touch-action:pan-y;}
 .seq-toolbar{width:100%;display:none;flex-direction:column;align-items:stretch;background:#e8e2d6;border-bottom:2px solid var(--bk);border-top:1px solid var(--bk);padding:4px 6px;gap:3px;box-sizing:border-box;flex-shrink:0;}
 .seq-toolbar-row{display:flex;flex-direction:row;align-items:center;gap:4px;}
 .seq-toolbar.active{display:flex;}
-.bank-row{display:flex;flex-direction:row;align-items:stretch;flex:1;}
+.bank-row{display:flex;flex-direction:row;align-items:flex-start;flex:1;touch-action:pan-y;}
 .bsize-col{position:relative;flex-shrink:0;width:28px;height:96px;cursor:pointer;touch-action:none;border-bottom:2px solid var(--bk);display:flex;align-items:stretch;}
 /* Horizontal version of size slider for seq toolbar */
 .bsize-col-h{position:relative;height:28px;cursor:ew-resize;touch-action:none;border:2px solid var(--bk);border-radius:3px;background:var(--w);overflow:hidden;display:flex;align-items:center;}
@@ -106,7 +106,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);height:100dvh;di
 .sizebar-handle{position:absolute;left:-2px;right:-2px;height:8px;background:var(--bk);border-radius:2px;pointer-events:none;transition:bottom .05s;z-index:3;}
 .sizebar-arrows{position:absolute;left:50%;transform:translate(-50%,50%);width:22px;height:20px;border:1.5px solid var(--bk);border-radius:3px;background:var(--w);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;line-height:1.1;color:var(--bk);pointer-events:none;transition:bottom .05s;z-index:4;}
 .sizebar-lbl{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--bk);text-align:center;line-height:1.6;pointer-events:none;user-select:none;}
-.bt{min-width:44px;height:44px;padding:0 8px;border:2px solid var(--br);background:var(--w);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:2px 2px 0 var(--br);transition:transform 0.04s,box-shadow 0.04s,background 0.1s;}
+.bt{min-width:44px;height:44px;padding:0 8px;border:2px solid var(--br);background:var(--w);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:2px 2px 0 var(--br);transition:transform 0.04s,box-shadow 0.04s,background 0.1s;touch-action:pan-y;}
 .bt.pressed{transform:translate(2px,2px)!important;box-shadow:0 0 0 var(--br)!important;}
 .bt-mic{position:absolute;top:1px;right:2px;font-size:7px;line-height:1;pointer-events:none;opacity:0.6;}
 .bt:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--br)!important;transition:transform 0.04s,box-shadow 0.04s;}
@@ -4024,6 +4024,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       fingerOver[touch.identifier]=el;
     }
   },{passive:true});
+  // Allow native scroll on the bank element itself
+  be.style.overflowY='visible';
+  be.parentElement.style.overscrollBehavior='contain';
 
   be.addEventListener('touchmove',function(e){
     // No preventDefault — allow natural vertical page scroll (touch-action:pan-y handles it)
