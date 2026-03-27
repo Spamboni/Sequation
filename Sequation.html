@@ -177,7 +177,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
   <div class="info-bar"><span class="blbl">Tap a square · then a number · tap placed to return · pinch to zoom · double-tap resets zoom</span></div>
   <div class="gscroll"><div class="grid-clip" id="gridClip"><div class="grid" id="grid"></div></div></div>
-  <div class="bank-outer"><div class="seq-toolbar" id="seqToolbar"><button class="seq-btn seq-btn-sq" id="seqPuz" style="font-size:8px;font-weight:700;flex-shrink:0;">PUZ</button><div class="bsize-col-h" id="sizeBar" style="flex:1;min-width:60px;"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">◀▶</div></div><div id="toolbarBeat" style="width:14px;height:14px;border-radius:50%;background:#ccc;border:1.5px solid #999;flex-shrink:0;transition:background .05s,box-shadow .05s;display:none;"></div><button class="seq-btn seq-btn-sq" id="seqRec" title="Record" style="display:none;flex-shrink:0;">⏺</button><button class="seq-btn seq-btn-lg" id="seqPlay" title="Play/Stop" style="display:none;flex-shrink:0;height:36px;width:36px;font-size:18px;">▶</button><button class="seq-btn seq-btn-sq" id="seqSave" title="Save" style="display:none;flex-shrink:0;">💾</button><button class="seq-btn seq-btn-sq" id="seqLoad" title="Load" style="display:none;flex-shrink:0;">📂</button><button class="seq-btn seq-btn-sq" id="seqClear" title="Clear" style="display:none;flex-shrink:0;">🗑</button><button class="seq-btn seq-btn-sq" id="seqErase" title="Erase Beats" style="display:none;flex-shrink:0;">✂</button><button class="seq-btn seq-btn-sq" id="colorTagBtn" title="Color tiles" style="display:none;flex-shrink:0;">🎨</button><button class="seq-btn seq-btn-sq" id="copyModeBtn" title="Copy sample" style="display:none;flex-shrink:0;">📋</button></div><div class="bank-row"><div class="bsize-wrap" id="sizeSideWrap"><div class="bsize-col" id="sizeBarV"><div class="sizebar-fill" id="sizeBarFillV"></div><div class="sizebar-handle" id="sizeBarHandleV"></div><div class="sizebar-arrows" id="sizeBarArrowsV">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="width:28px;font-size:8px;">SEQ</button></div><div class="bank"><div class="btiles" id="bank"></div></div></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div>
+  <div class="bank-outer"><div class="seq-toolbar" id="seqToolbar"><button class="seq-btn seq-btn-sq" id="seqPuz" style="font-size:8px;font-weight:700;flex-shrink:0;">PUZ</button><div class="bsize-col-h" id="sizeBar" style="flex:1;min-width:60px;"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">◀▶</div></div><div id="toolbarBeat" style="display:none;flex-direction:row;align-items:center;gap:3px;flex:1;overflow:hidden;"><div id="toolbarBeatDots" style="display:flex;gap:3px;flex-wrap:nowrap;align-items:center;justify-content:center;flex:1;"></div><button id="undockBeats2" title="Undock" style="font-family:monospace;font-size:8px;padding:2px 4px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;flex-shrink:0;">⊞</button></div><button class="seq-btn seq-btn-sq" id="seqRec" title="Record" style="display:none;flex-shrink:0;">⏺</button><button class="seq-btn seq-btn-lg" id="seqPlay" title="Play/Stop" style="display:none;flex-shrink:0;height:36px;width:36px;font-size:18px;">▶</button><button class="seq-btn seq-btn-sq" id="seqSave" title="Save" style="display:none;flex-shrink:0;">💾</button><button class="seq-btn seq-btn-sq" id="seqLoad" title="Load" style="display:none;flex-shrink:0;">📂</button><button class="seq-btn seq-btn-sq" id="seqClear" title="Clear" style="display:none;flex-shrink:0;">🗑</button><button class="seq-btn seq-btn-sq" id="seqErase" title="Erase Beats" style="display:none;flex-shrink:0;">✂</button><button class="seq-btn seq-btn-sq" id="colorTagBtn" title="Color tiles" style="display:none;flex-shrink:0;">🎨</button><button class="seq-btn seq-btn-sq" id="copyModeBtn" title="Copy sample" style="display:none;flex-shrink:0;">📋</button></div><div class="bank-row"><div class="bsize-wrap" id="sizeSideWrap"><div class="bsize-col" id="sizeBarV"><div class="sizebar-fill" id="sizeBarFillV"></div><div class="sizebar-handle" id="sizeBarHandleV"></div><div class="sizebar-arrows" id="sizeBarArrowsV">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="width:28px;font-size:8px;">SEQ</button></div><div class="bank"><div class="btiles" id="bank"></div></div></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div>
 <div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row pro-top" style="justify-content:space-between;"><div class="pro-beats" id="proBeats" style="flex:1;justify-content:center;"></div><div style="display:flex;gap:4px;"><button id="undockBeats" title="Undock beats" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div></div><div class="pro-row"><span class="pro-lbl">BARS</span><div class="pro-bar-btns"><button class="pro-btn active" data-bars="2">2</button><button class="pro-btn" data-bars="4">4</button><button class="pro-btn" data-bars="8">8</button><button class="pro-btn" data-bars="16">16</button></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"><button class="pro-btn pro-slot active" data-slot="0">1</button><button class="pro-btn pro-slot" data-slot="1">2</button><button class="pro-btn pro-slot" data-slot="2">3</button><button class="pro-btn pro-slot" data-slot="3">4</button><button class="pro-btn pro-slot" data-slot="4">5</button><button class="pro-btn pro-slot" data-slot="5">6</button><button class="pro-btn pro-slot" data-slot="6">7</button><button class="pro-btn pro-slot" data-slot="7">8</button></div></div><div class="pro-row" id="recVolRow" style="justify-content:flex-end;gap:6px;"><span class="pro-lbl" style="font-size:7px;white-space:nowrap;">REC VOL</span><input type="range" id="_recVolSlider" min="0.05" max="1" step="0.05" value="1" style="width:130px;accent-color:#ef4444;"><span class="pro-lbl" id="_recVolLbl" style="font-size:7px;min-width:28px;">100%</span><button id="_recVolBoost" title="Enable boost above 100%" style="font-family:monospace;font-size:7px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">+</button><button id="undockRecVol" title="Undock REC VOL" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:8px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;"><div style="display:flex;align-items:center;justify-content:space-between;"><span class="pro-lbl">MASTER EQ</span><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div class="pro-row" id="eraseRow" style="display:none;background:#fff3e0;border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#c2410c;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:#555;font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:#f97316;border-color:#c2410c;color:#fff;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:#666;"></span></div></div></div>
   <div class="bot">
     <button class="bbtn bundo" id="undo" disabled>Undo</button>
@@ -3545,7 +3545,11 @@ function renderBank(){
           setTimeout(function(){ el.style.background=''; el.style.color=''; el.style.borderColor=''; },200);
           if(window._startSampleRecord) window._startSampleRecord(idx);
         },500);
-        if(!SEL){ e.preventDefault(); doSound(); }
+        if(!SEL){
+          // Don't preventDefault on touchstart — allows two-finger scroll.
+          // Sound still plays; browser may show tap highlight but that's fine.
+          doSound();
+        }
       },{passive:false});
       el.addEventListener('touchend',function(){
         if(_holdTimer){ clearTimeout(_holdTimer); _holdTimer=null; }
@@ -4273,6 +4277,17 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       d.className = 'pro-beat' + ((i%4===0)?' accent':'');
       container.appendChild(d);
     }
+    // Mirror to toolbar
+    var tc = document.getElementById('toolbarBeatDots');
+    if(tc){
+      tc.innerHTML='';
+      for(var j=0;j<totalBeats;j++){
+        var td=document.createElement('div');
+        td.className='pro-beat'+((j%4===0)?' accent':'');
+        td.style.cssText='width:8px;height:8px;flex-shrink:0;';
+        tc.appendChild(td);
+      }
+    }
   }
 
   function updateBeatDot(beat){
@@ -4280,19 +4295,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(!container) return;
     var dots = container.querySelectorAll('.pro-beat');
     dots.forEach(function(d,i){ d.classList.toggle('active', i===beat); });
-    // Mirror to toolbar beat dot
-    var tb=document.getElementById('toolbarBeat');
-    if(tb && tb.style.display!=='none'){
-      tb.style.background='#ef4444';
-      tb.style.border='1.5px solid #991b1b';
-      tb.style.boxShadow='0 0 6px #ef4444';
-      clearTimeout(tb._flashT);
-      tb._flashT=setTimeout(function(){
-        tb.style.background='#ccc';
-        tb.style.border='1.5px solid #999';
-        tb.style.boxShadow='';
-      },80);
-    }
+    // Mirror to toolbar beat dots row
+    var tbDots = document.querySelectorAll('#toolbarBeatDots .pro-beat');
+    tbDots.forEach(function(d,i){ d.classList.toggle('active', i===beat); });
   }
 
   // ── Quantize helper ──────────────────────────────────────
@@ -4562,9 +4567,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     seqVisible = true;
     var _tb=document.getElementById('seqToolbar'); if(_tb) _tb.classList.add('active');
     var sw=document.getElementById('sizeSideWrap'); if(sw) sw.style.display='none';
-    ['seqRec','seqPlay','seqClear','seqSave','seqLoad','seqErase','copyModeBtn','colorTagBtn','toolbarBeat'].forEach(function(id){
+    ['seqRec','seqPlay','seqClear','seqSave','seqLoad','seqErase','copyModeBtn','colorTagBtn'].forEach(function(id){
       var el=document.getElementById(id); if(el) el.style.display='';
     });
+    var _tb3=document.getElementById('toolbarBeat'); if(_tb3) _tb3.style.display='flex';
     var sl=document.getElementById('sndLabel'); if(sl) sl.style.display='';
     var sr=document.getElementById('sndRow'); if(sr) sr.style.display='';
     if(btnPro){ btnPro.style.display='none'; }
@@ -5409,6 +5415,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var historyIdx=-1; // current position in history
     // Load persisted settings for this tile
     var meta=sampleMeta[tileIdx]||(sampleMeta[tileIdx]={attack:0,release:0,atkCurve:'linear',relCurve:'linear',volume:1.0,bass:0,treble:0,trimStart:0,trimEnd:1});
+    if(!meta.eqBands) meta.eqBands=null; // will be set by EQ section
+    if(!meta.volume) meta.volume=1.0;
 
     function mk(tag,css,txt){
       var el=document.createElement(tag);
@@ -5528,8 +5536,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var EQ_DEFAULTS=[
       {type:'lowshelf',  freq:100,  gain:0, Q:0.7, label:'LOW',    color:'#22c55e'},
       {type:'peaking',   freq:500,  gain:0, Q:1.0, label:'LO-MID', color:'#06b6d4'},
-      {type:'peaking',   freq:3000, gain:0, Q:1.0, label:'HI-MID', color:'#f97316'},
-      {type:'highshelf', freq:8000, gain:0, Q:0.7, label:'HIGH',   color:'#a855f7'},
+      {type:'peaking',   freq:1500, gain:0, Q:1.0, label:'MID',    color:'#eab308'},
+      {type:'peaking',   freq:5000, gain:0, Q:1.0, label:'HI-MID', color:'#f97316'},
+      {type:'highshelf', freq:10000,gain:0, Q:0.7, label:'HIGH',   color:'#a855f7'},
     ];
     if(!meta.eqBands) meta.eqBands=JSON.parse(JSON.stringify(EQ_DEFAULTS));
     // Ensure all bands present
@@ -5756,20 +5765,51 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       });
     }
 
-    // Flat response reset
-    var eqResetRow=mk('div','display:flex;justify-content:flex-end;width:280px;');
-    var eqResetBtn=mkBtn('FLAT','font-size:8px;padding:3px 8px;border:1px solid #555;border-radius:3px;background:transparent;color:#888;');
-    eqResetBtn.onclick=function(){
+    // ── Collapsible EQ wrapper ──
+    var eqExpanded = false; // default minimized
+
+    var eqHeader = mk('div',
+      'display:flex;align-items:center;justify-content:space-between;width:280px;'+
+      'border:1.5px solid #444;border-radius:4px;padding:5px 8px;cursor:pointer;'+
+      'background:#1a1a1a;user-select:none;-webkit-user-select:none;');
+    var eqHeaderLbl = mk('div','font-size:9px;font-weight:700;letter-spacing:1px;color:#aaa;','PARAMETRIC EQ  ▸');
+    var eqFlatBtn = mkBtn('FLAT','font-size:8px;padding:2px 7px;border:1px solid #555;border-radius:3px;background:transparent;color:#888;');
+    eqFlatBtn.onclick=function(e){
+      e.stopPropagation();
       meta.eqBands=JSON.parse(JSON.stringify(EQ_DEFAULTS));
       buildBandControls(); drawEQCurve(); applyProcessing();
     };
-    eqResetRow.appendChild(eqResetBtn);
+    eqHeader.appendChild(eqHeaderLbl); eqHeader.appendChild(eqFlatBtn);
+
+    var eqBody = mk('div','display:none;flex-direction:column;align-items:center;gap:4px;width:280px;');
+    eqBody.appendChild(eqCanvas);
+    eqBody.appendChild(eqResetRow2); // placeholder — append children below
+    eqBody.appendChild(bandCtrlWrap);
+
+    function toggleEQ(){
+      eqExpanded=!eqExpanded;
+      eqBody.style.display=eqExpanded?'flex':'none';
+      eqHeaderLbl.textContent='PARAMETRIC EQ  '+(eqExpanded?'▾':'▸');
+      if(eqExpanded) drawEQCurve();
+    }
+    eqHeader.addEventListener('click', toggleEQ);
+    eqHeader.addEventListener('touchend', function(e){ e.preventDefault(); toggleEQ(); },{passive:false});
+
+    // Flat button inside body too
+    var eqResetRow2=mk('div','display:flex;justify-content:flex-end;width:100%;');
+    var eqFlatBtn2=mkBtn('FLAT','font-size:8px;padding:3px 8px;border:1px solid #555;border-radius:3px;background:transparent;color:#888;');
+    eqFlatBtn2.onclick=function(){
+      meta.eqBands=JSON.parse(JSON.stringify(EQ_DEFAULTS));
+      buildBandControls(); drawEQCurve(); applyProcessing();
+    };
+    eqResetRow2.appendChild(eqFlatBtn2);
+    eqBody.insertBefore(eqResetRow2, bandCtrlWrap);
 
     // Init
     buildBandControls();
     drawEQCurve();
 
-    var eqRow = {_canvas:eqCanvas, _controls:bandCtrlWrap, _resetRow:eqResetRow};
+    var eqRow = {_eqHeader:eqHeader, _eqBody:eqBody};
 
     // ── Sample volume ──
     var volLbl=mk('div','font-size:9px;letter-spacing:1px;color:#888;margin-top:2px;','SAMPLE VOLUME');
@@ -5945,8 +5985,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     ov.appendChild(trimLbl);
     ov.appendChild(waveWrap);
     ov.appendChild(envLbl); ov.appendChild(envRow);
-    ov.appendChild(eqLbl); ov.appendChild(eqRow._canvas); ov.appendChild(eqRow._resetRow); ov.appendChild(eqRow._controls);
     ov.appendChild(volLbl); ov.appendChild(volRow);
+    ov.appendChild(eqRow._eqHeader); ov.appendChild(eqRow._eqBody);
     ov.appendChild(bottomRow);
     document.body.appendChild(ov);
 
@@ -5956,6 +5996,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     function applyProcessing(){
       if(!rawBuffer) return;
       statusEl.textContent='Processing...'; statusEl.style.color='#aaa';
+      sampleMeta[tileIdx]=meta; // ensure meta ref is always current
 
       // Step 1: Apply trim — extract trimmed region from rawBuffer
       var sr=rawBuffer.sampleRate, nch=rawBuffer.numberOfChannels;
@@ -6212,6 +6253,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   // ── BEAT LIGHTS panel — minimal: just dots + lock + dock ──
   function makeBeatsFloatable(){
     var undockBtn=document.getElementById('undockBeats');
+  var undockBtn2=document.getElementById('undockBeats2');
+  if(undockBtn2) undockBtn2.addEventListener('click',function(e){ e.stopPropagation(); if(undockBtn) undockBtn.click(); });
     if(!undockBtn) return;
     var floatEl=null, locked=false, origParent=null, origNext=null;
     var lockHoldTimer=null;
