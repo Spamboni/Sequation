@@ -61,6 +61,11 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .seq-toolbar.active{display:flex;}
 .bank-row{display:flex;flex-direction:row;align-items:flex-start;flex:1;}
 .bsize-col{position:relative;flex-shrink:0;width:28px;height:96px;cursor:pointer;touch-action:none;border-bottom:2px solid var(--bk);display:flex;align-items:stretch;}
+/* Horizontal version of size slider for seq toolbar */
+.bsize-col-h{position:relative;height:28px;cursor:ew-resize;touch-action:none;border:2px solid var(--bk);border-radius:3px;background:var(--w);overflow:visible;display:flex;align-items:center;}
+.bsize-col-h .sizebar-fill{position:absolute;left:0;top:0;bottom:0;background:#93c5fd;border-radius:2px 0 0 2px;}
+.bsize-col-h .sizebar-handle{position:absolute;top:-3px;bottom:-3px;width:12px;background:var(--bk);border-radius:3px;transform:translateX(-50%);z-index:3;cursor:ew-resize;}
+.bsize-col-h .sizebar-arrows{position:absolute;left:50%;transform:translateX(-50%);font-size:9px;color:var(--bk);pointer-events:none;z-index:4;white-space:nowrap;font-weight:700;}
 .sizebar-lock{display:none;}
 .seq-btns{display:none;}
 .seq-btn{height:28px;min-width:28px;font-size:13px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bk);border-radius:3px;background:var(--w);cursor:pointer;user-select:none;touch-action:manipulation;padding:0 5px;transition:background .12s;}
@@ -100,9 +105,10 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .sizebar-handle{position:absolute;left:-2px;right:-2px;height:8px;background:var(--bk);border-radius:2px;pointer-events:none;transition:bottom .05s;z-index:3;}
 .sizebar-arrows{position:absolute;left:50%;transform:translate(-50%,50%);width:22px;height:20px;border:1.5px solid var(--bk);border-radius:3px;background:var(--w);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;line-height:1.1;color:var(--bk);pointer-events:none;transition:bottom .05s;z-index:4;}
 .sizebar-lbl{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--bk);text-align:center;line-height:1.6;pointer-events:none;user-select:none;}
-.bt{min-width:44px;height:44px;padding:0 8px;border:2px solid var(--br);background:var(--w);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:2px 2px 0 var(--br);transition:all .1s;}
+.bt{min-width:44px;height:44px;padding:0 8px;border:2px solid var(--br);background:var(--w);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:2px 2px 0 var(--br);transition:transform 0.04s,box-shadow 0.04s,background 0.1s;}
+.bt.pressed{transform:translate(2px,2px)!important;box-shadow:0 0 0 var(--br)!important;}
 .bt-mic{position:absolute;top:1px;right:2px;font-size:7px;line-height:1;pointer-events:none;opacity:0.6;}
-.bt:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--br);}
+.bt:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--br)!important;transition:transform 0.04s,box-shadow 0.04s;}
 .bt.used{opacity:.20;cursor:pointer;pointer-events:all;box-shadow:none;}
 .bt.lit{border-color:#c9a800;color:var(--bk);background:#ffe250;box-shadow:2px 2px 0 rgba(180,148,0,.3);}
 .bot{width:100%;max-width:520px;padding:7px 12px 16px;display:flex;gap:8px;border-top:1px solid var(--br);flex-shrink:0;}
@@ -171,8 +177,8 @@ window.onerror=function(msg,src,line,col,err){
   </div>
   <div class="info-bar"><span class="blbl">Tap a square · then a number · tap placed to return · pinch to zoom · double-tap resets zoom</span></div>
   <div class="gscroll"><div class="grid-clip" id="gridClip"><div class="grid" id="grid"></div></div></div>
-  <div class="bank-outer"><div class="seq-toolbar" id="seqToolbar"><button class="seq-btn seq-btn-sq" id="seqPuz" style="font-size:8px;font-weight:700;">PUZ</button><button class="seq-btn seq-btn-sq" id="seqRec" title="Record" style="display:none;">⏺</button><button class="seq-btn seq-btn-lg" id="seqPlay" title="Play/Stop" style="display:none;height:36px;width:36px;font-size:18px;">▶</button><button class="seq-btn seq-btn-sq" id="seqSave" title="Save" style="display:none;">💾</button><button class="seq-btn seq-btn-sq" id="seqLoad" title="Load" style="display:none;">📂</button><div style="flex:1;"></div><button class="seq-btn seq-btn-sq" id="seqClear" title="Clear" style="display:none;">🗑</button><button class="seq-btn seq-btn-sq" id="seqErase" title="Erase Beats" style="display:none;">✂</button><button class="seq-btn seq-btn-sq" id="colorTagBtn" title="Color tiles" style="display:none;">🎨</button><button class="seq-btn seq-btn-sq" id="copyModeBtn" title="Copy sample" style="display:none;">📋</button></div><div class="bank-row"><div class="bsize-wrap" id="sizeSideWrap"><div class="bsize-col" id="sizeBar"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="width:28px;font-size:8px;">SEQ</button></div><div class="bank"><div class="btiles" id="bank"></div></div></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div></div></div>
-<div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row pro-top" style="justify-content:space-between;"><div class="pro-beats" id="proBeats"></div><div style="display:flex;gap:4px;"><button id="undockBeats" title="Undock beats" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div></div><div class="pro-row"><span class="pro-lbl">BARS</span><div class="pro-bar-btns"><button class="pro-btn active" data-bars="2">2</button><button class="pro-btn" data-bars="4">4</button><button class="pro-btn" data-bars="8">8</button><button class="pro-btn" data-bars="16">16</button></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"><button class="pro-btn pro-slot active" data-slot="0">1</button><button class="pro-btn pro-slot" data-slot="1">2</button><button class="pro-btn pro-slot" data-slot="2">3</button><button class="pro-btn pro-slot" data-slot="3">4</button><button class="pro-btn pro-slot" data-slot="4">5</button><button class="pro-btn pro-slot" data-slot="5">6</button><button class="pro-btn pro-slot" data-slot="6">7</button><button class="pro-btn pro-slot" data-slot="7">8</button></div></div><div class="pro-row" id="recVolRow" style="justify-content:flex-end;gap:6px;"><span class="pro-lbl" style="font-size:7px;white-space:nowrap;">REC VOL</span><input type="range" id="_recVolSlider" min="0.05" max="1" step="0.05" value="1" style="width:130px;accent-color:#ef4444;"><span class="pro-lbl" id="_recVolLbl" style="font-size:7px;min-width:28px;">100%</span><button id="_recVolBoost" title="Enable boost above 100%" style="font-family:monospace;font-size:7px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">+</button><button id="undockRecVol" title="Undock REC VOL" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:8px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;"><div style="display:flex;align-items:center;justify-content:space-between;"><span class="pro-lbl">MASTER EQ</span><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div class="pro-row" id="eraseRow" style="display:none;background:#fff3e0;border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#c2410c;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:#555;font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:#f97316;border-color:#c2410c;color:#fff;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:#666;"></span></div></div></div>
+  <div class="bank-outer"><div class="seq-toolbar" id="seqToolbar"><button class="seq-btn seq-btn-sq" id="seqPuz" style="font-size:8px;font-weight:700;flex-shrink:0;">PUZ</button><div class="bsize-col-h" id="sizeBar" style="flex:1;min-width:60px;"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">◀▶</div></div><button class="seq-btn seq-btn-sq" id="seqRec" title="Record" style="display:none;flex-shrink:0;">⏺</button><button class="seq-btn seq-btn-lg" id="seqPlay" title="Play/Stop" style="display:none;flex-shrink:0;height:36px;width:36px;font-size:18px;">▶</button><button class="seq-btn seq-btn-sq" id="seqSave" title="Save" style="display:none;flex-shrink:0;">💾</button><button class="seq-btn seq-btn-sq" id="seqLoad" title="Load" style="display:none;flex-shrink:0;">📂</button><button class="seq-btn seq-btn-sq" id="seqClear" title="Clear" style="display:none;flex-shrink:0;">🗑</button><button class="seq-btn seq-btn-sq" id="seqErase" title="Erase Beats" style="display:none;flex-shrink:0;">✂</button><button class="seq-btn seq-btn-sq" id="colorTagBtn" title="Color tiles" style="display:none;flex-shrink:0;">🎨</button><button class="seq-btn seq-btn-sq" id="copyModeBtn" title="Copy sample" style="display:none;flex-shrink:0;">📋</button></div><div class="bank-row"><div class="bsize-wrap" id="sizeSideWrap"><div class="bsize-col" id="sizeBarV"><div class="sizebar-fill" id="sizeBarFillV"></div><div class="sizebar-handle" id="sizeBarHandleV"></div><div class="sizebar-arrows" id="sizeBarArrowsV">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="width:28px;font-size:8px;">SEQ</button></div><div class="bank"><div class="btiles" id="bank"></div></div></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div>
+<div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row pro-top" style="justify-content:space-between;"><div class="pro-beats" id="proBeats" style="flex:1;justify-content:center;"></div><div style="display:flex;gap:4px;"><button id="undockBeats" title="Undock beats" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div></div><div class="pro-row"><span class="pro-lbl">BARS</span><div class="pro-bar-btns"><button class="pro-btn active" data-bars="2">2</button><button class="pro-btn" data-bars="4">4</button><button class="pro-btn" data-bars="8">8</button><button class="pro-btn" data-bars="16">16</button></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"><button class="pro-btn pro-slot active" data-slot="0">1</button><button class="pro-btn pro-slot" data-slot="1">2</button><button class="pro-btn pro-slot" data-slot="2">3</button><button class="pro-btn pro-slot" data-slot="3">4</button><button class="pro-btn pro-slot" data-slot="4">5</button><button class="pro-btn pro-slot" data-slot="5">6</button><button class="pro-btn pro-slot" data-slot="6">7</button><button class="pro-btn pro-slot" data-slot="7">8</button></div></div><div class="pro-row" id="recVolRow" style="justify-content:flex-end;gap:6px;"><span class="pro-lbl" style="font-size:7px;white-space:nowrap;">REC VOL</span><input type="range" id="_recVolSlider" min="0.05" max="1" step="0.05" value="1" style="width:130px;accent-color:#ef4444;"><span class="pro-lbl" id="_recVolLbl" style="font-size:7px;min-width:28px;">100%</span><button id="_recVolBoost" title="Enable boost above 100%" style="font-family:monospace;font-size:7px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">+</button><button id="undockRecVol" title="Undock REC VOL" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:8px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;"><div style="display:flex;align-items:center;justify-content:space-between;"><span class="pro-lbl">MASTER EQ</span><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div class="pro-row" id="eraseRow" style="display:none;background:#fff3e0;border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#c2410c;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:#555;font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:#f97316;border-color:#c2410c;color:#fff;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:#666;"></span></div></div></div>
   <div class="bot">
     <button class="bbtn bundo" id="undo" disabled>Undo</button>
     <button class="bbtn bnew" id="newp">New Puzzle</button>
@@ -3466,10 +3472,10 @@ var tileColors = {};
 function applyTileColor(tile, idx){
   var col = tileColors[idx];
   if(col){
-    // Colored shadow only — no border changes
-    // The tile already has box-shadow:2px 2px 0 var(--br) from CSS
-    // We replace it entirely with a colored version
-    tile.style.boxShadow = '4px 4px 0 '+col+', 0 3px 12px '+col+'99';
+    // Replace the default grey shadow with the same shape but colored
+    // Default is: box-shadow:2px 2px 0 var(--br) — flat offset, no blur
+    // We match exactly: same offset, same spread, just different color
+    tile.style.boxShadow = '2px 2px 0 '+col;
   } else {
     tile.style.boxShadow = '';
   }
@@ -3499,10 +3505,13 @@ function renderBank(){
       function doSound(){
         playBankSound(sndIdx, recVolume);
         if(window._seqNoteOn) _seqNoteOn(sndIdx, idx);
+        // Press animation — adds offset then restores
+        el.classList.add('pressed');
         el.style.background='#ef4444';el.style.color='#fff';el.style.borderColor='#991b1b';
         setTimeout(function(){
+          el.classList.remove('pressed');
           el.style.background='';el.style.color='';el.style.borderColor='';
-        },180);
+        },120);
       }
       // Long-press for sample recording — measured on touchend
       var _holdStartX=0, _holdStartY=0, _holdTimer=null, _holdFired=false;
@@ -3517,10 +3526,10 @@ function renderBank(){
           if(window._copyModeTap) window._copyModeTap(idx);
           return;
         }
-        // Color tag mode — touchstart handled by document listener, just suppress sound
+        // Color tag mode — paint tile and begin drag-paint
         if(window._colorModeActive && window._colorModeActive()){
           e.preventDefault(); e.stopPropagation();
-          if(window._colorModePaint) window._colorModePaint(idx);
+          if(window._colorModeStart) window._colorModeStart(idx, e.touches[0].identifier, e.touches[0].clientX, e.touches[0].clientY);
           return;
         }
         _holdStartX=e.touches[0].clientX;
@@ -4028,10 +4037,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       if(!isNaN(idx)&&!isNaN(sndIdx)&&!SEL&&PZ&&!PZ.bank[idx].used){
         playBankSound(sndIdx, recVolume);
         if(window._seqNoteOn) _seqNoteOn(sndIdx, idx);
+        tile.classList.add('pressed');
         tile.style.background='#ef4444';tile.style.color='#fff';tile.style.borderColor='#991b1b';
         setTimeout((function(t){return function(){
+          t.classList.remove('pressed');
           t.style.background='';t.style.color='';t.style.borderColor='';
-        };})(tile),180);
+        };})(tile),120);
       }
     }
   },{passive:true});
@@ -4133,24 +4144,38 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   window.addEventListener('mouseup',onEnd);
 
   // Double-tap to lock/unlock
+  // Double-tap to lock/unlock — works on both touch and mouse
   var _barTapT=0, _barTaps=0;
-  bar.addEventListener('click',function(e){
-    if(dragging||_lockTouched) return;
+
+  function toggleBarLock(){
+    locked=!locked;
+    bar.style.outline=locked?'2px solid #dc2626':'';
+    bar.style.cursor=locked?'default':'pointer';
+    bar.style.opacity=locked?'0.6':'1';
+  }
+
+  // Touch double-tap
+  bar.addEventListener('touchend',function(e){
+    if(dragging) return;
     var now=Date.now();
     if(now-_barTapT<350){ _barTaps++; } else { _barTaps=1; }
     _barTapT=now;
-    if(_barTaps>=2){
-      _barTaps=0;
-      locked=!locked;
-      bar.style.outline=locked?'2px solid #dc2626':'';
-      bar.style.cursor=locked?'default':'pointer';
-      return;
-    }
+    if(_barTaps>=2){ _barTaps=0; e.preventDefault(); toggleBarLock(); }
+  },{passive:false});
+
+  // Mouse click (single = jump, double = lock)
+  bar.addEventListener('click',function(e){
+    if(dragging||_lockTouched) return;
+    // double-click handled by touchend on mobile; handle for mouse here
     if(!locked){
       var rect=bar.getBoundingClientRect();
       var pct=(1-(e.clientY-rect.top)/rect.height)*100;
       applyPct(pct);
     }
+  });
+  bar.addEventListener('dblclick',function(e){
+    e.preventDefault();
+    toggleBarLock();
   });
 })();
 // ═══════════════════════════════════════════════════════════
@@ -4516,27 +4541,28 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   function showSeq(){
     seqVisible = true;
     var _tb=document.getElementById('seqToolbar'); if(_tb) _tb.classList.add('active');
+    var sw=document.getElementById('sizeSideWrap'); if(sw) sw.style.display='none';
     ['seqRec','seqPlay','seqClear','seqSave','seqLoad','seqErase','copyModeBtn','colorTagBtn'].forEach(function(id){
       var el=document.getElementById(id); if(el) el.style.display='';
     });
     var sl=document.getElementById('sndLabel'); if(sl) sl.style.display='';
     var sr=document.getElementById('sndRow'); if(sr) sr.style.display='';
-    if(btnPro){ btnPro.style.background='var(--bk)'; btnPro.style.color='var(--bg)'; }
-    // Also enable proMode so beats/etc work
+    if(btnPro){ btnPro.style.display='none'; }
     if(!proMode){ proMode=true; if(proPanel) proPanel.style.display='flex'; buildBeatDots(); syncTracks(); updateSlotUI(); }
+    applyPctH(scaleToPct(TILE_SCALE));
     updateUI();
   }
 
   function hideSeq(){
     seqVisible = false;
     var _tb2=document.getElementById('seqToolbar'); if(_tb2) _tb2.classList.remove('active');
+    var sw2=document.getElementById('sizeSideWrap'); if(sw2) sw2.style.display='';
     ['seqRec','seqPlay','seqClear','seqSave','seqLoad','seqErase','copyModeBtn','colorTagBtn'].forEach(function(id){
       var el=document.getElementById(id); if(el) el.style.display='none';
     });
     var sl=document.getElementById('sndLabel'); if(sl) sl.style.display='none';
     var sr=document.getElementById('sndRow'); if(sr) sr.style.display='none';
-    if(btnPro){ btnPro.style.background=''; btnPro.style.color=''; }
-    // Stop and hide pro panel
+    if(btnPro){ btnPro.style.display=''; btnPro.style.background=''; btnPro.style.color=''; }
     stopAll(); stopBeatClock();
     proMode=false; if(proPanel) proPanel.style.display='none';
     updateUI();
@@ -4704,6 +4730,58 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     });
     btn.addEventListener('mouseleave', onHoldEnd);
   });
+
+// ── HORIZONTAL SIZE SLIDER (seq toolbar) ──────────────────────
+(function(){
+  var hbar=document.getElementById('sizeBar');
+  if(!hbar) return;
+  var hfill=document.getElementById('sizeBarFill');
+  var hhandle=document.getElementById('sizeBarHandle');
+
+  function pctToScaleH(pct){ return 0.5+(pct/100); }
+  function scaleToPctH(s){ return (s-0.5)*100; }
+
+  function applyPctH(pct){
+    pct=Math.max(0,Math.min(100,pct));
+    TILE_SCALE=pctToScaleH(pct);
+    if(hfill){ hfill.style.width=pct+'%'; }
+    if(hhandle){ hhandle.style.left=pct+'%'; }
+    if(PZ) renderBank();
+    // Sync vertical slider display
+    var vfill=document.getElementById('sizeBarFillV');
+    var vhandle=document.getElementById('sizeBarHandleV');
+    var varrows=document.getElementById('sizeBarArrowsV');
+    var vpct=Math.min(100,Math.max(0,(TILE_SCALE-0.5)/0.5*100));
+    if(vfill) vfill.style.height=vpct+'%';
+    if(vhandle) vhandle.style.bottom=vpct+'%';
+    if(varrows) varrows.style.bottom=vpct+'%';
+  }
+  window.applyPctH=applyPctH;
+
+  // Init at 50% (middle = TILE_SCALE 1.0 = default largest)
+  applyPctH(50);
+
+  var _hDragging=false, _hStartX=0, _hStartPct=50;
+  function hStart(x){ _hDragging=true; _hStartX=x; _hStartPct=scaleToPctH(TILE_SCALE); }
+  function hMove(x){
+    if(!_hDragging) return;
+    var w=hbar.offsetWidth||100;
+    applyPctH(_hStartPct+((x-_hStartX)/w)*100);
+  }
+  function hEnd(){ _hDragging=false; }
+
+  hbar.addEventListener('touchstart',function(e){ e.preventDefault(); hStart(e.touches[0].clientX); },{passive:false});
+  hbar.addEventListener('touchmove',function(e){ e.preventDefault(); hMove(e.touches[0].clientX); },{passive:false});
+  hbar.addEventListener('touchend',hEnd,{passive:true});
+  hbar.addEventListener('mousedown',function(e){ hStart(e.clientX); e.preventDefault(); });
+  window.addEventListener('mousemove',function(e){ if(_hDragging) hMove(e.clientX); });
+  window.addEventListener('mouseup',hEnd);
+  hbar.addEventListener('click',function(e){
+    if(_hDragging) return;
+    var rect=hbar.getBoundingClientRect();
+    applyPctH(((e.clientX-rect.left)/rect.width)*100);
+  });
+})();
 
   // Recording volume slider
   (function(){
@@ -6185,11 +6263,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   function showPicker(){
     if(pickerOv) return;
     pickerOv = document.createElement('div');
-    pickerOv.style.cssText = 'position:fixed;z-index:600;background:#1c1c1c;border:2px solid #444;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.5);';
+    pickerOv.style.cssText = 'position:fixed;z-index:600;background:#1c1c1c;border:2px solid #444;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:220px;';
     var br = btn.getBoundingClientRect();
-    // Position to the left of right toolbar
-    pickerOv.style.right = (window.innerWidth - br.left + 4)+'px';
-    pickerOv.style.top = Math.min(br.top, window.innerHeight-220)+'px';
+    // Position below the button, clamped within screen
+    var cTop=Math.min(br.bottom+4, window.innerHeight-240);
+    var cLeft=Math.max(4, Math.min(br.left, window.innerWidth-224));
+    pickerOv.style.top=cTop+'px';
+    pickerOv.style.left=cLeft+'px';
 
     var lbl = document.createElement('div');
     lbl.style.cssText = 'font-family:monospace;font-size:9px;color:#888;letter-spacing:1px;';
@@ -6346,36 +6426,36 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   window._colorModeActive=function(){ return colorMode; };
   window._colorModePaint=function(idx){ if(colorMode) paintTile(idx); };
 
-  document.addEventListener('touchstart',function(e){
+  // Touch: _colorModeStart called from tile touchstart interceptor
+  window._colorModeStart = function(idx, touchId, cx, cy){
     if(!colorMode) return;
-    var t=e.target;
-    while(t&&t!==document.body){
-      if(t.classList&&t.classList.contains('bt')){
-        var idx=parseInt(t.dataset.bankIdx);
-        if(!isNaN(idx)){ painting=true; _paintId=e.touches[0].identifier; lastPainted=-1; paintTile(idx); }
-        return;
-      }
-      t=t.parentElement;
-    }
-  },{passive:true});
+    painting=true; _paintId=touchId; lastPainted=-1;
+    paintTile(idx);
+  };
 
-  document.addEventListener('touchmove',function(e){
-    if(!colorMode||!painting) return;
-    for(var i=0;i<e.touches.length;i++){
-      if(e.touches[i].identifier===_paintId){
-        var el=document.elementFromPoint(e.touches[i].clientX,e.touches[i].clientY);
-        while(el&&el!==document.body){
-          if(el.classList&&el.classList.contains('bt')){
-            var idx=parseInt(el.dataset.bankIdx);
-            if(!isNaN(idx)) paintTile(idx);
-            break;
+  // touchmove on the bank container — non-passive so we can preventDefault
+  var bankEl=document.getElementById('bank');
+  if(bankEl){
+    bankEl.addEventListener('touchmove',function(e){
+      if(!colorMode||!painting) return;
+      e.preventDefault(); // stop page scroll while painting
+      for(var i=0;i<e.touches.length;i++){
+        if(e.touches[i].identifier===_paintId){
+          var el=document.elementFromPoint(e.touches[i].clientX,e.touches[i].clientY);
+          while(el&&el!==document.body){
+            if(el.classList&&el.classList.contains('bt')){
+              var idx2=parseInt(el.dataset.bankIdx);
+              if(!isNaN(idx2)) paintTile(idx2);
+              break;
+            }
+            el=el.parentElement;
           }
-          el=el.parentElement;
+          break;
         }
-        break;
       }
-    }
-  },{passive:true});
+    },{passive:false});
+    bankEl.addEventListener('touchend',function(){ painting=false; lastPainted=-1; },{passive:true});
+  }
 
   // Mouse support for PC
   document.addEventListener('mousedown',function(e){
@@ -6592,8 +6672,12 @@ window._showColorPresets=function(anchorEl){
   ov.id='_presetPicker';
   ov.style.cssText='position:fixed;z-index:700;background:#1c1c1c;border:2px solid #444;border-radius:8px;padding:10px;min-width:220px;max-width:290px;box-shadow:0 4px 20px rgba(0,0,0,.6);overflow-y:auto;max-height:70vh;';
   var br=anchorEl?anchorEl.getBoundingClientRect():{top:100,left:50,bottom:130};
-  ov.style.top=Math.min(br.bottom+6,window.innerHeight-250)+'px';
-  ov.style.left=Math.max(4,br.left)+'px';
+  // Position below anchor, clamped fully within screen
+  var topPos=Math.min(br.bottom+6, window.innerHeight-260);
+  // Clamp left so panel doesn't go off right edge (panel max-width 290px)
+  var leftPos=Math.max(4, Math.min(br.left, window.innerWidth-294));
+  ov.style.top=topPos+'px';
+  ov.style.left=leftPos+'px';
 
   function mkSection(title){
     var d=document.createElement('div');
