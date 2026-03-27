@@ -4549,7 +4549,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var sr=document.getElementById('sndRow'); if(sr) sr.style.display='';
     if(btnPro){ btnPro.style.display='none'; }
     if(!proMode){ proMode=true; if(proPanel) proPanel.style.display='flex'; buildBeatDots(); syncTracks(); updateSlotUI(); }
-    applyPctH(scaleToPct(TILE_SCALE));
+    if(window.applyPctH) window.applyPctH((TILE_SCALE-0.5)*100);
     updateUI();
   }
 
