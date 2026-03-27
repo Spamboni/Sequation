@@ -62,10 +62,10 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .bank-row{display:flex;flex-direction:row;align-items:flex-start;flex:1;}
 .bsize-col{position:relative;flex-shrink:0;width:28px;height:96px;cursor:pointer;touch-action:none;border-bottom:2px solid var(--bk);display:flex;align-items:stretch;}
 /* Horizontal version of size slider for seq toolbar */
-.bsize-col-h{position:relative;height:28px;cursor:ew-resize;touch-action:none;border:2px solid var(--bk);border-radius:3px;background:var(--w);overflow:visible;display:flex;align-items:center;}
-.bsize-col-h .sizebar-fill{position:absolute;left:0;top:0;bottom:0;background:#93c5fd;border-radius:2px 0 0 2px;}
-.bsize-col-h .sizebar-handle{position:absolute;top:-3px;bottom:-3px;width:12px;background:var(--bk);border-radius:3px;transform:translateX(-50%);z-index:3;cursor:ew-resize;}
-.bsize-col-h .sizebar-arrows{position:absolute;left:50%;transform:translateX(-50%);font-size:9px;color:var(--bk);pointer-events:none;z-index:4;white-space:nowrap;font-weight:700;}
+.bsize-col-h{position:relative;height:28px;cursor:ew-resize;touch-action:none;border:2px solid var(--bk);border-radius:3px;background:var(--w);overflow:hidden;display:flex;align-items:center;}
+.bsize-col-h .sizebar-fill{position:absolute;left:0;top:0;bottom:0;background:#93c5fd;border-radius:2px 0 0 2px;pointer-events:none;}
+.bsize-col-h .sizebar-handle{position:absolute;top:50%;width:14px;height:22px;background:var(--bk);border-radius:3px;transform:translate(-50%,-50%);z-index:3;cursor:ew-resize;pointer-events:none;}
+.bsize-col-h .sizebar-arrows{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:9px;color:var(--bk);pointer-events:none;z-index:4;white-space:nowrap;font-weight:700;opacity:0.5;}
 .sizebar-lock{display:none;}
 .seq-btns{display:none;}
 .seq-btn{height:28px;min-width:28px;font-size:13px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bk);border-radius:3px;background:var(--w);cursor:pointer;user-select:none;touch-action:manipulation;padding:0 5px;transition:background .12s;}
@@ -177,7 +177,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
   <div class="info-bar"><span class="blbl">Tap a square · then a number · tap placed to return · pinch to zoom · double-tap resets zoom</span></div>
   <div class="gscroll"><div class="grid-clip" id="gridClip"><div class="grid" id="grid"></div></div></div>
-  <div class="bank-outer"><div class="seq-toolbar" id="seqToolbar"><button class="seq-btn seq-btn-sq" id="seqPuz" style="font-size:8px;font-weight:700;flex-shrink:0;">PUZ</button><div class="bsize-col-h" id="sizeBar" style="flex:1;min-width:60px;"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">◀▶</div></div><button class="seq-btn seq-btn-sq" id="seqRec" title="Record" style="display:none;flex-shrink:0;">⏺</button><button class="seq-btn seq-btn-lg" id="seqPlay" title="Play/Stop" style="display:none;flex-shrink:0;height:36px;width:36px;font-size:18px;">▶</button><button class="seq-btn seq-btn-sq" id="seqSave" title="Save" style="display:none;flex-shrink:0;">💾</button><button class="seq-btn seq-btn-sq" id="seqLoad" title="Load" style="display:none;flex-shrink:0;">📂</button><button class="seq-btn seq-btn-sq" id="seqClear" title="Clear" style="display:none;flex-shrink:0;">🗑</button><button class="seq-btn seq-btn-sq" id="seqErase" title="Erase Beats" style="display:none;flex-shrink:0;">✂</button><button class="seq-btn seq-btn-sq" id="colorTagBtn" title="Color tiles" style="display:none;flex-shrink:0;">🎨</button><button class="seq-btn seq-btn-sq" id="copyModeBtn" title="Copy sample" style="display:none;flex-shrink:0;">📋</button></div><div class="bank-row"><div class="bsize-wrap" id="sizeSideWrap"><div class="bsize-col" id="sizeBarV"><div class="sizebar-fill" id="sizeBarFillV"></div><div class="sizebar-handle" id="sizeBarHandleV"></div><div class="sizebar-arrows" id="sizeBarArrowsV">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="width:28px;font-size:8px;">SEQ</button></div><div class="bank"><div class="btiles" id="bank"></div></div></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div>
+  <div class="bank-outer"><div class="seq-toolbar" id="seqToolbar"><button class="seq-btn seq-btn-sq" id="seqPuz" style="font-size:8px;font-weight:700;flex-shrink:0;">PUZ</button><div class="bsize-col-h" id="sizeBar" style="flex:1;min-width:60px;"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">◀▶</div></div><div id="toolbarBeat" style="width:14px;height:14px;border-radius:50%;background:#ccc;border:1.5px solid #999;flex-shrink:0;transition:background .05s,box-shadow .05s;display:none;"></div><button class="seq-btn seq-btn-sq" id="seqRec" title="Record" style="display:none;flex-shrink:0;">⏺</button><button class="seq-btn seq-btn-lg" id="seqPlay" title="Play/Stop" style="display:none;flex-shrink:0;height:36px;width:36px;font-size:18px;">▶</button><button class="seq-btn seq-btn-sq" id="seqSave" title="Save" style="display:none;flex-shrink:0;">💾</button><button class="seq-btn seq-btn-sq" id="seqLoad" title="Load" style="display:none;flex-shrink:0;">📂</button><button class="seq-btn seq-btn-sq" id="seqClear" title="Clear" style="display:none;flex-shrink:0;">🗑</button><button class="seq-btn seq-btn-sq" id="seqErase" title="Erase Beats" style="display:none;flex-shrink:0;">✂</button><button class="seq-btn seq-btn-sq" id="colorTagBtn" title="Color tiles" style="display:none;flex-shrink:0;">🎨</button><button class="seq-btn seq-btn-sq" id="copyModeBtn" title="Copy sample" style="display:none;flex-shrink:0;">📋</button></div><div class="bank-row"><div class="bsize-wrap" id="sizeSideWrap"><div class="bsize-col" id="sizeBarV"><div class="sizebar-fill" id="sizeBarFillV"></div><div class="sizebar-handle" id="sizeBarHandleV"></div><div class="sizebar-arrows" id="sizeBarArrowsV">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="width:28px;font-size:8px;">SEQ</button></div><div class="bank"><div class="btiles" id="bank"></div></div></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div>
 <div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row pro-top" style="justify-content:space-between;"><div class="pro-beats" id="proBeats" style="flex:1;justify-content:center;"></div><div style="display:flex;gap:4px;"><button id="undockBeats" title="Undock beats" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div></div><div class="pro-row"><span class="pro-lbl">BARS</span><div class="pro-bar-btns"><button class="pro-btn active" data-bars="2">2</button><button class="pro-btn" data-bars="4">4</button><button class="pro-btn" data-bars="8">8</button><button class="pro-btn" data-bars="16">16</button></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"><button class="pro-btn pro-slot active" data-slot="0">1</button><button class="pro-btn pro-slot" data-slot="1">2</button><button class="pro-btn pro-slot" data-slot="2">3</button><button class="pro-btn pro-slot" data-slot="3">4</button><button class="pro-btn pro-slot" data-slot="4">5</button><button class="pro-btn pro-slot" data-slot="5">6</button><button class="pro-btn pro-slot" data-slot="6">7</button><button class="pro-btn pro-slot" data-slot="7">8</button></div></div><div class="pro-row" id="recVolRow" style="justify-content:flex-end;gap:6px;"><span class="pro-lbl" style="font-size:7px;white-space:nowrap;">REC VOL</span><input type="range" id="_recVolSlider" min="0.05" max="1" step="0.05" value="1" style="width:130px;accent-color:#ef4444;"><span class="pro-lbl" id="_recVolLbl" style="font-size:7px;min-width:28px;">100%</span><button id="_recVolBoost" title="Enable boost above 100%" style="font-family:monospace;font-size:7px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">+</button><button id="undockRecVol" title="Undock REC VOL" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:8px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;"><div style="display:flex;align-items:center;justify-content:space-between;"><span class="pro-lbl">MASTER EQ</span><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div class="pro-row" id="eraseRow" style="display:none;background:#fff3e0;border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#c2410c;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:#555;font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:#f97316;border-color:#c2410c;color:#fff;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:#666;"></span></div></div></div>
   <div class="bot">
     <button class="bbtn bundo" id="undo" disabled>Undo</button>
@@ -3516,6 +3516,9 @@ function renderBank(){
       // Long-press for sample recording — measured on touchend
       var _holdStartX=0, _holdStartY=0, _holdTimer=null, _holdFired=false;
       el.addEventListener('touchstart',function(e){
+        // Two fingers = native scroll — don't intercept
+        if(e.touches.length >= 2){ return; }
+
         if(window._eraseIsActive && window._eraseIsActive()){
           e.preventDefault(); e.stopPropagation();
           window._eraseToggleBank(idx); return;
@@ -3596,8 +3599,12 @@ window._updateSampleIcons=function(){
     if(userSamples[idx]&&!existing){
       t.style.position='relative';
       var mic=document.createElement('span');
-      mic.className='bt-mic'; mic.textContent='🎤';
+      mic.className='bt-mic';
+      mic.textContent=(sampleMeta[idx]&&sampleMeta[idx]._isStock)?'🎵':'🎤';
       t.appendChild(mic);
+    } else if(userSamples[idx]&&existing){
+      // Update icon in case stock status changed
+      existing.textContent=(sampleMeta[idx]&&sampleMeta[idx]._isStock)?'🎵':'🎤';
     } else if(!userSamples[idx]&&existing){
       t.removeChild(existing);
     }
@@ -4056,9 +4063,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
 // Custom size bar — drag up to increase, down to decrease
 (function(){
-  var bar=document.getElementById('sizeBar');
-  var fill=document.getElementById('sizeBarFill');
-  var handle=document.getElementById('sizeBarHandle');
+  var bar=document.getElementById('sizeBarV');
+  var fill=document.getElementById('sizeBarFillV');
+  var handle=document.getElementById('sizeBarHandleV');
   var lockBtn=document.getElementById('sizeBarLock');
   if(!bar||!fill)return;
 
@@ -4273,6 +4280,19 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(!container) return;
     var dots = container.querySelectorAll('.pro-beat');
     dots.forEach(function(d,i){ d.classList.toggle('active', i===beat); });
+    // Mirror to toolbar beat dot
+    var tb=document.getElementById('toolbarBeat');
+    if(tb && tb.style.display!=='none'){
+      tb.style.background='#ef4444';
+      tb.style.border='1.5px solid #991b1b';
+      tb.style.boxShadow='0 0 6px #ef4444';
+      clearTimeout(tb._flashT);
+      tb._flashT=setTimeout(function(){
+        tb.style.background='#ccc';
+        tb.style.border='1.5px solid #999';
+        tb.style.boxShadow='';
+      },80);
+    }
   }
 
   // ── Quantize helper ──────────────────────────────────────
@@ -4542,7 +4562,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     seqVisible = true;
     var _tb=document.getElementById('seqToolbar'); if(_tb) _tb.classList.add('active');
     var sw=document.getElementById('sizeSideWrap'); if(sw) sw.style.display='none';
-    ['seqRec','seqPlay','seqClear','seqSave','seqLoad','seqErase','copyModeBtn','colorTagBtn'].forEach(function(id){
+    ['seqRec','seqPlay','seqClear','seqSave','seqLoad','seqErase','copyModeBtn','colorTagBtn','toolbarBeat'].forEach(function(id){
       var el=document.getElementById(id); if(el) el.style.display='';
     });
     var sl=document.getElementById('sndLabel'); if(sl) sl.style.display='';
@@ -4557,7 +4577,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     seqVisible = false;
     var _tb2=document.getElementById('seqToolbar'); if(_tb2) _tb2.classList.remove('active');
     var sw2=document.getElementById('sizeSideWrap'); if(sw2) sw2.style.display='';
-    ['seqRec','seqPlay','seqClear','seqSave','seqLoad','seqErase','copyModeBtn','colorTagBtn'].forEach(function(id){
+    ['seqRec','seqPlay','seqClear','seqSave','seqLoad','seqErase','copyModeBtn','colorTagBtn','toolbarBeat'].forEach(function(id){
       var el=document.getElementById(id); if(el) el.style.display='none';
     });
     var sl=document.getElementById('sndLabel'); if(sl) sl.style.display='none';
@@ -4745,7 +4765,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     pct=Math.max(0,Math.min(100,pct));
     TILE_SCALE=pctToScaleH(pct);
     if(hfill){ hfill.style.width=pct+'%'; }
-    if(hhandle){ hhandle.style.left=pct+'%'; }
+    if(hhandle){ hhandle.style.left=pct+'%'; } // transform:translate(-50%,-50%) centers it
     if(PZ) renderBank();
     // Sync vertical slider display
     var vfill=document.getElementById('sizeBarFillV');
@@ -4755,6 +4775,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(vfill) vfill.style.height=vpct+'%';
     if(vhandle) vhandle.style.bottom=vpct+'%';
     if(varrows) varrows.style.bottom=vpct+'%';
+    // Sync mini beat light in toolbar
+    if(window._syncToolbarBeat) window._syncToolbarBeat();
   }
   window.applyPctH=applyPctH;
 
@@ -4921,7 +4943,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
           var m={};
           Object.keys(sampleMeta).forEach(function(k){
             var s=sampleMeta[k];
-            m[k]={attack:s.attack,release:s.release,atkCurve:s.atkCurve,relCurve:s.relCurve,volume:s.volume,bass:s.bass||0,treble:s.treble||0,trimStart:s.trimStart||0,trimEnd:s.trimEnd!==undefined?s.trimEnd:1};
+            m[k]={attack:s.attack,release:s.release,atkCurve:s.atkCurve,relCurve:s.relCurve,volume:s.volume,bass:s.bass||0,treble:s.treble||0,trimStart:s.trimStart||0,trimEnd:s.trimEnd!==undefined?s.trimEnd:1,eqBands:s.eqBands||null,_aliasIdx:s._aliasIdx};
           });
           return m;
         })(),
@@ -5500,34 +5522,254 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     envRow.appendChild(mkEnvRow('RELEASE','release','relCurve'));
 
     // ── EQ ──
-    var eqLbl=mk('div','font-size:9px;letter-spacing:1px;color:#888;margin-top:2px;','EQ');
-    var eqRow=mk('div','display:flex;gap:14px;flex-wrap:wrap;justify-content:center;');
+    var eqLbl=mk('div','font-size:9px;letter-spacing:1px;color:#888;margin-top:2px;','PARAMETRIC EQ');
 
-    function mkEQSlider(label, metaKey){
-      var wrap=mk('div','display:flex;flex-direction:column;align-items:center;gap:3px;');
-      var lbl=mk('div','font-size:9px;color:#888;',label);
-      var row=mk('div','display:flex;align-items:center;gap:6px;');
-      var inp=mk('input'); inp.type='range'; inp.min=-100; inp.max=100; inp.step=1;
-      inp.value=Math.round((meta[metaKey]||0)*100);
-      inp.style.cssText='width:90px;accent-color:#06b6d4;';
-      var pct=Math.round((meta[metaKey]||0)*100);
-      var valLbl=mk('div','font-size:10px;color:#ccc;min-width:36px;',(pct>0?'+':'')+pct+'%');
-      inp.oninput=function(){
-        meta[metaKey]=parseInt(inp.value)/100;
-        var p=parseInt(inp.value);
-        valLbl.textContent=(p>0?'+':'')+p+'%';
-        applyProcessing();
-      };
-      // Zero button
-      var zeroBtn=mkBtn('0','font-size:8px;padding:2px 5px;border:1px solid #666;border-radius:3px;background:transparent;color:#888;');
-      zeroBtn.onclick=function(){ inp.value=0; meta[metaKey]=0; valLbl.textContent='0%'; applyProcessing(); };
-      row.appendChild(inp); row.appendChild(valLbl); row.appendChild(zeroBtn);
-      wrap.appendChild(lbl); wrap.appendChild(row);
-      return wrap;
+    // ── EQ bands: [{type,freq,gain,Q,label,color}] stored in meta.eqBands ──
+    var EQ_DEFAULTS=[
+      {type:'lowshelf',  freq:100,  gain:0, Q:0.7, label:'LOW',    color:'#22c55e'},
+      {type:'peaking',   freq:500,  gain:0, Q:1.0, label:'LO-MID', color:'#06b6d4'},
+      {type:'peaking',   freq:3000, gain:0, Q:1.0, label:'HI-MID', color:'#f97316'},
+      {type:'highshelf', freq:8000, gain:0, Q:0.7, label:'HIGH',   color:'#a855f7'},
+    ];
+    if(!meta.eqBands) meta.eqBands=JSON.parse(JSON.stringify(EQ_DEFAULTS));
+    // Ensure all bands present
+    while(meta.eqBands.length<EQ_DEFAULTS.length){
+      meta.eqBands.push(JSON.parse(JSON.stringify(EQ_DEFAULTS[meta.eqBands.length])));
     }
 
-    eqRow.appendChild(mkEQSlider('BASS',  'bass'));
-    eqRow.appendChild(mkEQSlider('TREBLE','treble'));
+    // ── Frequency response canvas ──
+    var eqCanvas=document.createElement('canvas');
+    eqCanvas.width=280; eqCanvas.height=80;
+    eqCanvas.style.cssText='width:280px;height:80px;border:1.5px solid #333;border-radius:4px;background:#111;display:block;cursor:crosshair;touch-action:none;';
+
+    function freqToX(f){ return eqCanvas.width*(Math.log10(f/20)/Math.log10(20000/20)); }
+    function xToFreq(x){ return 20*Math.pow(10,(x/eqCanvas.width)*Math.log10(20000/20)); }
+    function gainToY(g){ return eqCanvas.height/2 - (g/20)*(eqCanvas.height*0.4); }
+
+    function getResponse(bands, numPoints){
+      var freqs=[]; var out=[];
+      for(var i=0;i<numPoints;i++){
+        freqs.push(20*Math.pow(10,(i/(numPoints-1))*Math.log10(20000/20)));
+        out.push(0);
+      }
+      bands.forEach(function(b){
+        if(b.gain===0) return;
+        var f0=b.freq, g=b.gain, Q=Math.max(0.1,b.Q||0.7);
+        var A=Math.pow(10,g/40);
+        freqs.forEach(function(f,i){
+          var w=f/f0;
+          var db;
+          if(b.type==='lowshelf'){
+            // low shelf magnitude
+            var num=(A*A*(w*w)+2*A*(1/Math.sqrt(2))*w+1);
+            var den=(w*w+2*(1/Math.sqrt(2))*w+1);
+            // simplified: use dB approximation
+            db=g/(1+Math.pow(f/f0,2));
+          } else if(b.type==='highshelf'){
+            db=g/(1+Math.pow(f0/f,2));
+          } else {
+            // peaking bell
+            var bw=f0/Q;
+            db=g/(1+Math.pow((f*f-f0*f0)/(f*bw),2));
+          }
+          out[i]+=db;
+        });
+      });
+      return {freqs:freqs, dbs:out};
+    }
+
+    function drawEQCurve(){
+      var ctx=eqCanvas.getContext('2d');
+      var W=eqCanvas.width, H=eqCanvas.height;
+      ctx.clearRect(0,0,W,H);
+      // Grid
+      ctx.strokeStyle='#222'; ctx.lineWidth=1;
+      [63,250,1000,4000,16000].forEach(function(f){
+        var x=freqToX(f); ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();
+      });
+      [-15,-9,-3,3,9,15].forEach(function(g){
+        var y=gainToY(g); ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+      });
+      // 0dB line
+      ctx.strokeStyle='#444'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(0,H/2); ctx.lineTo(W,H/2); ctx.stroke();
+
+      // Per-band ghost curves
+      meta.eqBands.forEach(function(b,bi){
+        if(b.gain===0) return;
+        var r=getResponse([b],120);
+        ctx.strokeStyle=EQ_DEFAULTS[bi].color+'88';
+        ctx.lineWidth=1; ctx.beginPath();
+        r.freqs.forEach(function(f,i){
+          var x=freqToX(f), y=gainToY(r.dbs[i]);
+          i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+      });
+
+      // Combined response curve
+      var r=getResponse(meta.eqBands,200);
+      ctx.strokeStyle='#f5f0e8'; ctx.lineWidth=2;
+      ctx.beginPath();
+      r.freqs.forEach(function(f,i){
+        var x=freqToX(f), y=Math.max(2,Math.min(H-2,gainToY(r.dbs[i])));
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+
+      // Band handles (draggable dots)
+      meta.eqBands.forEach(function(b,bi){
+        var x=freqToX(b.freq), y=gainToY(b.gain);
+        ctx.fillStyle=EQ_DEFAULTS[bi].color;
+        ctx.strokeStyle='#fff'; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fill(); ctx.stroke();
+        // Label
+        ctx.fillStyle=EQ_DEFAULTS[bi].color;
+        ctx.font='bold 7px monospace';
+        ctx.textAlign='center';
+        ctx.fillText(EQ_DEFAULTS[bi].label, x, y-9);
+      });
+    }
+
+    // ── Canvas drag to move band handles ──
+    var _eqDrag=-1, _eqDragStartX=0, _eqDragStartY=0;
+
+    function getCanvasXY(e){
+      var r=eqCanvas.getBoundingClientRect();
+      var touch=e.touches?e.touches[0]:e;
+      return {x:(touch.clientX-r.left)*(eqCanvas.width/r.width),
+              y:(touch.clientY-r.top)*(eqCanvas.height/r.height)};
+    }
+
+    function nearestBand(x,y){
+      var best=-1, bestD=999;
+      meta.eqBands.forEach(function(b,i){
+        var bx=freqToX(b.freq), by=gainToY(b.gain);
+        var d=Math.sqrt((x-bx)*(x-bx)+(y-by)*(y-by));
+        if(d<bestD){ bestD=d; best=i; }
+      });
+      return bestD<24?best:-1;
+    }
+
+    function eqPointerStart(e){
+      e.preventDefault();
+      var p=getCanvasXY(e);
+      _eqDrag=nearestBand(p.x,p.y);
+      if(_eqDrag<0){
+        // Click empty area — snap nearest band freq there
+        var nb=nearestBand(p.x,eqCanvas.height/2);
+        if(nb<0) nb=0;
+        meta.eqBands[nb].freq=Math.max(20,Math.min(18000,xToFreq(p.x)));
+        meta.eqBands[nb].gain=Math.max(-18,Math.min(18,(eqCanvas.height/2-p.y)/(eqCanvas.height*0.4)*20));
+        _eqDrag=nb;
+        drawEQCurve(); updateBandControls(); applyProcessing();
+      }
+    }
+    function eqPointerMove(e){
+      if(_eqDrag<0) return;
+      e.preventDefault();
+      var p=getCanvasXY(e);
+      meta.eqBands[_eqDrag].freq=Math.max(20,Math.min(18000,xToFreq(p.x)));
+      meta.eqBands[_eqDrag].gain=Math.max(-18,Math.min(18,(eqCanvas.height/2-p.y)/(eqCanvas.height*0.4)*20));
+      meta.eqBands[_eqDrag].gain=Math.round(meta.eqBands[_eqDrag].gain*10)/10;
+      meta.eqBands[_eqDrag].freq=Math.round(meta.eqBands[_eqDrag].freq);
+      drawEQCurve(); updateBandControls(); applyProcessing();
+    }
+    function eqPointerEnd(){ _eqDrag=-1; }
+
+    eqCanvas.addEventListener('mousedown',eqPointerStart);
+    eqCanvas.addEventListener('mousemove',eqPointerMove);
+    eqCanvas.addEventListener('mouseup',eqPointerEnd);
+    eqCanvas.addEventListener('touchstart',eqPointerStart,{passive:false});
+    eqCanvas.addEventListener('touchmove',eqPointerMove,{passive:false});
+    eqCanvas.addEventListener('touchend',eqPointerEnd,{passive:true});
+
+    // ── Per-band detail controls ──
+    var bandCtrlWrap=mk('div','display:flex;flex-direction:column;gap:4px;width:280px;margin-top:4px;');
+
+    function mkKnobRow(label,min,max,step,val,color,onchange){
+      var row=mk('div','display:flex;align-items:center;gap:4px;');
+      var lbl=mk('div','font-size:8px;color:'+color+';min-width:28px;text-align:right;letter-spacing:.5px;',label);
+      var inp=document.createElement('input'); inp.type='range';
+      inp.min=min; inp.max=max; inp.step=step; inp.value=val;
+      inp.style.cssText='flex:1;accent-color:'+color+';height:16px;';
+      var valLbl=mk('div','font-size:9px;color:#ccc;min-width:38px;text-align:right;',val);
+      inp.oninput=function(){ valLbl.textContent=parseFloat(inp.value); onchange(parseFloat(inp.value)); drawEQCurve(); applyProcessing(); };
+      row.appendChild(lbl); row.appendChild(inp); row.appendChild(valLbl);
+      return {row:row,inp:inp,valLbl:valLbl};
+    }
+
+    var bandWidgets=[];
+    function buildBandControls(){
+      bandCtrlWrap.innerHTML='';
+      bandWidgets=[];
+      meta.eqBands.forEach(function(b,bi){
+        var col=EQ_DEFAULTS[bi].color;
+        var section=mk('div','border:1px solid '+col+'44;border-radius:4px;padding:4px 6px;background:#1a1a1a;');
+        var hdr=mk('div','display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;');
+        var nm=mk('div','font-size:9px;font-weight:700;color:'+col+';letter-spacing:1px;',EQ_DEFAULTS[bi].label+' ('+b.type+')');
+        var resetBtn=mkBtn('0','font-size:8px;padding:1px 5px;border:1px solid #555;border-radius:3px;background:transparent;color:#888;');
+        resetBtn.onclick=(function(i){ return function(){
+          meta.eqBands[i]=JSON.parse(JSON.stringify(EQ_DEFAULTS[i]));
+          buildBandControls(); drawEQCurve(); applyProcessing();
+        };})(bi);
+        hdr.appendChild(nm); hdr.appendChild(resetBtn);
+        section.appendChild(hdr);
+
+        var fw=mkKnobRow('FREQ',20,18000,1,b.freq,col,function(v){ meta.eqBands[bi].freq=v; updateBandControls(); });
+        var gw=mkKnobRow('GAIN',-18,18,0.5,b.gain,col,function(v){ meta.eqBands[bi].gain=v; updateBandControls(); });
+        var qw; 
+        if(b.type==='peaking'){
+          qw=mkKnobRow('Q',0.1,10,0.1,b.Q,col,function(v){ meta.eqBands[bi].Q=v; });
+        }
+        // Display freq in Hz/kHz
+        var fv=b.freq>=1000?(b.freq/1000).toFixed(1)+'k':b.freq+'Hz';
+        fw.valLbl.textContent=fv;
+        fw.inp.addEventListener('input',function(){ 
+          var v2=parseFloat(fw.inp.value);
+          fw.valLbl.textContent=v2>=1000?(v2/1000).toFixed(1)+'k':v2+'Hz';
+        });
+        gw.valLbl.textContent=(b.gain>0?'+':'')+b.gain.toFixed(1)+'dB';
+        gw.inp.addEventListener('input',function(){
+          var v2=parseFloat(gw.inp.value);
+          gw.valLbl.textContent=(v2>0?'+':'')+v2.toFixed(1)+'dB';
+        });
+
+        section.appendChild(fw.row);
+        section.appendChild(gw.row);
+        if(qw) section.appendChild(qw.row);
+        bandCtrlWrap.appendChild(section);
+        bandWidgets.push({fw:fw,gw:gw,qw:qw});
+      });
+    }
+
+    function updateBandControls(){
+      // Update sliders to match meta without full rebuild
+      meta.eqBands.forEach(function(b,bi){
+        var w=bandWidgets[bi]; if(!w) return;
+        w.fw.inp.value=b.freq;
+        var fv=b.freq>=1000?(b.freq/1000).toFixed(1)+'k':Math.round(b.freq)+'Hz';
+        w.fw.valLbl.textContent=fv;
+        w.gw.inp.value=b.gain;
+        w.gw.valLbl.textContent=(b.gain>0?'+':'')+b.gain.toFixed(1)+'dB';
+        if(w.qw){ w.qw.inp.value=b.Q; w.qw.valLbl.textContent=b.Q; }
+      });
+    }
+
+    // Flat response reset
+    var eqResetRow=mk('div','display:flex;justify-content:flex-end;width:280px;');
+    var eqResetBtn=mkBtn('FLAT','font-size:8px;padding:3px 8px;border:1px solid #555;border-radius:3px;background:transparent;color:#888;');
+    eqResetBtn.onclick=function(){
+      meta.eqBands=JSON.parse(JSON.stringify(EQ_DEFAULTS));
+      buildBandControls(); drawEQCurve(); applyProcessing();
+    };
+    eqResetRow.appendChild(eqResetBtn);
+
+    // Init
+    buildBandControls();
+    drawEQCurve();
+
+    var eqRow = {_canvas:eqCanvas, _controls:bandCtrlWrap, _resetRow:eqResetRow};
 
     // ── Sample volume ──
     var volLbl=mk('div','font-size:9px;letter-spacing:1px;color:#888;margin-top:2px;','SAMPLE VOLUME');
@@ -5703,7 +5945,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     ov.appendChild(trimLbl);
     ov.appendChild(waveWrap);
     ov.appendChild(envLbl); ov.appendChild(envRow);
-    ov.appendChild(eqLbl); ov.appendChild(eqRow);
+    ov.appendChild(eqLbl); ov.appendChild(eqRow._canvas); ov.appendChild(eqRow._resetRow); ov.appendChild(eqRow._controls);
     ov.appendChild(volLbl); ov.appendChild(volRow);
     ov.appendChild(bottomRow);
     document.body.appendChild(ov);
@@ -5745,41 +5987,43 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         }
       }
 
-      // Step 2: Apply EQ via offline AudioContext render
-      var bassDb=meta.bass||0;
-      var trebleDb=meta.treble||0;
-      if(bassDb===0 && trebleDb===0){
-        // No EQ needed — use envelope buffer directly
+      // Step 2: Apply parametric EQ via OfflineAudioContext
+      var bands=meta.eqBands||[];
+      var hasEQ=bands.some(function(b){ return b.gain!==0; });
+      var isStock=meta._isStock||false;
+      if(!hasEQ){
         userSamples[tileIdx]=envBuf;
+        sampleMeta[tileIdx]=meta;
         if(window._updateSampleIcons) window._updateSampleIcons();
-        existingLbl.textContent='🎤 Sample saved!'; existingLbl.style.color='#4ade80';
+        existingLbl.textContent=isStock?'🎵 Stock + effects saved!':'🎤 Sample saved!';
+        existingLbl.style.color='#4ade80';
         testBtn.style.display='';
         statusEl.textContent='Tap TEST to preview · REC to re-record'; statusEl.style.color='#aaa';
         drawWaveform();
         return;
       }
-      // Use OfflineAudioContext to run EQ filters
       try{
         var offCtx=new OfflineAudioContext(nch,len,sr);
         var src=offCtx.createBufferSource();
         src.buffer=envBuf;
-        // Low shelf for bass
-        var bass=offCtx.createBiquadFilter();
-        bass.type='lowshelf'; bass.frequency.value=200; bass.gain.value=bassDb*20; // -20 to +20 dB
-        // High shelf for treble
-        var treble=offCtx.createBiquadFilter();
-        treble.type='highshelf'; treble.frequency.value=4000; treble.gain.value=trebleDb*20;
-        src.connect(bass); bass.connect(treble); treble.connect(offCtx.destination);
+        var lastNode=src;
+        bands.forEach(function(b){
+          if(b.gain===0) return;
+          var f=offCtx.createBiquadFilter();
+          f.type=b.type; f.frequency.value=b.freq; f.gain.value=b.gain;
+          if(b.type==='peaking') f.Q.value=Math.max(0.1,b.Q||1.0);
+          lastNode.connect(f); lastNode=f;
+        });
+        lastNode.connect(offCtx.destination);
         src.start(0);
         offCtx.startRendering().then(function(rendered){
           userSamples[tileIdx]=rendered;
           if(window._updateSampleIcons) window._updateSampleIcons();
-          existingLbl.textContent='🎤 Sample saved!'; existingLbl.style.color='#4ade80';
+          existingLbl.textContent=isStock?'🎵 Stock + effects saved!':'🎤 Sample saved!'; existingLbl.style.color='#4ade80';
           testBtn.style.display='';
           statusEl.textContent='Tap TEST to preview · REC to re-record'; statusEl.style.color='#aaa';
           drawWaveform();
         }).catch(function(){
-          // Fallback — save without EQ
           userSamples[tileIdx]=envBuf;
           if(window._updateSampleIcons) window._updateSampleIcons();
           testBtn.style.display='';
@@ -5794,6 +6038,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // ── Record ──
     function refreshEnvSliders(){
       if(volInp){ volInp.value=Math.round(meta.volume*100); volValLbl.textContent=volInp.value+'%'; }
+      if(!meta.eqBands) meta.eqBands=JSON.parse(JSON.stringify(EQ_DEFAULTS));
+      if(typeof buildBandControls==='function'){ buildBandControls(); drawEQCurve(); }
       drawWaveform();
     }
 
@@ -5883,27 +6129,31 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       drawWaveform();
     } else if(!userSamples[tileIdx] && !rawBuffer){
       // Stock sound — render via OfflineAudioContext for waveform display
-      drawWaveform(); // draws flat line while rendering
+      meta._isStock = true; // flag so applyProcessing knows source
+      existingLbl.textContent='🎵 Rendering preview...';
+      existingLbl.style.color='#06b6d4';
+      drawWaveform(); // flat line while rendering
       (function(){
-        var dur=1.2, sr=AC.sampleRate;
+        var dur=1.5, sr=AC.sampleRate;
         try{
           var offCtx=new OfflineAudioContext(1,Math.ceil(sr*dur),sr);
-          // Patch: temporarily make _bsG and _bsN route to offCtx
           var _origGMD=getMasterDest;
           getMasterDest=function(){ return offCtx.destination; };
           window._bsNVol=1.0;
-          // Render the sound
-          try{ playBankSound(tileIdx, 1.0); }catch(e){}
+          // Use the actual play idx (follow alias if set)
+          var playIdx=(meta._aliasIdx!==undefined)?meta._aliasIdx:tileIdx;
+          try{ playBankSound(playIdx, 1.0); }catch(e){}
           getMasterDest=_origGMD;
-
           offCtx.startRendering().then(function(rendered){
-            if(!document.getElementById('_sampleOv')) return; // overlay closed
+            if(!document.getElementById('_sampleOv')) return;
             rawBuffer=rendered;
-            existingLbl.textContent='🎵 Stock sound preview';
+            meta._stockRawBuffer=rendered; // keep original stock render
+            existingLbl.textContent='🎵 Stock sound';
             existingLbl.style.color='#06b6d4';
+            testBtn.style.display='';
             drawWaveform();
-          }).catch(function(){});
-        }catch(e){}
+          }).catch(function(){ existingLbl.textContent='🎵 Stock sound (preview unavailable)'; });
+        }catch(e){ existingLbl.textContent='🎵 Stock sound'; }
       })();
     } else {
       drawWaveform();
@@ -6435,6 +6685,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   if(bankEl){
     bankEl.addEventListener('touchmove',function(e){
       if(!colorMode||!painting) return;
+      if(e.touches.length >= 2) return; // two fingers = scroll
       e.preventDefault(); // stop page scroll while painting
       for(var i=0;i<e.touches.length;i++){
         if(e.touches[i].identifier===_paintId){
