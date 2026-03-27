@@ -1,0 +1,18 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Sequation",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Sequation",
+  "start_url": "/https://spamboni.github.io/Sequation/Sequation.html",
+  "theme_color": "#1c1c1c",
+  "id": "Sequation",
+  "description": "Math puzzle game",
+  "lang": "en",
+  "categories": [
+    "games",
+    "music"
+  ]
+}
