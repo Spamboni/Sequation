@@ -110,6 +110,13 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .bt{min-width:44px;height:44px;padding:0 8px;border:2px solid var(--br);background:var(--w);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:2px 2px 0 var(--br);transition:transform 0.04s,box-shadow 0.04s,background 0.1s;touch-action:pan-y;}
 .bt.pressed{transform:translate(2px,2px)!important;box-shadow:0 0 0 var(--br)!important;}
 .bt.active-flash{background:#ef4444!important;color:#fff!important;border-color:#991b1b!important;}
+@keyframes bt-spin{
+  0%  {transform:rotate(0deg) scale(1);}
+  40% {transform:rotate(200deg) scale(0.75);}
+  70% {transform:rotate(320deg) scale(0.82);}
+  100%{transform:rotate(360deg) scale(1);}
+}
+.bt.spinning{animation:bt-spin 380ms cubic-bezier(0.25,0.46,0.45,0.94) forwards;box-shadow:none!important;}
 /* particles via canvas */
 .bt-mic{position:absolute;top:2px;left:2px;width:5px;height:5px;border-radius:50%;pointer-events:none;}
 .bt:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--br)!important;transition:transform 0.04s,box-shadow 0.04s;}
@@ -3622,8 +3629,14 @@ function renderBank(){
           // Wide variance: some die quickly, some linger — gives organic staggered decay
           var life=Math.floor(LIFETIME*(0.3+Math.random()*0.7))+Math.floor(Math.random()*15);
           // 0.3*55=16 min, 1.0*55+15=70 max → roughly 16-70 frames, heavily random
+          // shape: 0=circle(30%), 1=jagged(50%), 2=coal(20%)
+          var shapeR=Math.random();
+          var shape=shapeR<0.3?0:shapeR<0.8?1:2;
+          var sides=3+Math.floor(Math.random()*3); // 3,4,5 sides
+          var radii=[]; for(var ri=0;ri<sides;ri++) radii.push(Math.random());
           particles.push({x:px,y:py,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,
-            size:1.5+Math.random()*2.5,grey:grey,age:0,life:life,dead:false});
+            size:1.5+Math.random()*2.5,grey:grey,age:0,life:life,dead:false,
+            shape:shape,sides:sides,radii:radii,rot:Math.random()*Math.PI*2});
         }
 
         // ── Animation loop ──
@@ -3666,23 +3679,52 @@ function renderBank(){
             var t=pt.age/pt.life;
             // Fade completes at 75% of lifetime — still has motion when gone
             var tFade=Math.min(t/0.75,1.0);
-            var op=Math.pow(1-tFade,1.2)*0.95;
+            var op=Math.pow(1-tFade,1.2)*0.75;
             if(op<=0.015){ pt.dead=true; continue; }
 
             // Asymmetric clip: top/left=2px (border only), right/bottom=4px (border+shadow)
             var inside=false;
             for(var r=0;r<tileRects.length;r++){
               var tr=tileRects[r];
-              if(pt.x>tr.x-2&&pt.x<tr.x+tr.w+4&&pt.y>tr.y-2&&pt.y<tr.y+tr.h+4){inside=true;break;}
+              if(pt.x>tr.x-1&&pt.x<tr.x+tr.w+3&&pt.y>tr.y-1&&pt.y<tr.y+tr.h+3){inside=true;break;}
             }
             if(inside){alive=true;continue;}
 
             var c=pt.grey;
             ctx.globalAlpha=op;
-            ctx.fillStyle='rgb('+c+','+c+','+c+')';
-            ctx.beginPath();
-            ctx.arc(pt.x,pt.y,pt.size/2,0,Math.PI*2);
-            ctx.fill();
+            var r=pt.size/2;
+            if(pt.shape===0){
+              // Perfect circle
+              ctx.fillStyle='rgb('+c+','+c+','+c+')';
+              ctx.beginPath();
+              ctx.arc(pt.x,pt.y,r,0,Math.PI*2);
+              ctx.fill();
+            } else if(pt.shape===1){
+              // Jagged polygon (3-5 sides, uneven radii)
+              ctx.fillStyle='rgb('+c+','+c+','+c+')';
+              ctx.beginPath();
+              var sides=pt.sides;
+              for(var s=0;s<sides;s++){
+                var a=pt.rot+(s/sides)*Math.PI*2;
+                var rr=r*(0.55+pt.radii[s]*0.7);
+                var nx=pt.x+Math.cos(a)*rr;
+                var ny=pt.y+Math.sin(a)*rr;
+                s===0?ctx.moveTo(nx,ny):ctx.lineTo(nx,ny);
+              }
+              ctx.closePath();
+              ctx.fill();
+            } else {
+              // Hot coal: dark outer, bright hot center
+              var grad=ctx.createRadialGradient(pt.x,pt.y,0,pt.x,pt.y,r*1.2);
+              var bright=Math.min(255,c+140);
+              grad.addColorStop(0,'rgba('+bright+','+bright+','+bright+',1)');
+              grad.addColorStop(0.45,'rgba('+c+','+c+','+c+',0.9)');
+              grad.addColorStop(1,'rgba('+c+','+c+','+c+',0)');
+              ctx.fillStyle=grad;
+              ctx.beginPath();
+              ctx.arc(pt.x,pt.y,r*1.2,0,Math.PI*2);
+              ctx.fill();
+            }
             alive=true;
           }
 
@@ -3702,12 +3744,22 @@ function renderBank(){
       function doSound(){
         playBankSound(sndIdx, recVolume);
         if(window._seqNoteOn) _seqNoteOn(sndIdx, idx);
-        // Press animation — adds offset then restores
-        el.classList.add('pressed','active-flash');
-        spawnParticles(el);
-        setTimeout(function(){
-          el.classList.remove('pressed','active-flash');
-        },120);
+        // Spin animation for first 10 tiles only (test)
+        if(idx < 10){
+          el.classList.remove('spinning'); // reset if already spinning
+          void el.offsetWidth; // force reflow so animation restarts
+          el.classList.add('spinning','active-flash');
+          spawnParticles(el);
+          setTimeout(function(){
+            el.classList.remove('spinning','active-flash');
+          },400);
+        } else {
+          el.classList.add('pressed','active-flash');
+          spawnParticles(el);
+          setTimeout(function(){
+            el.classList.remove('pressed','active-flash');
+          },120);
+        }
       }
       // Long-press for sample recording — measured on touchend
       var _holdStartX=0, _holdStartY=0, _holdTimer=null, _holdFired=false;
