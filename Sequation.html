@@ -110,11 +110,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .bt{min-width:44px;height:44px;padding:0 8px;border:2px solid var(--br);background:var(--w);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:2px 2px 0 var(--br);transition:transform 0.04s,box-shadow 0.04s,background 0.1s;touch-action:pan-y;}
 .bt.pressed{transform:translate(2px,2px)!important;box-shadow:0 0 0 var(--br)!important;}
 .bt.active-flash{background:#ef4444!important;color:#fff!important;border-color:#991b1b!important;}
-.bt-particle{position:fixed;pointer-events:none;z-index:9999;border-radius:50%;opacity:1;}
-@keyframes bt-fly{
-  0%  {transform:translate(0,0) scale(1);opacity:0.9;}
-  100%{transform:translate(var(--px),var(--py)) scale(0);opacity:0;}
-}
+/* particles via canvas */
 .bt-mic{position:absolute;top:2px;left:2px;width:5px;height:5px;border-radius:50%;pointer-events:none;}
 .bt:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--br)!important;transition:transform 0.04s,box-shadow 0.04s;}
 .bt.used{opacity:.20;cursor:pointer;pointer-events:all;box-shadow:none;}
@@ -3510,7 +3506,7 @@ function applyTileColor(tile, idx){
   // When tiles are tight (gap < ~4px), box-shadow gets hidden behind neighbours.
   // Switch to border mode: top+left grey, bottom+right colored — stays visible.
   var tileGap = Math.round(6 * TILE_SCALE * TILE_GAP_MULT);
-  var tight = (tileGap < 4);
+  var tight = (tileGap === 0);
   if(col){
     if(tight){
       // Border mode: top/left neutral grey, bottom/right show color
@@ -3559,52 +3555,151 @@ function renderBank(){
       // Sound+flash function — used by both touch and click paths
       function spawnParticles(el){
         var tileGap=Math.round(6*TILE_SCALE*TILE_GAP_MULT);
-        if(tileGap < 3) return;
-        var rect=el.getBoundingClientRect();
-        var col=tileColors[idx]||'#ef4444';
-        var colors=[col,'#fbbf24','#f5f0e8','#ef4444','#fde68a','#d97706','#fff'];
-        var count=16+Math.floor(Math.random()*8); // 16-23 particles
-        for(var p=0;p<count;p++){
-          // Pick a random point on the tile perimeter (edges only)
-          var side=Math.floor(Math.random()*4); // 0=top,1=right,2=bottom,3=left
-          var ex,ey,outAngle;
-          if(side===0){       // top edge
-            ex=rect.left+Math.random()*rect.width;
-            ey=rect.top;
-            outAngle=-Math.PI/2 + (Math.random()-0.5)*Math.PI*0.8;
-          } else if(side===1){ // right edge
-            ex=rect.right;
-            ey=rect.top+Math.random()*rect.height;
-            outAngle=0 + (Math.random()-0.5)*Math.PI*0.8;
-          } else if(side===2){ // bottom edge
-            ex=rect.left+Math.random()*rect.width;
-            ey=rect.bottom;
-            outAngle=Math.PI/2 + (Math.random()-0.5)*Math.PI*0.8;
-          } else {             // left edge
-            ex=rect.left;
-            ey=rect.top+Math.random()*rect.height;
-            outAngle=Math.PI + (Math.random()-0.5)*Math.PI*0.8;
-          }
-          var dist=10+Math.random()*20; // shorter travel — stays near border
-          var size=2.5+Math.random()*3.5; // 2.5-6px
-          var dur=180+Math.random()*200; // 180-380ms
-          var px=Math.cos(outAngle)*dist;
-          var py=Math.sin(outAngle)*dist;
-          var d=document.createElement('div');
-          d.className='bt-particle';
-          d.style.cssText=[
-            'width:'+size+'px',
-            'height:'+size+'px',
-            'left:'+(ex-size/2).toFixed(1)+'px',
-            'top:'+(ey-size/2).toFixed(1)+'px',
-            'background:'+colors[Math.floor(Math.random()*colors.length)],
-            '--px:'+px.toFixed(1)+'px',
-            '--py:'+py.toFixed(1)+'px',
-            'animation:bt-fly '+dur+'ms ease-out forwards'
-          ].join(';');
-          document.body.appendChild(d);
-          setTimeout((function(node){ return function(){ if(node.parentNode) node.parentNode.removeChild(node); }; })(d), dur+20);
+        if(tileGap < 2) return;
+
+        var tileSize=el.getBoundingClientRect().width; // one tile width in px
+        var maxDist=tileSize*3;   // fade out by 3 tiles distance
+        var fadeDist=tileSize;    // start fading at 1 tile distance
+
+        // ── Get or create persistent canvas covering entire bank ──
+        var bankEl=document.getElementById('bank');
+        if(!bankEl) return;
+        var bankRect=bankEl.getBoundingClientRect();
+
+        var cv=document.getElementById('_particleCanvas');
+        if(!cv){
+          cv=document.createElement('canvas');
+          cv.id='_particleCanvas';
+          cv.style.cssText='position:fixed;pointer-events:none;z-index:9998;';
+          document.body.appendChild(cv);
         }
+        // Size/position canvas to match bank
+        cv.width=Math.round(bankRect.width);
+        cv.height=Math.round(bankRect.height);
+        cv.style.left=bankRect.left+'px';
+        cv.style.top=bankRect.top+'px';
+        cv.style.width=bankRect.width+'px';
+        cv.style.height=bankRect.height+'px';
+
+        var ctx=cv.getContext('2d');
+
+        // ── Collect tile rects (in canvas local coords) ──
+        function getTileRects(){
+          var rects=[];
+          document.querySelectorAll('#bank .bt').forEach(function(t){
+            var r=t.getBoundingClientRect();
+            rects.push({
+              x:r.left-bankRect.left, y:r.top-bankRect.top,
+              w:r.width, h:r.height
+            });
+          });
+          return rects;
+        }
+
+        // ── Spawn particles from tapped tile edges ──
+        var tileRect=el.getBoundingClientRect();
+        var tx=tileRect.left-bankRect.left;
+        var ty=tileRect.top-bankRect.top;
+        var tw=tileRect.width, th=tileRect.height;
+
+        var particles=window._particlePool||(window._particlePool=[]);
+        var count=44+Math.floor(Math.random()*12); // ~50 particles
+
+        for(var p=0;p<count;p++){
+          var side=Math.floor(Math.random()*4);
+          var px,py,angle;
+          if(side===0){      // top
+            px=tx+Math.random()*tw; py=ty;
+            angle=-Math.PI/2+(Math.random()-0.5)*Math.PI*0.85;
+          } else if(side===1){ // right
+            px=tx+tw; py=ty+Math.random()*th;
+            angle=(Math.random()-0.5)*Math.PI*0.85;
+          } else if(side===2){ // bottom
+            px=tx+Math.random()*tw; py=ty+th;
+            angle=Math.PI/2+(Math.random()-0.5)*Math.PI*0.85;
+          } else {           // left
+            px=tx; py=ty+Math.random()*th;
+            angle=Math.PI+(Math.random()-0.5)*Math.PI*0.85;
+          }
+          var speed=(3+Math.random()*4)*1.4; // fast initial speed
+          var grey=Math.floor(Math.random()*80); // 0-79 = dark grey to near-black
+          particles.push({
+            x:px, y:py,
+            vx:Math.cos(angle)*speed,
+            vy:Math.sin(angle)*speed,
+            ox:px, oy:py,      // origin for distance calc
+            size:1.5+Math.random()*2.5,
+            grey:grey,
+            life:1.0,
+            dead:false
+          });
+        }
+        window._particlePool=particles;
+
+        // ── Animation loop (shared, only one rAF active at a time) ──
+        if(window._particleRAF) return;
+        function frame(){
+          var tileRects=getTileRects();
+          ctx.clearRect(0,0,cv.width,cv.height);
+
+          var alive=false;
+          for(var i=0;i<particles.length;i++){
+            var pt=particles[i];
+            if(pt.dead) continue;
+
+            // Exponential deceleration: multiply velocity by 0.88 each frame
+            pt.vx*=0.88; pt.vy*=0.88;
+            pt.x+=pt.vx; pt.y+=pt.vy;
+
+            // Distance from origin
+            var dx=pt.x-pt.ox, dy=pt.y-pt.oy;
+            var dist=Math.sqrt(dx*dx+dy*dy);
+
+            // Kill if too far or out of canvas
+            if(dist>maxDist||pt.x<0||pt.y<0||pt.x>cv.width||pt.y>cv.height){
+              pt.dead=true; continue;
+            }
+
+            // Opacity: stays near 1 until fadeDist, then drops, then rapidly gone
+            var op;
+            if(dist<fadeDist){
+              op=1.0-(dist/fadeDist)*0.15; // very slight fade near tile
+            } else {
+              var t2=(dist-fadeDist)/(maxDist-fadeDist); // 0→1 over remaining distance
+              op=0.85*Math.pow(1-t2,2.2); // starts slow, accelerates
+            }
+            if(op<=0.01){ pt.dead=true; continue; }
+
+            // Clip: skip if particle center is inside any tile rect
+            var inside=false;
+            for(var r=0;r<tileRects.length;r++){
+              var tr=tileRects[r];
+              if(pt.x>tr.x&&pt.x<tr.x+tr.w&&pt.y>tr.y&&pt.y<tr.y+tr.h){
+                inside=true; break;
+              }
+            }
+            if(inside){ alive=true; continue; } // still alive, just skip drawing
+
+            var c=pt.grey;
+            ctx.globalAlpha=op;
+            ctx.fillStyle='rgb('+c+','+c+','+c+')';
+            ctx.beginPath();
+            ctx.arc(pt.x,pt.y,pt.size/2,0,Math.PI*2);
+            ctx.fill();
+            alive=true;
+          }
+
+          ctx.globalAlpha=1;
+
+          if(alive){
+            window._particleRAF=requestAnimationFrame(frame);
+          } else {
+            window._particleRAF=null;
+            window._particlePool=[];
+            ctx.clearRect(0,0,cv.width,cv.height);
+          }
+        }
+        window._particleRAF=requestAnimationFrame(frame);
       }
 
       function doSound(){
@@ -6128,8 +6223,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     volInp.oninput=function(){
   meta.volume=Math.max(0.05,parseInt(volInp.value)/100);
   volValLbl.textContent=volInp.value+'%';
-  drawWaveform(); // update volume line on waveform
-  // Play a quick preview blip so user hears the volume change immediately
+  sampleMeta[tileIdx]=meta;
+  _userModified=true;
+  if(window._updateSampleIcons) window._updateSampleIcons();
+  drawWaveform();
   if(userSamples[tileIdx]&&AC){
     try{
       var src=AC.createBufferSource(); src.buffer=userSamples[tileIdx];
