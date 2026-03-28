@@ -58,12 +58,12 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 
 .bank-outer{width:100%;max-width:520px;border-top:2px solid var(--bk);background:#ede8dc;flex-shrink:0;display:flex;flex-direction:column;align-items:stretch;touch-action:pan-y;}
 .seq-toolbar{width:100%;display:none;flex-direction:column;align-items:stretch;background:#e8e2d6;border-bottom:2px solid var(--bk);border-top:1px solid var(--bk);padding:4px 6px;gap:3px;box-sizing:border-box;flex-shrink:0;}
-.seq-toolbar-row{display:flex;flex-direction:row;align-items:center;gap:4px;}
+.seq-toolbar-row{display:flex;flex-direction:row;align-items:center;gap:3px;flex-wrap:wrap;overflow:hidden;}
 .seq-toolbar.active{display:flex;}
 .bank-row{display:flex;flex-direction:row;align-items:flex-start;flex:1;touch-action:pan-y;}
 .bsize-col{position:relative;flex-shrink:0;width:28px;height:96px;cursor:pointer;touch-action:none;border-bottom:2px solid var(--bk);display:flex;align-items:stretch;}
 /* Horizontal version of size slider for seq toolbar */
-.bsize-col-h{position:relative;height:28px;cursor:ew-resize;touch-action:none;border:2px solid var(--bk);border-radius:3px;background:var(--w);overflow:hidden;display:flex;align-items:center;}
+.bsize-col-h{position:relative;height:28px;cursor:ew-resize;touch-action:none;border:2px solid var(--bk);border-radius:3px;background:var(--w);overflow:hidden;display:flex;align-items:center;min-width:40px;}
 .bsize-col-h .sizebar-fill{position:absolute;left:0;top:0;bottom:0;background:#93c5fd;border-radius:2px 0 0 2px;pointer-events:none;}
 .bsize-col-h .sizebar-handle{position:absolute;top:50%;width:14px;height:22px;background:var(--bk);border-radius:3px;transform:translate(-50%,-50%);z-index:3;cursor:ew-resize;pointer-events:none;}
 .bsize-col-h .sizebar-arrows{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:9px;color:var(--bk);pointer-events:none;z-index:5;white-space:nowrap;font-weight:700;}
@@ -4285,7 +4285,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       for(var j=0;j<totalBeats;j++){
         var td=document.createElement('div');
         td.className='pro-beat'+((j%4===0)?' accent':'');
-        td.style.cssText='width:7px;height:7px;flex-shrink:0;border-radius:50%;background:#ccc;border:1px solid #888;';
+        var dotSz = totalBeats > 32 ? '4px' : totalBeats > 16 ? '5px' : '7px';
+        var dotGap = totalBeats > 16 ? '1px' : '2px';
+        td.style.cssText='width:'+dotSz+';height:'+dotSz+';min-width:3px;flex-shrink:1;';
+        if(j===0 && tc) tc.style.gap=dotGap;
         tc.appendChild(td);
       }
     }
@@ -4298,11 +4301,18 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     dots.forEach(function(d,i){ d.classList.toggle('active', i===beat); });
     // Mirror to toolbar beat dots row
     var tbDots = document.querySelectorAll('#toolbarBeatDots .pro-beat');
+    var tbCount = tbDots.length;
+    // Shrink gap for many beats
+    var tbContainer = document.getElementById('toolbarBeatDots');
+    if(tbContainer) tbContainer.style.gap = tbCount > 16 ? '1px' : tbCount > 8 ? '1px' : '2px';
     tbDots.forEach(function(d,i){
       var isActive = (i===beat);
       d.classList.toggle('active', isActive);
       d.style.background = isActive ? '#ef4444' : '#ccc';
       d.style.boxShadow = isActive ? '0 0 4px #ef4444' : '';
+      // Shrink dots for high bar counts
+      if(tbCount > 32) d.style.width = d.style.height = '4px';
+      else if(tbCount > 16) d.style.width = d.style.height = '5px';
     });
   }
 
@@ -4784,8 +4794,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   var hfill=document.getElementById('sizeBarFill');
   var hhandle=document.getElementById('sizeBarHandle');
 
-  function pctToScaleH(pct){ return 0.5+(pct/100); }
-  function scaleToPctH(s){ return (s-0.5)*100; }
+  function pctToScaleH(pct){ return 0.5+(pct/100)*1.75; } // max=2.25 (50% more than before)
+  function scaleToPctH(s){ return (s-0.5)/1.75*100; }
 
   function applyPctH(pct){
     pct=Math.max(0,Math.min(100,pct));
@@ -5439,6 +5449,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var meta=sampleMeta[tileIdx]||(sampleMeta[tileIdx]={attack:0,release:0,atkCurve:'linear',relCurve:'linear',volume:1.0,bass:0,treble:0,trimStart:0,trimEnd:1});
     if(!meta.eqBands) meta.eqBands=null; // will be set by EQ section
     if(!meta.volume) meta.volume=1.0;
+    var _userModified = !!userSamples[tileIdx]; // already has sample = already modified
 
     function mk(tag,css,txt){
       var el=document.createElement(tag);
@@ -5478,14 +5489,24 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var actionRow=mk('div','display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;');
     var testBtn=mkBtn('▶  TEST','font-size:12px;padding:7px 14px;border:1.5px solid #4ade80;border-radius:4px;background:transparent;color:#4ade80;'+(userSamples[tileIdx]?'':'display:none;'));
     testBtn.onclick=function(){
-      var buf=userSamples[tileIdx]; if(!buf||!AC) return;
-      try{
-        var src=AC.createBufferSource(); src.buffer=buf;
-        var g=AC.createGain(); g.gain.value=Math.max(0.05,meta.volume||1);
-        src.connect(g); g.connect(getMasterDest()); src.start(AC.currentTime);
+      if(!AC) return;
+      var buf=userSamples[tileIdx]||meta._stockSourceBuffer;
+      if(buf){
+        // Play the buffer directly
+        try{
+          var src=AC.createBufferSource(); src.buffer=buf;
+          var g=AC.createGain(); g.gain.value=Math.max(0.05,meta.volume||1);
+          src.connect(g); g.connect(getMasterDest()); src.start(AC.currentTime);
+          testBtn.style.background='#4ade80'; testBtn.style.color='#000';
+          setTimeout(function(){ testBtn.style.background='transparent'; testBtn.style.color='#4ade80'; },(buf.duration*1000)+100);
+        }catch(e){}
+      } else if(meta._isStock){
+        // Stock sound not yet rendered — play via playBankSound
+        var playIdx=(meta._aliasIdx!==undefined)?meta._aliasIdx:tileIdx;
+        playBankSound(playIdx, meta.volume||1);
         testBtn.style.background='#4ade80'; testBtn.style.color='#000';
-        setTimeout(function(){ testBtn.style.background='transparent'; testBtn.style.color='#4ade80'; },(buf.duration*1000)+100);
-      }catch(e){}
+        setTimeout(function(){ testBtn.style.background='transparent'; testBtn.style.color='#4ade80'; },500);
+      }
     };
     var undoBtn=mkBtn('↩ UNDO','font-size:11px;padding:6px 12px;border:1.5px solid #888;border-radius:4px;background:transparent;color:#aaa;opacity:0.4;');
     var redoBtn=mkBtn('↪ REDO','font-size:11px;padding:6px 12px;border:1.5px solid #888;border-radius:4px;background:transparent;color:#aaa;opacity:0.4;');
@@ -5862,7 +5883,15 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     buildBandControls();
     drawEQCurve();
 
-    var eqRow = {_eqHeader:eqTabRow, _eqBody:eqBodiesWrap};
+    // Wrap tabs + bodies together; tabs are sticky so they stay visible while scrolling
+    var eqTabRow_sticky = eqTabRow;
+    eqTabRow_sticky.style.cssText += 'position:sticky;top:0;z-index:10;background:#111;';
+
+    var eqContainer = mk('div','display:flex;flex-direction:column;align-items:center;width:280px;gap:4px;');
+    eqContainer.appendChild(eqTabRow_sticky);
+    eqContainer.appendChild(eqBodiesWrap);
+
+    var eqRow = {_eqHeader:eqContainer, _eqBody:mk('div','')};
 
     // ── Sample volume ──
     var volLbl=mk('div','font-size:9px;letter-spacing:1px;color:#888;margin-top:2px;','SAMPLE VOLUME');
@@ -6039,7 +6068,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     ov.appendChild(waveWrap);
     ov.appendChild(envLbl); ov.appendChild(envRow);
     ov.appendChild(volLbl); ov.appendChild(volRow);
-    ov.appendChild(eqRow._eqHeader); ov.appendChild(eqRow._eqBody);
+    ov.appendChild(eqRow._eqHeader); // _eqBody already inside _eqHeader
     ov.appendChild(bottomRow);
     document.body.appendChild(ov);
 
@@ -6047,6 +6076,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     function applyEnvelope(){ applyProcessing(); } // alias
 
     function applyProcessing(){
+      _userModified = true; // user changed something
       // For stock sounds use the preserved source buffer, not rawBuffer
       // (rawBuffer gets overwritten with processed result)
       var sourceBuffer = (meta._isStock && meta._stockSourceBuffer) ? meta._stockSourceBuffer : rawBuffer;
@@ -6215,6 +6245,17 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       doStop();
       if(mediaStream){ mediaStream.getTracks().forEach(function(t){t.stop()}); mediaStream=null; }
       mediaRecorder=null; chunks=[];
+      // If stock sound and user never modified anything, remove any saved buffer
+      // so the tile reverts to playing the original synth sound
+      if(meta._isStock && !_userModified){
+        delete userSamples[tileIdx];
+        // Keep sampleMeta for settings but clear the stock source buffers from it
+        // so next open re-renders fresh
+        if(sampleMeta[tileIdx]){ 
+          delete sampleMeta[tileIdx]._stockSourceBuffer;
+        }
+        if(window._updateSampleIcons) window._updateSampleIcons();
+      }
       if(document.body.contains(ov)) document.body.removeChild(ov);
     };
 
@@ -6247,10 +6288,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
             meta._stockSourceBuffer=rendered; // preserved source — never overwritten
             existingLbl.textContent='🎵 Stock sound — edit freely';
             existingLbl.style.color='#06b6d4';
-            testBtn.style.display='';
+            testBtn.style.display=''; // show test button
+            _userModified=false; // render itself doesn't count as user modification
             drawWaveform();
-            // Auto-apply so any already-set envelope/volume takes effect
-            applyProcessing();
           }).catch(function(){ existingLbl.textContent='🎵 Stock sound (preview unavailable)'; });
         }catch(e){ existingLbl.textContent='🎵 Stock sound'; }
       })();
