@@ -3617,7 +3617,7 @@ function renderBank(){
         if(particles.length>800) particles.splice(0,particles.length-800);
 
         var _press=(window._tapPressure!==undefined)?window._tapPressure:0.5;
-        var count=Math.round((28+Math.random()*8)+_press*(28+Math.random()*8));
+        var count=Math.round(8+_press*72+Math.random()*8);
         var LIFETIME=55; // frames — guaranteed death
         for(var p=0;p<count;p++){
           var side=Math.floor(Math.random()*4);
@@ -3628,7 +3628,7 @@ function renderBank(){
           else{              px=tx; py=ty+Math.random()*th;    angle=Math.PI+(Math.random()-0.5)*Math.PI*0.85;}
           // Scale speed with tile size: 1x at TILE_SCALE<=1.0, up to 2x at max (3.0)
           var speedMult = (TILE_SCALE<=1.0) ? 1.0 : 1.0+(TILE_SCALE-1.0)/2.0;
-          var pressMult = 0.6 + _press * 1.2;
+          var pressMult = 0.2 + _press * 2.3;
           var speed=(3+Math.random()*4)*speedMult*pressMult;
           // Parse tile color into RGB for particles
           var tileCol=tileColors[idx];
@@ -3783,20 +3783,20 @@ function renderBank(){
       function doSound(pressure){
         if(pressure===undefined) pressure=0.5;
         window._tapPressure=pressure;
-        var vol=Math.max(0.05,Math.min(2.0,recVolume*(0.5+pressure*0.8)));
+        var vol=Math.max(0.01,Math.min(2.0,recVolume*(0.1+pressure*1.9)));
         playBankSound(sndIdx,vol);
         if(window._seqNoteOn) _seqNoteOn(sndIdx,idx);
         if(SPIN_ON){
-          el.style.setProperty('--spin-dur',Math.round(500-pressure*250)+'ms');
+          el.style.setProperty('--spin-dur',Math.round(800-pressure*650)+'ms');
           el.classList.remove('spinning');
           void el.offsetWidth;
           el.classList.add('spinning','active-flash');
           spawnParticles(el);
-          setTimeout(function(){ el.classList.remove('spinning','active-flash'); el.style.removeProperty('--spin-dur'); },Math.round(500-pressure*250));
+          setTimeout(function(){ el.classList.remove('spinning','active-flash'); el.style.removeProperty('--spin-dur'); },Math.round(800-pressure*650));
         } else {
           el.classList.add('pressed','active-flash');
           spawnParticles(el);
-          setTimeout(function(){ el.classList.remove('pressed','active-flash'); },Math.round(80+pressure*120));
+          setTimeout(function(){ el.classList.remove('pressed','active-flash'); },Math.round(60+pressure*240));
         }
       }
       // Long-press for sample recording — measured on touchend
