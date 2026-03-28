@@ -3834,6 +3834,13 @@ function renderBank(){
           var _p=0.5;
           if(_f>0.01){ _p=Math.max(0,Math.min(1,(_f-0.05)/0.95)); }
           else if(_r>2){ _p=Math.max(0,Math.min(1,(_r-2)/13)); }
+          // Debug overlay
+          var _dbg=document.getElementById('_pressureDbg');
+          if(!_dbg){ _dbg=document.createElement('div'); _dbg.id='_pressureDbg';
+            _dbg.style.cssText='position:fixed;top:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#4ade80;font-family:monospace;font-size:11px;padding:6px 12px;border-radius:6px;z-index:9999;pointer-events:none;text-align:center;';
+            document.body.appendChild(_dbg); }
+          _dbg.textContent='force:'+_f.toFixed(3)+' radius:'+_r.toFixed(1)+' p:'+_p.toFixed(2)+' vol:'+(Math.round(recVolume*(0.1+_p*1.9)*100))+'%';
+          clearTimeout(_dbg._t); _dbg._t=setTimeout(function(){ _dbg.textContent=''; },2000);
           doSound(_p);
         }
       },{passive:true});
