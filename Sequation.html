@@ -3557,15 +3557,17 @@ function renderBank(){
         var tileGap=Math.round(6*TILE_SCALE*TILE_GAP_MULT);
         if(tileGap < 2) return;
 
-        var tileSize=el.getBoundingClientRect().width; // one tile width in px
-        var maxDist=tileSize*3;   // fade out by 3 tiles distance
-        var fadeDist=tileSize;    // start fading at 1 tile distance
+        // Hide if overlay is open (editor, etc.)
+        if(document.getElementById('_sampleOv')) return;
 
-        // ── Get or create persistent canvas covering entire bank ──
         var bankEl=document.getElementById('bank');
         if(!bankEl) return;
-        var bankRect=bankEl.getBoundingClientRect();
 
+        var tileSize=el.getBoundingClientRect().width;
+        var maxDist=tileSize*3;
+        var fadeDist=tileSize;
+
+        // ── Get or create canvas ──
         var cv=document.getElementById('_particleCanvas');
         if(!cv){
           cv=document.createElement('canvas');
@@ -3573,28 +3575,20 @@ function renderBank(){
           cv.style.cssText='position:fixed;pointer-events:none;z-index:9998;';
           document.body.appendChild(cv);
         }
-        // Size/position canvas to match bank
-        cv.width=Math.round(bankRect.width);
-        cv.height=Math.round(bankRect.height);
-        cv.style.left=bankRect.left+'px';
-        cv.style.top=bankRect.top+'px';
-        cv.style.width=bankRect.width+'px';
-        cv.style.height=bankRect.height+'px';
 
-        var ctx=cv.getContext('2d');
-
-        // ── Collect tile rects (in canvas local coords) ──
-        function getTileRects(){
-          var rects=[];
-          document.querySelectorAll('#bank .bt').forEach(function(t){
-            var r=t.getBoundingClientRect();
-            rects.push({
-              x:r.left-bankRect.left, y:r.top-bankRect.top,
-              w:r.width, h:r.height
-            });
-          });
-          return rects;
+        // ── Update canvas size/position every spawn (handles scroll) ──
+        function syncCanvas(){
+          var br=bankEl.getBoundingClientRect();
+          cv.width=Math.round(br.width);
+          cv.height=Math.round(br.height);
+          cv.style.left=br.left+'px';
+          cv.style.top=br.top+'px';
+          cv.style.width=br.width+'px';
+          cv.style.height=br.height+'px';
+          return br;
         }
+        var bankRect=syncCanvas();
+        var ctx=cv.getContext('2d');
 
         // ── Spawn particles from tapped tile edges ──
         var tileRect=el.getBoundingClientRect();
@@ -3602,83 +3596,91 @@ function renderBank(){
         var ty=tileRect.top-bankRect.top;
         var tw=tileRect.width, th=tileRect.height;
 
-        var particles=window._particlePool||(window._particlePool=[]);
-        var count=44+Math.floor(Math.random()*12); // ~50 particles
+        if(!window._particlePool) window._particlePool=[];
+        var particles=window._particlePool;
 
+        // Cull dead particles before adding new ones
+        for(var ci=particles.length-1;ci>=0;ci--){
+          if(particles[ci].dead) particles.splice(ci,1);
+        }
+        // Hard cap: max 400 live particles at once
+        if(particles.length>400) particles.splice(0,particles.length-400);
+
+        var count=44+Math.floor(Math.random()*12);
         for(var p=0;p<count;p++){
           var side=Math.floor(Math.random()*4);
           var px,py,angle;
-          if(side===0){      // top
-            px=tx+Math.random()*tw; py=ty;
-            angle=-Math.PI/2+(Math.random()-0.5)*Math.PI*0.85;
-          } else if(side===1){ // right
-            px=tx+tw; py=ty+Math.random()*th;
-            angle=(Math.random()-0.5)*Math.PI*0.85;
-          } else if(side===2){ // bottom
-            px=tx+Math.random()*tw; py=ty+th;
-            angle=Math.PI/2+(Math.random()-0.5)*Math.PI*0.85;
-          } else {           // left
-            px=tx; py=ty+Math.random()*th;
-            angle=Math.PI+(Math.random()-0.5)*Math.PI*0.85;
-          }
-          var speed=(3+Math.random()*4)*1.4; // fast initial speed
-          var grey=Math.floor(Math.random()*80); // 0-79 = dark grey to near-black
-          particles.push({
-            x:px, y:py,
-            vx:Math.cos(angle)*speed,
-            vy:Math.sin(angle)*speed,
-            ox:px, oy:py,      // origin for distance calc
-            size:1.5+Math.random()*2.5,
-            grey:grey,
-            life:1.0,
-            dead:false
-          });
+          if(side===0){      px=tx+Math.random()*tw; py=ty;    angle=-Math.PI/2+(Math.random()-0.5)*Math.PI*0.85;}
+          else if(side===1){ px=tx+tw; py=ty+Math.random()*th; angle=(Math.random()-0.5)*Math.PI*0.85;}
+          else if(side===2){ px=tx+Math.random()*tw; py=ty+th; angle=Math.PI/2+(Math.random()-0.5)*Math.PI*0.85;}
+          else{              px=tx; py=ty+Math.random()*th;    angle=Math.PI+(Math.random()-0.5)*Math.PI*0.85;}
+          var speed=3+Math.random()*4;
+          var grey=Math.floor(Math.random()*80);
+          particles.push({x:px,y:py,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,
+            ox:px,oy:py,size:1.5+Math.random()*2.5,grey:grey,dead:false});
         }
-        window._particlePool=particles;
 
-        // ── Animation loop (shared, only one rAF active at a time) ──
+        // ── Animation loop ──
         if(window._particleRAF) return;
-        function frame(){
-          var tileRects=getTileRects();
-          ctx.clearRect(0,0,cv.width,cv.height);
 
+        function frame(){
+          // Re-sync canvas position every frame (handles scroll/resize)
+          var br=bankEl.getBoundingClientRect();
+          if(cv.width!==Math.round(br.width)||cv.height!==Math.round(br.height)){
+            cv.width=Math.round(br.width); cv.height=Math.round(br.height);
+          }
+          cv.style.left=br.left+'px'; cv.style.top=br.top+'px';
+
+          // If overlay is open, hide canvas
+          if(document.getElementById('_sampleOv')){
+            cv.style.display='none';
+            window._particleRAF=requestAnimationFrame(frame);
+            return;
+          }
+          cv.style.display='';
+
+          // Snapshot tile rects once per frame
+          var tileRects=[];
+          document.querySelectorAll('#bank .bt').forEach(function(t){
+            var r=t.getBoundingClientRect();
+            tileRects.push({x:r.left-br.left,y:r.top-br.top,w:r.width,h:r.height});
+          });
+
+          ctx.clearRect(0,0,cv.width,cv.height);
           var alive=false;
-          for(var i=0;i<particles.length;i++){
-            var pt=particles[i];
+          var pts=window._particlePool;
+
+          for(var i=0;i<pts.length;i++){
+            var pt=pts[i];
             if(pt.dead) continue;
 
-            // Exponential deceleration: multiply velocity by 0.88 each frame
             pt.vx*=0.88; pt.vy*=0.88;
             pt.x+=pt.vx; pt.y+=pt.vy;
 
-            // Distance from origin
             var dx=pt.x-pt.ox, dy=pt.y-pt.oy;
             var dist=Math.sqrt(dx*dx+dy*dy);
 
-            // Kill if too far or out of canvas
-            if(dist>maxDist||pt.x<0||pt.y<0||pt.x>cv.width||pt.y>cv.height){
+            if(dist>maxDist||pt.x<-10||pt.y<-10||pt.x>cv.width+10||pt.y>cv.height+10){
               pt.dead=true; continue;
             }
 
-            // Opacity: stays near 1 until fadeDist, then drops, then rapidly gone
+            // Opacity: near-full until fadeDist, then power-curve fade to 0
             var op;
             if(dist<fadeDist){
-              op=1.0-(dist/fadeDist)*0.15; // very slight fade near tile
+              op=1.0-(dist/fadeDist)*0.12;
             } else {
-              var t2=(dist-fadeDist)/(maxDist-fadeDist); // 0→1 over remaining distance
-              op=0.85*Math.pow(1-t2,2.2); // starts slow, accelerates
+              var t2=(dist-fadeDist)/(maxDist-fadeDist);
+              op=0.88*Math.pow(1-t2,1.8);
             }
-            if(op<=0.01){ pt.dead=true; continue; }
+            if(op<=0.02){ pt.dead=true; continue; }
 
-            // Clip: skip if particle center is inside any tile rect
+            // Skip drawing if inside a tile (clip to gaps only)
             var inside=false;
             for(var r=0;r<tileRects.length;r++){
               var tr=tileRects[r];
-              if(pt.x>tr.x&&pt.x<tr.x+tr.w&&pt.y>tr.y&&pt.y<tr.y+tr.h){
-                inside=true; break;
-              }
+              if(pt.x>tr.x&&pt.x<tr.x+tr.w&&pt.y>tr.y&&pt.y<tr.y+tr.h){inside=true;break;}
             }
-            if(inside){ alive=true; continue; } // still alive, just skip drawing
+            if(inside){alive=true;continue;}
 
             var c=pt.grey;
             ctx.globalAlpha=op;
