@@ -109,14 +109,14 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .sizebar-lbl{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--bk);text-align:center;line-height:1.6;pointer-events:none;user-select:none;}
 .bt{min-width:44px;height:44px;padding:0 8px;border:2px solid var(--br);background:var(--w);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:2px 2px 0 var(--br);transition:transform 0.04s,box-shadow 0.04s,background 0.1s;touch-action:pan-y;}
 .bt.pressed{transform:translate(2px,2px)!important;box-shadow:0 0 0 var(--br)!important;}
-.bt.active-flash{background:#ef4444!important;color:#fff!important;border-color:#991b1b!important;}
+.bt.active-flash{background:var(--flash-bg,#ef4444)!important;color:#fff!important;border-color:#991b1b!important;}
 @keyframes bt-spin{
   0%  {transform:rotate(0deg) scale(1);}
   40% {transform:rotate(200deg) scale(0.75);}
   70% {transform:rotate(320deg) scale(0.82);}
   100%{transform:rotate(360deg) scale(1);}
 }
-.bt.spinning{animation:bt-spin 380ms cubic-bezier(0.25,0.46,0.45,0.94) forwards;box-shadow:none!important;}
+.bt.spinning{animation:bt-spin var(--spin-dur,380ms) cubic-bezier(0.25,0.46,0.45,0.94) forwards;box-shadow:none!important;}
 /* particles via canvas */
 .bt-mic{position:absolute;top:2px;left:2px;width:5px;height:5px;border-radius:50%;pointer-events:none;}
 .bt:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--br)!important;transition:transform 0.04s,box-shadow 0.04s;}
@@ -3616,7 +3616,8 @@ function renderBank(){
         // Hard cap: max 400 live particles at once
         if(particles.length>800) particles.splice(0,particles.length-800);
 
-        var count=44+Math.floor(Math.random()*12);
+        var _press=(window._tapPressure!==undefined)?window._tapPressure:0.5;
+        var count=Math.round((28+Math.random()*8)+_press*(28+Math.random()*8));
         var LIFETIME=55; // frames — guaranteed death
         for(var p=0;p<count;p++){
           var side=Math.floor(Math.random()*4);
@@ -3627,7 +3628,8 @@ function renderBank(){
           else{              px=tx; py=ty+Math.random()*th;    angle=Math.PI+(Math.random()-0.5)*Math.PI*0.85;}
           // Scale speed with tile size: 1x at TILE_SCALE<=1.0, up to 2x at max (3.0)
           var speedMult = (TILE_SCALE<=1.0) ? 1.0 : 1.0+(TILE_SCALE-1.0)/2.0;
-          var speed=(3+Math.random()*4)*speedMult;
+          var pressMult = 0.6 + _press * 1.2;
+          var speed=(3+Math.random()*4)*speedMult*pressMult;
           // Parse tile color into RGB for particles
           var tileCol=tileColors[idx];
           var pr=0,pg=0,pb=0;
