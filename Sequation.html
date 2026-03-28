@@ -3604,9 +3604,10 @@ function renderBank(){
           if(particles[ci].dead) particles.splice(ci,1);
         }
         // Hard cap: max 400 live particles at once
-        if(particles.length>400) particles.splice(0,particles.length-400);
+        if(particles.length>800) particles.splice(0,particles.length-800);
 
         var count=44+Math.floor(Math.random()*12);
+        var LIFETIME=55; // frames — guaranteed death
         for(var p=0;p<count;p++){
           var side=Math.floor(Math.random()*4);
           var px,py,angle;
@@ -3614,24 +3615,27 @@ function renderBank(){
           else if(side===1){ px=tx+tw; py=ty+Math.random()*th; angle=(Math.random()-0.5)*Math.PI*0.85;}
           else if(side===2){ px=tx+Math.random()*tw; py=ty+th; angle=Math.PI/2+(Math.random()-0.5)*Math.PI*0.85;}
           else{              px=tx; py=ty+Math.random()*th;    angle=Math.PI+(Math.random()-0.5)*Math.PI*0.85;}
-          var speed=3+Math.random()*4;
+          // Scale speed with tile size: 1x at TILE_SCALE<=1.0, up to 2x at max (3.0)
+          var speedMult = (TILE_SCALE<=1.0) ? 1.0 : 1.0+(TILE_SCALE-1.0)/2.0;
+          var speed=(3+Math.random()*4)*speedMult;
           var grey=Math.floor(Math.random()*80);
+          // Wide variance: some die quickly, some linger — gives organic staggered decay
+          var life=Math.floor(LIFETIME*(0.3+Math.random()*0.7))+Math.floor(Math.random()*15);
+          // 0.3*55=16 min, 1.0*55+15=70 max → roughly 16-70 frames, heavily random
           particles.push({x:px,y:py,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,
-            ox:px,oy:py,size:1.5+Math.random()*2.5,grey:grey,dead:false});
+            size:1.5+Math.random()*2.5,grey:grey,age:0,life:life,dead:false});
         }
 
         // ── Animation loop ──
         if(window._particleRAF) return;
 
         function frame(){
-          // Re-sync canvas position every frame (handles scroll/resize)
           var br=bankEl.getBoundingClientRect();
           if(cv.width!==Math.round(br.width)||cv.height!==Math.round(br.height)){
             cv.width=Math.round(br.width); cv.height=Math.round(br.height);
           }
           cv.style.left=br.left+'px'; cv.style.top=br.top+'px';
 
-          // If overlay is open, hide canvas
           if(document.getElementById('_sampleOv')){
             cv.style.display='none';
             window._particleRAF=requestAnimationFrame(frame);
@@ -3639,7 +3643,6 @@ function renderBank(){
           }
           cv.style.display='';
 
-          // Snapshot tile rects once per frame
           var tileRects=[];
           document.querySelectorAll('#bank .bt').forEach(function(t){
             var r=t.getBoundingClientRect();
@@ -3654,31 +3657,31 @@ function renderBank(){
             var pt=pts[i];
             if(pt.dead) continue;
 
+            pt.age++;
+            if(pt.age>=pt.life){ pt.dead=true; continue; }
+
             pt.vx*=0.88; pt.vy*=0.88;
             pt.x+=pt.vx; pt.y+=pt.vy;
 
-            var dx=pt.x-pt.ox, dy=pt.y-pt.oy;
-            var dist=Math.sqrt(dx*dx+dy*dy);
+            // t: 0=birth, 1=death
+            var t=pt.age/pt.life;
 
-            if(dist>maxDist||pt.x<-10||pt.y<-10||pt.x>cv.width+10||pt.y>cv.height+10){
-              pt.dead=true; continue;
-            }
-
-            // Opacity: near-full until fadeDist, then power-curve fade to 0
+            // Opacity: stays high for first 40% of life, then fades hard
             var op;
-            if(dist<fadeDist){
-              op=1.0-(dist/fadeDist)*0.12;
+            if(t<0.4){
+              op=1.0-t*0.1; // barely fades
             } else {
-              var t2=(dist-fadeDist)/(maxDist-fadeDist);
-              op=0.88*Math.pow(1-t2,1.8);
+              var t2=(t-0.4)/0.6; // 0→1 over remaining life
+              op=0.96*Math.pow(1-t2,1.6); // accelerating fade
             }
-            if(op<=0.02){ pt.dead=true; continue; }
+            if(op<=0.015){ pt.dead=true; continue; }
 
-            // Skip drawing if inside a tile (clip to gaps only)
+            // Expand clip by 3px to cover border(2px) + shadow(2px right/bottom)
             var inside=false;
+            var PAD=3;
             for(var r=0;r<tileRects.length;r++){
               var tr=tileRects[r];
-              if(pt.x>tr.x&&pt.x<tr.x+tr.w&&pt.y>tr.y&&pt.y<tr.y+tr.h){inside=true;break;}
+              if(pt.x>tr.x-PAD&&pt.x<tr.x+tr.w+PAD&&pt.y>tr.y-PAD&&pt.y<tr.y+tr.h+PAD){inside=true;break;}
             }
             if(inside){alive=true;continue;}
 
