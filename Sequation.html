@@ -3620,7 +3620,7 @@ function renderBank(){
 
         var _press=(window._tapPressure!==undefined)?window._tapPressure:0.5;
         var count=Math.round(8+_press*72+Math.random()*8);
-        var LIFETIME=55; // frames — guaranteed death
+        var LIFETIME=window._partLifeMult||55;
         for(var p=0;p<count;p++){
           var side=Math.floor(Math.random()*4);
           var px,py,angle;
@@ -3629,9 +3629,10 @@ function renderBank(){
           else if(side===2){ px=tx+Math.random()*tw; py=ty+th; angle=Math.PI/2+(Math.random()-0.5)*Math.PI*0.85;}
           else{              px=tx; py=ty+Math.random()*th;    angle=Math.PI+(Math.random()-0.5)*Math.PI*0.85;}
           // Scale speed with tile size: 1x at TILE_SCALE<=1.0, up to 2x at max (3.0)
-          var speedMult = (TILE_SCALE<=1.0) ? 1.0 : 1.0+(TILE_SCALE-1.0)/2.0;
-          var pressMult = 0.2 + _press * 2.3;
-          var speed=(3+Math.random()*4)*speedMult*pressMult;
+          var speedMult=(TILE_SCALE<=1.0)?1.0:1.0+(TILE_SCALE-1.0)/2.0;
+          var pressMult=0.2+_press*2.3;
+          var _psm=window._partSpeedMult||1;
+          var speed=(3+Math.random()*4)*speedMult*pressMult*_psm;
           // Parse tile color into RGB for particles
           var tileCol=tileColors[idx];
           var pr=0,pg=0,pb=0;
@@ -3695,7 +3696,7 @@ function renderBank(){
             pt.age++;
             if(pt.age>=pt.life){ pt.dead=true; continue; }
 
-            pt.vx*=0.88; pt.vy*=0.88;
+            var _dc=window._partDecay||0.88; pt.vx*=_dc; pt.vy*=_dc;
             pt.x+=pt.vx; pt.y+=pt.vy;
 
             var t=pt.age/pt.life;
