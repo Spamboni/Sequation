@@ -3780,24 +3780,23 @@ function renderBank(){
         window._particleRAF=requestAnimationFrame(frame);
       }
 
-      function doSound(){
-        playBankSound(sndIdx, recVolume);
-        if(window._seqNoteOn) _seqNoteOn(sndIdx, idx);
-        // Spin animation for first 10 tiles only (test)
+      function doSound(pressure){
+        if(pressure===undefined) pressure=0.5;
+        window._tapPressure=pressure;
+        var vol=Math.max(0.05,Math.min(2.0,recVolume*(0.5+pressure*0.8)));
+        playBankSound(sndIdx,vol);
+        if(window._seqNoteOn) _seqNoteOn(sndIdx,idx);
         if(SPIN_ON){
-          el.classList.remove('spinning'); // reset if already spinning
-          void el.offsetWidth; // force reflow so animation restarts
+          el.style.setProperty('--spin-dur',Math.round(500-pressure*250)+'ms');
+          el.classList.remove('spinning');
+          void el.offsetWidth;
           el.classList.add('spinning','active-flash');
           spawnParticles(el);
-          setTimeout(function(){
-            el.classList.remove('spinning','active-flash');
-          },400);
+          setTimeout(function(){ el.classList.remove('spinning','active-flash'); el.style.removeProperty('--spin-dur'); },Math.round(500-pressure*250));
         } else {
           el.classList.add('pressed','active-flash');
           spawnParticles(el);
-          setTimeout(function(){
-            el.classList.remove('pressed','active-flash');
-          },120);
+          setTimeout(function(){ el.classList.remove('pressed','active-flash'); },Math.round(80+pressure*120));
         }
       }
       // Long-press for sample recording — measured on touchend
@@ -3828,7 +3827,15 @@ function renderBank(){
           setTimeout(function(){ el.style.background=''; el.style.color=''; el.style.borderColor=''; },200);
           if(window._startSampleRecord) window._startSampleRecord(idx);
         },500);
-        if(!SEL){ doSound(); }
+        if(!SEL){
+          var _t=e.changedTouches[0];
+          var _f=(_t.force||_t.webkitForce||0);
+          var _r=(_t.radiusX||_t.webkitRadiusX||0);
+          var _p=0.5;
+          if(_f>0.01){ _p=Math.max(0,Math.min(1,(_f-0.05)/0.95)); }
+          else if(_r>2){ _p=Math.max(0,Math.min(1,(_r-2)/13)); }
+          doSound(_p);
+        }
       },{passive:true});
       el.addEventListener('touchend',function(){
         if(_holdTimer){ clearTimeout(_holdTimer); _holdTimer=null; }
