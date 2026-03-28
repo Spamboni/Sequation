@@ -3663,25 +3663,17 @@ function renderBank(){
             pt.vx*=0.88; pt.vy*=0.88;
             pt.x+=pt.vx; pt.y+=pt.vy;
 
-            // t: 0=birth, 1=death
             var t=pt.age/pt.life;
-
-            // Opacity: stays high for first 40% of life, then fades hard
-            var op;
-            if(t<0.4){
-              op=1.0-t*0.1; // barely fades
-            } else {
-              var t2=(t-0.4)/0.6; // 0→1 over remaining life
-              op=0.96*Math.pow(1-t2,1.6); // accelerating fade
-            }
+            // Fade completes at 75% of lifetime — still has motion when gone
+            var tFade=Math.min(t/0.75,1.0);
+            var op=Math.pow(1-tFade,1.2)*0.95;
             if(op<=0.015){ pt.dead=true; continue; }
 
-            // Expand clip by 3px to cover border(2px) + shadow(2px right/bottom)
+            // Asymmetric clip: top/left=2px (border only), right/bottom=4px (border+shadow)
             var inside=false;
-            var PAD=3;
             for(var r=0;r<tileRects.length;r++){
               var tr=tileRects[r];
-              if(pt.x>tr.x-PAD&&pt.x<tr.x+tr.w+PAD&&pt.y>tr.y-PAD&&pt.y<tr.y+tr.h+PAD){inside=true;break;}
+              if(pt.x>tr.x-2&&pt.x<tr.x+tr.w+4&&pt.y>tr.y-2&&pt.y<tr.y+tr.h+4){inside=true;break;}
             }
             if(inside){alive=true;continue;}
 
