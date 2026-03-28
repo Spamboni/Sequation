@@ -3434,8 +3434,10 @@ var TILE_SCALE=1.0;
 var TILE_GAP_MULT=1.0;
 var SPIN_ON=true;
 var PARTICLES_ON=true;
-var PRESSURE_BASE=0.8; // radiusX value that maps to 100% volume
-var PRESSURE_RANGE=1.0; // 0=flat(no effect), 1=normal, 2=extreme // 0=no gap, 1=default, 3=3x gap
+var PRESSURE_BASE=0.8;
+var PRESSURE_RANGE=1.0;
+// Sensitivity vol limits (set by range slider)
+window._sensVolMin=0.75; window._sensVolMax=1.25; // 0=no gap, 1=default, 3=3x gap
 
 function newPuzzle(){
   resumeAC();playNewGame();
@@ -3792,12 +3794,18 @@ function renderBank(){
         pressure=Math.max(0,_ep); // allow going above 1 for extreme range
         window._tapPressure=pressure;
         // Normalize so PRESSURE_BASE always = 100% of recVolume
-        var _pBase=(PRESSURE_BASE-0.2)/1.2;
-        var _vMin=window._sensVolMin||0.1;
-        var _vMax=window._sensVolMax||2.0;
-        var _factorBase=_vMin+_pBase*(_vMax-_vMin);
-        var _factorRaw=(_vMin+pressure*(_vMax-_vMin))/_factorBase;
-        var _factor=1.0+(_factorRaw-1.0)*PRESSURE_RANGE;
+        // Map radius to 0-1 range: 0.1→0, 1.6→1
+        var _pNorm=Math.max(0,(pressure*1.2+0.2-0.1)/1.5); // pressure already=(r-0.1)/1.2 scaled
+        // Recalc from raw radius stored in _tapPressure (before PRESSURE_RANGE scaling)
+        var _rawR=(window._tapPressure||0.5)*1.2+0.2; // approximate back to radius
+        var _pNorm2=Math.max(0,(_rawR-0.1)/1.5); // 0=softest(0.1r), 1=hardest(1.6r)
+        var _pBase2=Math.max(0,(PRESSURE_BASE-0.1)/1.5); // base as 0-1
+        var _vMin=window._sensVolMin!==undefined?window._sensVolMin:0.75;
+        var _vMax=window._sensVolMax!==undefined?window._sensVolMax:1.25;
+        // Volume at this pressure: linear between vMin and vMax, normalized so base=1.0
+        var _volAtBase=_vMin+_pBase2*(_vMax-_vMin);
+        var _volAtPress=_vMin+_pNorm2*(_vMax-_vMin);
+        var _factor=_volAtBase>0?_volAtPress/_volAtBase:1.0;
         var vol=Math.max(0.01,recVolume*_factor);
         playBankSound(sndIdx,vol);
         if(window._seqNoteOn) _seqNoteOn(sndIdx,idx);
@@ -3845,9 +3853,14 @@ function renderBank(){
         if(!SEL){
           var _t=e.changedTouches[0];
           var _r=(_t.radiusX||_t.webkitRadiusX||PRESSURE_BASE);
-          // Map radius to pressure: PRESSURE_BASE = 100% (pressure=0.5263...)
-          // 0.2 = soft (p=0), 1.4 = hard (p=1)
-          var _p=Math.max(0,(_r-0.2)/1.2); // no upper cap — radius>1.4 goes above 1.0
+          // Weighted jitter: 50% actual, 25% each for ±0.1
+          // Gives organic feel and smooths choppy jumps
+          var _jRoll=Math.random();
+          if(_jRoll<0.25)      _r=_r-0.1;
+          else if(_jRoll<0.50) _r=_r+0.1;
+          // else keep _r as-is (50% chance)
+          _r=Math.max(0.1,_r); // floor at 0.1
+          var _p=Math.max(0,(_r-0.2)/1.2);
           doSound(_p);
         }
       },{passive:true});
@@ -6839,6 +6852,11 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(!btn) return;
     btn.classList.toggle('active',SENS_ON);
     btn.style.opacity=SENS_ON?'1':'0.4';
+    // Grey out VOL slider when sensitivity is active
+    var vsl=document.getElementById('tbVolSlider');
+    if(vsl){ vsl.style.opacity=SENS_ON?'0.35':'1'; vsl.style.pointerEvents=SENS_ON?'none':''; }
+    var vlbl=vsl?vsl.previousElementSibling:null;
+    if(vlbl&&vlbl.tagName==='SPAN'){ vlbl.style.opacity=SENS_ON?'0.35':'1'; }
   }
 
   function mkRow(label,id,min,max,step,val,unit,color){
@@ -6879,18 +6897,46 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
     // PRESSURE
     panel.appendChild(hdr('PRESSURE','#7c3aed'));
-    var baseRow=mkRow('Base radius (100%)', '_spBase', 0.2, 1.4, 0.05, PRESSURE_BASE, '', '#7c3aed');
-    baseRow.sl.addEventListener('_sync',function(){ PRESSURE_BASE=parseFloat(baseRow.sl.value); });
+
+    // Base slider: 0-100% maps to radius 0.1-1.6
+    // Default 0.8 radius = (0.8-0.1)/(1.6-0.1)*100 = 46.7%
+    function baseToRadius(pct){ return 0.1+(pct/100)*1.5; }
+    function radiusToBase(r){ return (r-0.1)/1.5*100; }
+    var _basePct=radiusToBase(PRESSURE_BASE);
+    var baseRow=mkRow('Base (100% vol point)', '_spBase', 0, 100, 1, _basePct, '%→'+PRESSURE_BASE.toFixed(2)+'r', '#7c3aed');
+    baseRow.sl.addEventListener('_sync',function(){
+      var pct=parseFloat(baseRow.sl.value);
+      PRESSURE_BASE=parseFloat(baseToRadius(pct).toFixed(2));
+      baseRow.vl.textContent=pct.toFixed(0)+'%→'+PRESSURE_BASE.toFixed(2)+'r';
+    });
     panel.appendChild(baseRow.row);
-    var rangeRow=mkRow('Pressure range', '_spRange', 0, 3, 0.05, PRESSURE_RANGE, '×', '#ef4444');
-    rangeRow.sl.addEventListener('_sync',function(){ PRESSURE_RANGE=parseFloat(rangeRow.sl.value); });
+
+    // Range slider: 0-100%
+    // Left(0%): spread ±25% → soft=75%, hard=125%  → _vMin=0.75, _vMax=1.25
+    // Right(100%): soft=5%, hard=300%              → _vMin=0.05, _vMax=3.0
+    // Linear interpolation: vMin = 0.75-(0.70*t), vMax = 1.25+(1.75*t)  where t=0-1
+    function rangeToLimits(pct){
+      var t=pct/100;
+      return { vMin:0.75-0.70*t, vMax:1.25+1.75*t };
+    }
+    function limitsToRange(vMin,vMax){
+      // Use vMax to infer t: vMax=1.25+1.75*t → t=(vMax-1.25)/1.75
+      var t=Math.max(0,Math.min(1,(vMax-1.25)/1.75));
+      return t*100;
+    }
+    var _rangePct=limitsToRange(window._sensVolMin||0.75, window._sensVolMax||1.25);
+    var _rLim=rangeToLimits(_rangePct);
+    window._sensVolMin=_rLim.vMin; window._sensVolMax=_rLim.vMax;
+    var rangeRow=mkRow('Range (soft→hard vol)', '_spRange', 0, 100, 1, _rangePct, '%', '#ef4444');
+    rangeRow.sl.addEventListener('_sync',function(){
+      var lim=rangeToLimits(parseFloat(rangeRow.sl.value));
+      window._sensVolMin=lim.vMin; window._sensVolMax=lim.vMax;
+      rangeRow.vl.textContent=Math.round(lim.vMin*100)+'→'+Math.round(lim.vMax*100)+'%';
+    });
+    // Show initial labels
+    rangeRow.vl.textContent=Math.round(_rLim.vMin*100)+'→'+Math.round(_rLim.vMax*100)+'%';
     panel.appendChild(rangeRow.row);
-    var volMinRow=mkRow('Min vol (softest tap)', '_spVolMin', 0, 1, 0.05, window._sensVolMin||0.1, '', '#f97316');
-    volMinRow.sl.addEventListener('_sync',function(){ window._sensVolMin=parseFloat(volMinRow.sl.value); });
-    panel.appendChild(volMinRow.row);
-    var volMaxRow=mkRow('Max vol (hardest tap)', '_spVolMax', 1, 4, 0.1, window._sensVolMax||2.0, '×', '#fbbf24');
-    volMaxRow.sl.addEventListener('_sync',function(){ window._sensVolMax=parseFloat(volMaxRow.sl.value); });
-    panel.appendChild(volMaxRow.row);
+
 
     // ANIMATION
     panel.appendChild(hdr('ANIMATION','#06b6d4'));
