@@ -2754,26 +2754,20 @@ function playBankSound(idx, eventVol){
   // Pass volume to synth sounds — capture per-call to avoid race conditions
   var _metaV=(sampleMeta[idx]&&sampleMeta[idx].volume!==undefined)?sampleMeta[idx].volume:1.0;
   var _vol=Math.max(0.0001,((eventVol!==undefined)?eventVol:1.0)*_metaV);
-  if(SOUND_STYLE==='B') playBankB(idx,_vol);
-  else if(SOUND_STYLE==='C') playBankC(idx,_vol);
-  else if(SOUND_STYLE==='D') playBankD(idx,_vol);
-  else if(SOUND_STYLE==='E') playBankE(idx,_vol);
-  else if(SOUND_STYLE==='F') playBankF(idx,_vol);
-  else playBankA(idx,_vol);
+  // Per-tile style override
+  var _styleOv=window._tileStyleOverride&&window._tileStyleOverride[idx];
+  var _useStyle=_styleOv?_styleOv.style:SOUND_STYLE;
+  var _useIdx=_styleOv?_styleOv.idx:idx;
+  var _metaV2=(sampleMeta[_useIdx]&&sampleMeta[_useIdx].volume!==undefined)?sampleMeta[_useIdx].volume:1.0;
+  var _vol2=Math.max(0.0001,((eventVol!==undefined)?eventVol:1.0)*_metaV2);
+  if(_useStyle==='B') playBankB(_useIdx,_vol2);
+  else if(_useStyle==='C') playBankC(_useIdx,_vol2);
+  else if(_useStyle==='D') playBankD(_useIdx,_vol2);
+  else if(_useStyle==='E') playBankE(_useIdx,_vol2);
+  else if(_useStyle==='F') playBankF(_useIdx,_vol2);
+  else playBankA(_useIdx,_vol2);
 }
 
-// Check for per-tile style override
-var _origPlayBankSound=playBankSound;
-function playBankSound(idx,eventVol){
-  if(window._tileStyleOverride&&window._tileStyleOverride[idx]){
-    var ov=window._tileStyleOverride[idx];
-    var prev=SOUND_STYLE; SOUND_STYLE=ov.style;
-    _origPlayBankSound(ov.idx,eventVol);
-    SOUND_STYLE=prev;
-    return;
-  }
-  _origPlayBankSound(idx,eventVol);
-}
 
 // ── SHARED HELPERS ───────────────────────────────────────────
 function _bsG(vol,dec){
