@@ -6017,20 +6017,23 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     function buildBrowserList(){
       browserPanel.innerHTML='';
       var names=STOCK_NAMES[SOUND_STYLE]||[];
-      var bankTiles=document.querySelectorAll('#bank .bt');
-      var bankSize=bankTiles.length||(PZ?PZ.bank.length:0);
-      if(bankSize===0){ browserPanel.appendChild(mk('div','font-family:monospace;font-size:9px;color:#555;padding:10px;text-align:center;','No tiles loaded')); return; }
+      // PZ.bank.length is most reliable — DOM tiles may be hidden under overlay
+      var bankSize=(PZ&&PZ.bank)?PZ.bank.length:document.querySelectorAll('#bank .bt').length;
+      if(bankSize===0){ browserPanel.appendChild(mk('div','font-family:monospace;font-size:9px;color:#555;padding:10px;text-align:center;','No tiles — open a puzzle first')); return; }
       for(var i=0;i<bankSize;i++){
         var hasCustom=!!userSamples[i];
         var hasSample=hasCustom||(sampleMeta[i]&&sampleMeta[i]._isStock);
-        var name=names[i]||('Sound '+(i+1));
+        var name=names[i]||('Tile '+(i+1));
         var isActive=(i===tileIdx);
+        var col=hasCustom?'#4ade80':hasSample?'#ccc':'#888';
         var row=mk('div','display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;border-bottom:1px solid #222;'+(isActive?'background:#1e1e3a;':''  ));
-        row.appendChild(mk('span','font-family:monospace;font-size:9px;color:#555;min-width:22px;flex-shrink:0;',''+(i+1)));
-        row.appendChild(mk('span','font-family:monospace;font-size:10px;flex:1;'+(hasCustom?'color:#4ade80;':hasSample?'color:#ccc;':'color:#444;'),name));
-        var pb=mk('button','font-family:monospace;font-size:9px;padding:2px 7px;border:1px solid #555;border-radius:3px;background:transparent;color:#aaa;cursor:pointer;flex-shrink:0;','>');
-        pb.addEventListener('click',(function(ii){return function(e){e.stopPropagation();playBankSound(ii,0.7);};})(i));
-        row.appendChild(pb);
+        row.appendChild(mk('span','font-family:monospace;font-size:9px;color:#555;min-width:24px;flex-shrink:0;',+(i+1)+'.'));
+        row.appendChild(mk('span','font-family:monospace;font-size:10px;flex:1;color:'+col+';',name));
+        if(hasSample){
+          var pb=mk('button','font-family:monospace;font-size:9px;padding:2px 7px;border:1px solid #555;border-radius:3px;background:transparent;color:#aaa;cursor:pointer;flex-shrink:0;','>');
+          pb.addEventListener('click',(function(ii){return function(e){e.stopPropagation();playBankSound(ii,0.7);};})(i));
+          row.appendChild(pb);
+        }
         row.addEventListener('click',(function(ii){return function(){
           var _ov2=document.getElementById('_sampleOv');
           if(_ov2&&_ov2.parentNode)_ov2.parentNode.removeChild(_ov2);
@@ -6038,7 +6041,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         };})(i));
         browserPanel.appendChild(row);
       }
-      setTimeout(function(){var rows=browserPanel.querySelectorAll('div');if(rows[tileIdx])rows[tileIdx].scrollIntoView({block:'center'});},50);
+      setTimeout(function(){var rows=browserPanel.querySelectorAll('div[style]');if(rows[tileIdx])rows[tileIdx].scrollIntoView({block:'center'});},50);
     }
 
     var _browserOpen=false;
