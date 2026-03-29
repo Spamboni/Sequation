@@ -2762,6 +2762,19 @@ function playBankSound(idx, eventVol){
   else playBankA(idx,_vol);
 }
 
+// Check for per-tile style override
+var _origPlayBankSound=playBankSound;
+function playBankSound(idx,eventVol){
+  if(window._tileStyleOverride&&window._tileStyleOverride[idx]){
+    var ov=window._tileStyleOverride[idx];
+    var prev=SOUND_STYLE; SOUND_STYLE=ov.style;
+    _origPlayBankSound(ov.idx,eventVol);
+    SOUND_STYLE=prev;
+    return;
+  }
+  _origPlayBankSound(idx,eventVol);
+}
+
 // ── SHARED HELPERS ───────────────────────────────────────────
 function _bsG(vol,dec){
   var g=AC.createGain();g.connect(getMasterDest());
@@ -6016,32 +6029,74 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
     function buildBrowserList(){
       browserPanel.innerHTML='';
-      var names=STOCK_NAMES[SOUND_STYLE]||[];
-      // PZ.bank.length is most reliable — DOM tiles may be hidden under overlay
-      var bankSize=(PZ&&PZ.bank)?PZ.bank.length:document.querySelectorAll('#bank .bt').length;
-      if(bankSize===0){ browserPanel.appendChild(mk('div','font-family:monospace;font-size:9px;color:#555;padding:10px;text-align:center;','No tiles — open a puzzle first')); return; }
-      for(var i=0;i<bankSize;i++){
-        var hasCustom=!!userSamples[i];
-        var hasSample=hasCustom||(sampleMeta[i]&&sampleMeta[i]._isStock);
-        var name=names[i]||('Tile '+(i+1));
-        var isActive=(i===tileIdx);
-        var col=hasCustom?'#4ade80':hasSample?'#ccc':'#888';
-        var row=mk('div','display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;border-bottom:1px solid #222;'+(isActive?'background:#1e1e3a;':''  ));
-        row.appendChild(mk('span','font-family:monospace;font-size:9px;color:#555;min-width:24px;flex-shrink:0;',+(i+1)+'.'));
-        row.appendChild(mk('span','font-family:monospace;font-size:10px;flex:1;color:'+col+';',name));
-        if(hasSample){
+
+      // Style selector tabs at top of browser
+      var tabBar=mk('div','display:flex;gap:4px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid #333;');
+      var _browseStyle=SOUND_STYLE;
+      var styleLabels={A:'Classic',B:'8-Bit',C:'Sci-Fi',D:'Nature',E:'Industrial',F:'Piano'};
+      var tabs={};
+      ['A','B','C','D','E','F'].forEach(function(s){
+        var tab=mk('button','font-family:monospace;font-size:8px;font-weight:700;padding:3px 7px;border:1.5px solid #555;border-radius:3px;cursor:pointer;'+(s===_browseStyle?'background:#ef4444;color:#fff;border-color:#ef4444;':'background:transparent;color:#888;'),styleLabels[s]);
+        tab.addEventListener('click',function(){
+          _browseStyle=s;
+          Object.keys(tabs).forEach(function(k){
+            tabs[k].style.background=k===s?'#ef4444':'transparent';
+            tabs[k].style.color=k===s?'#fff':'#888';
+            tabs[k].style.borderColor=k===s?'#ef4444':'#555';
+          });
+          buildList();
+        });
+        tabs[s]=tab;
+        tabBar.appendChild(tab);
+      });
+      browserPanel.appendChild(tabBar);
+
+      var listEl=mk('div','display:flex;flex-direction:column;');
+      browserPanel.appendChild(listEl);
+
+      function buildList(){
+        listEl.innerHTML='';
+        var names=STOCK_NAMES[_browseStyle]||[];
+        var count=names.length||50;
+        for(var i=0;i<count;i++){
+          var soundName=names[i]||('Sound '+(i+1));
+          var isCurrentStyle=(_browseStyle===SOUND_STYLE);
+          var hasCustom=isCurrentStyle&&!!userSamples[i];
+          var hasSample=hasCustom||(isCurrentStyle&&sampleMeta[i]&&sampleMeta[i]._isStock);
+          var isAssigned=isCurrentStyle&&(i===tileIdx);
+          var row=mk('div','display:flex;align-items:center;gap:6px;padding:5px 10px;cursor:pointer;border-bottom:1px solid #1a1a1a;'+(isAssigned?'background:#1e1e3a;':''  ));
+          row.appendChild(mk('span','font-family:monospace;font-size:8px;color:#444;min-width:20px;flex-shrink:0;',''+(i+1)));
+          row.appendChild(mk('span','font-family:monospace;font-size:10px;flex:1;color:'+(hasCustom?'#4ade80':'#ccc')+';',soundName+(hasCustom?' ●':'')));
+          // Preview button
           var pb=mk('button','font-family:monospace;font-size:9px;padding:2px 7px;border:1px solid #555;border-radius:3px;background:transparent;color:#aaa;cursor:pointer;flex-shrink:0;','>');
-          pb.addEventListener('click',(function(ii){return function(e){e.stopPropagation();playBankSound(ii,0.7);};})(i));
+          pb.addEventListener('click',(function(ii,ss){
+            return function(e){
+              e.stopPropagation();
+              // Preview using the target style temporarily
+              var prev=SOUND_STYLE; SOUND_STYLE=ss;
+              playBankSound(ii,0.7);
+              SOUND_STYLE=prev;
+            };
+          })(i,_browseStyle));
           row.appendChild(pb);
+          // Assign button — sets this tile to use this sound style+index
+          var ab=mk('button','font-family:monospace;font-size:8px;padding:2px 7px;border:1px solid #7c3aed;border-radius:3px;background:transparent;color:#a78bfa;cursor:pointer;flex-shrink:0;','USE');
+          ab.addEventListener('click',(function(ii,ss){
+            return function(e){
+              e.stopPropagation();
+              // Store override: tile tileIdx uses style ss, sound index ii
+              if(!window._tileStyleOverride) window._tileStyleOverride={};
+              window._tileStyleOverride[tileIdx]={style:ss,idx:ii};
+              ab.style.background='#7c3aed'; ab.style.color='#fff';
+              ab.textContent='SET!';
+              setTimeout(function(){ ab.style.background='transparent'; ab.style.color='#a78bfa'; ab.textContent='USE'; },800);
+            };
+          })(i,_browseStyle));
+          row.appendChild(ab);
+          listEl.appendChild(row);
         }
-        row.addEventListener('click',(function(ii){return function(){
-          var _ov2=document.getElementById('_sampleOv');
-          if(_ov2&&_ov2.parentNode)_ov2.parentNode.removeChild(_ov2);
-          window._startSampleRecord(ii);
-        };})(i));
-        browserPanel.appendChild(row);
       }
-      setTimeout(function(){var rows=browserPanel.querySelectorAll('div[style]');if(rows[tileIdx])rows[tileIdx].scrollIntoView({block:'center'});},50);
+      buildList();
     }
 
     var _browserOpen=false;
