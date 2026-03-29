@@ -6019,73 +6019,66 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
     // ── Sample Browser ──
     var browserBtn=mk('button','font-family:monospace;font-size:10px;font-weight:700;padding:6px 14px;border:1.5px solid #555;border-radius:5px;background:#2a2a2a;color:#ccc;cursor:pointer;width:100%;text-align:left;letter-spacing:.5px;','\uD83D\uDD0E  BROWSE ALL SAMPLES');
-    var browserPanel=mk('div','display:none;width:100%;max-height:200px;overflow-y:auto;border:1.5px solid #444;border-radius:5px;background:#111;flex-direction:column;');
+    var browserPanel=mk('div','display:none;width:100%;height:260px;border:1.5px solid #444;border-radius:5px;background:#111;flex-direction:column;overflow:hidden;');
 
     function buildBrowserList(){
       browserPanel.innerHTML='';
-
-      // Style selector tabs at top of browser
-      var tabBar=mk('div','display:flex;gap:4px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid #333;');
-      var _browseStyle=SOUND_STYLE;
       var styleLabels={A:'Classic',B:'8-Bit',C:'Sci-Fi',D:'Nature',E:'Industrial',F:'Piano'};
+      var _browseStyle={val:SOUND_STYLE}; // object so closures share reference
       var tabs={};
-      ['A','B','C','D','E','F'].forEach(function(s){
-        var tab=mk('button','font-family:monospace;font-size:8px;font-weight:700;padding:3px 7px;border:1.5px solid #555;border-radius:3px;cursor:pointer;'+(s===_browseStyle?'background:#ef4444;color:#fff;border-color:#ef4444;':'background:transparent;color:#888;'),styleLabels[s]);
-        tab.addEventListener('click',function(){
-          _browseStyle=s;
-          Object.keys(tabs).forEach(function(k){
-            tabs[k].style.background=k===s?'#ef4444':'transparent';
-            tabs[k].style.color=k===s?'#fff':'#888';
-            tabs[k].style.borderColor=k===s?'#ef4444':'#555';
-          });
-          buildList();
+
+      // Tab bar
+      var tabBar=mk('div','display:flex;gap:3px;flex-wrap:wrap;padding:5px 6px;border-bottom:1px solid #333;flex-shrink:0;');
+      function setTab(s){
+        _browseStyle.val=s;
+        Object.keys(tabs).forEach(function(k){
+          tabs[k].style.background=k===s?'#ef4444':'transparent';
+          tabs[k].style.color=k===s?'#fff':'#888';
+          tabs[k].style.borderColor=k===s?'#ef4444':'#555';
         });
+        buildList();
+      }
+      ['A','B','C','D','E','F'].forEach(function(s){
+        var tab=mk('button','font-family:monospace;font-size:8px;font-weight:700;padding:3px 6px;border:1.5px solid #555;border-radius:3px;cursor:pointer;'+(s===_browseStyle.val?'background:#ef4444;color:#fff;border-color:#ef4444;':'background:transparent;color:#888;'),styleLabels[s]);
+        tab.addEventListener('click',(function(ss){return function(){setTab(ss);};})(s));
         tabs[s]=tab;
         tabBar.appendChild(tab);
       });
       browserPanel.appendChild(tabBar);
 
-      var listEl=mk('div','display:flex;flex-direction:column;');
+      // List container
+      var listEl=mk('div','flex:1;overflow-y:auto;');
       browserPanel.appendChild(listEl);
 
       function buildList(){
         listEl.innerHTML='';
-        var names=STOCK_NAMES[_browseStyle]||[];
-        var count=names.length||50;
+        var s=_browseStyle.val;
+        var names=STOCK_NAMES[s]||[];
+        var count=Math.max(names.length,10);
         for(var i=0;i<count;i++){
           var soundName=names[i]||('Sound '+(i+1));
-          var isCurrentStyle=(_browseStyle===SOUND_STYLE);
-          var hasCustom=isCurrentStyle&&!!userSamples[i];
-          var hasSample=hasCustom||(isCurrentStyle&&sampleMeta[i]&&sampleMeta[i]._isStock);
-          var isAssigned=isCurrentStyle&&(i===tileIdx);
-          var row=mk('div','display:flex;align-items:center;gap:6px;padding:5px 10px;cursor:pointer;border-bottom:1px solid #1a1a1a;'+(isAssigned?'background:#1e1e3a;':''  ));
-          row.appendChild(mk('span','font-family:monospace;font-size:8px;color:#444;min-width:20px;flex-shrink:0;',''+(i+1)));
-          row.appendChild(mk('span','font-family:monospace;font-size:10px;flex:1;color:'+(hasCustom?'#4ade80':'#ccc')+';',soundName+(hasCustom?' ●':'')));
-          // Preview button
-          var pb=mk('button','font-family:monospace;font-size:9px;padding:2px 7px;border:1px solid #555;border-radius:3px;background:transparent;color:#aaa;cursor:pointer;flex-shrink:0;','>');
+          var isCur=(s===SOUND_STYLE);
+          var hasCustom=isCur&&!!userSamples[i];
+          var hasSample=hasCustom||(isCur&&sampleMeta[i]&&sampleMeta[i]._isStock);
+          var isAssigned=isCur&&(i===tileIdx);
+          var row=mk('div','display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid #1a1a1a;'+(isAssigned?'background:#1e1e3a;':''  ));
+          row.appendChild(mk('span','font-family:monospace;font-size:8px;color:#444;min-width:20px;flex-shrink:0;',''+(i+1)+'.'));
+          row.appendChild(mk('span','font-family:monospace;font-size:10px;flex:1;color:'+(hasCustom?'#4ade80':'#ddd')+';',soundName+(hasCustom?' ●':'')));
+          var pb=mk('button','font-family:monospace;font-size:9px;padding:2px 8px;border:1px solid #555;border-radius:3px;background:transparent;color:#aaa;cursor:pointer;flex-shrink:0;','>');
           pb.addEventListener('click',(function(ii,ss){
-            return function(e){
-              e.stopPropagation();
-              // Preview using the target style temporarily
-              var prev=SOUND_STYLE; SOUND_STYLE=ss;
-              playBankSound(ii,0.7);
-              SOUND_STYLE=prev;
-            };
-          })(i,_browseStyle));
+            return function(e){ e.stopPropagation(); var p=SOUND_STYLE; SOUND_STYLE=ss; playBankSound(ii,0.7); SOUND_STYLE=p; };
+          })(i,s));
           row.appendChild(pb);
-          // Assign button — sets this tile to use this sound style+index
-          var ab=mk('button','font-family:monospace;font-size:8px;padding:2px 7px;border:1px solid #7c3aed;border-radius:3px;background:transparent;color:#a78bfa;cursor:pointer;flex-shrink:0;','USE');
-          ab.addEventListener('click',(function(ii,ss){
+          var ab=mk('button','font-family:monospace;font-size:8px;padding:2px 8px;border:1.5px solid #7c3aed;border-radius:3px;background:transparent;color:#a78bfa;cursor:pointer;flex-shrink:0;','USE');
+          ab.addEventListener('click',(function(ii,ss,btn){
             return function(e){
               e.stopPropagation();
-              // Store override: tile tileIdx uses style ss, sound index ii
               if(!window._tileStyleOverride) window._tileStyleOverride={};
               window._tileStyleOverride[tileIdx]={style:ss,idx:ii};
-              ab.style.background='#7c3aed'; ab.style.color='#fff';
-              ab.textContent='SET!';
-              setTimeout(function(){ ab.style.background='transparent'; ab.style.color='#a78bfa'; ab.textContent='USE'; },800);
+              btn.textContent='SET!'; btn.style.background='#7c3aed'; btn.style.color='#fff';
+              setTimeout(function(){btn.textContent='USE';btn.style.background='transparent';btn.style.color='#a78bfa';},800);
             };
-          })(i,_browseStyle));
+          })(i,s,ab));
           row.appendChild(ab);
           listEl.appendChild(row);
         }
