@@ -4750,7 +4750,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       rawTime = Math.max(0, Math.min(loopMs * 0.999, rawTime));
       var qt = quantizeTime(rawTime);
       qt = Math.max(0, Math.min(loopMs - 10, qt));
-      recTrack.push({ sndIdx:sndIdx, bankIdx:bankIdx, time:qt, vol:parseFloat(recVolume)||1.0 });
+      recTrack.push({ sndIdx:sndIdx, bankIdx:bankIdx, time:qt, bpmAtRecord:bpm, vol:parseFloat(recVolume)||1.0 });
     }
   };
 
@@ -4822,8 +4822,11 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // Schedule all existing track events
     tracks.forEach(function(tr){
       tr.forEach(function(ev){
+        // Scale event time if BPM has changed since recording
+        var _evBpm = ev.bpmAtRecord || bpm;
+        var _scaledTime = ev.time * (_evBpm / bpm);
         // Clamp event time to just inside loop to prevent bunching at end
-        var t = Math.min(ev.time, loopMs - 5);
+        var t = Math.min(_scaledTime, loopMs - 5);
         if(t < 0) return;
         var handle=(function(ev,t){
           return setTimeout(function(){
@@ -5406,11 +5409,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   var bpmInput = document.getElementById('proBpm');
   if(bpmInput) bpmInput.addEventListener('change',function(){
     var v=parseInt(this.value);
-    if(v>=40&&v<=300){ bpm=v; var _tb=document.getElementById('tbBpmInput'); if(_tb) _tb.value=v; if(isPlaying||waitingForFirstNote){ stopBeatClock(); if(isPlaying) startBeatClock(); } }
+    if(v>=40&&v<=300){ bpm=v; var _tb=document.getElementById('tbBpmInput'); if(_tb) _tb.value=v; if(isPlaying||waitingForFirstNote){ stopBeatClock(); if(isPlaying){ startBeatClock(); schedulePlayback(); } } }
     else this.value=bpm;
   });
 
   // Tap tempo
+  var tbTapBtn = document.getElementById('tbTapBtn');
+  if(tbTapBtn) tbTapBtn.addEventListener('click', function(){ if(proTap) proTap.click(); });
   var proTap = document.getElementById('proTap');
   if(proTap) proTap.addEventListener('click',function(){
     var now=Date.now();
@@ -5424,7 +5429,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       bpm=Math.max(40,Math.min(300,bpm));
       if(bpmInput) bpmInput.value=bpm;
       var _tbBpm=document.getElementById('tbBpmInput'); if(_tbBpm) _tbBpm.value=Math.round(bpm);
-      if(isPlaying||waitingForFirstNote){ stopBeatClock(); if(isPlaying) startBeatClock(); }
+      if(isPlaying||waitingForFirstNote){ stopBeatClock(); if(isPlaying){ startBeatClock(); schedulePlayback(); } }
     }
     // Flash tap button
     proTap.style.background='#ef4444';
