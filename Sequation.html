@@ -112,20 +112,20 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .bt.pressed{transform:translate(2px,2px)!important;box-shadow:0 0 0 var(--br)!important;}
 .bt.active-flash{background:var(--flash-bg,#ef4444)!important;color:#fff!important;border-color:#991b1b!important;}
 @keyframes seq-intro-zoom{
-  0%  { transform:scale(1) translateY(0);    opacity:1; }
-  40% { transform:scale(2.5) translateY(0);  opacity:1; }
-  65% { transform:scale(6) translateY(-8px); opacity:1; }
-  85% { transform:scale(9) translateY(-10px);opacity:1; }
-  100%{ transform:scale(9) translateY(-10px);opacity:0; }
+  0%   { transform:scale(1);    opacity:1; }
+  30%  { transform:scale(1);    opacity:1; }
+  65%  { transform:scale(5) translateY(-5px); opacity:1; }
+  85%  { transform:scale(9) translateY(-7px); opacity:1; }
+  100% { transform:scale(9) translateY(-7px); opacity:0; }
 }
 @keyframes seq-plus-fade{
-  0%  { opacity:0; transform:translateY(8px); }
-  100%{ opacity:1; transform:translateY(0); }
+  0%  { opacity:0; transform:translateX(-50%) translateY(6px); }
+  100%{ opacity:1; transform:translateX(-50%) translateY(0); }
 }
 #seqIntroOv{position:fixed;inset:0;z-index:9999;background:#e8e2d6;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
 #seqIntroOv .si-title{font-family:'Abril Fatface',serif;font-size:32px;letter-spacing:3px;color:#1c1c1c;position:relative;}
 #seqIntroOv .si-title span{color:#ef4444;}
-#seqIntroOv .si-plus{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;letter-spacing:3px;color:#ef4444;margin-top:2px;opacity:0;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;}
+#seqIntroOv .si-plus{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;letter-spacing:4px;color:#ef4444;opacity:0;position:absolute;top:105%;left:50%;transform:translateX(-50%);white-space:nowrap;}
 @keyframes bt-spin{
   0%  {transform:rotate(0deg) scale(1);}
   40% {transform:rotate(200deg) scale(0.75);}
@@ -4601,6 +4601,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   // Pro mode state
   var proMode = false;
   var bpm = 120;
+  var _pendingBars = null;
   var bars = 2;
   var clickOn = true;
   var accentOn = true;
@@ -5279,53 +5280,79 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(_seqIntroDone){ cb(); return; }
     _seqIntroDone=true;
 
-    var ov=document.createElement('div'); ov.id='seqIntroOv';
-    var titleWrap=document.createElement('div'); titleWrap.style.cssText='position:relative;display:inline-block;';
-    var titleEl=document.createElement('div'); titleEl.className='si-title';
-    titleEl.innerHTML='SEQU<span>ATION</span>';
-    var plusEl=document.createElement('div'); plusEl.className='si-plus';
-    plusEl.textContent='+ SEQUENCER';
-    titleWrap.appendChild(titleEl);
-    titleWrap.appendChild(plusEl);
-    ov.appendChild(titleWrap);
-    document.body.appendChild(ov);
+    var mastContainer=document.querySelector('.mast');
+    var hiddenTxt=document.getElementById('seqHiddenText');
+    if(!mastContainer){ cb(); return; }
 
-    // Phase 1: zoom into the E at end of SEQUATION (0-1.4s)
-    titleWrap.style.transformOrigin='85% 100%'; // right side, bottom (under the E)
-    titleWrap.style.animation='seq-intro-zoom 1.6s cubic-bezier(0.4,0,0.2,1) forwards';
+    // Remember scroll position
+    var _origScroll=window.scrollY||document.documentElement.scrollTop||0;
+    window.scrollTo({top:0,behavior:'smooth'});
 
-    // Phase 2: show "+ SEQUENCER" at 1.1s
     setTimeout(function(){
-      plusEl.style.animation='seq-plus-fade 0.35s ease forwards';
-    }, 1050);
+      var mastRect=mastContainer.getBoundingClientRect();
 
-    // Phase 3: fade out overlay at 1.6s, then callback
-    setTimeout(function(){
-      ov.style.transition='opacity 0.3s';
-      ov.style.opacity='0';
+      // Full-screen overlay with cloned mast
+      var ov=document.createElement('div');
+      ov.style.cssText='position:fixed;inset:0;z-index:9999;overflow:hidden;pointer-events:none;background:var(--bg,#e8e2d6);';
+      document.body.appendChild(ov);
+
+      var clone=mastContainer.cloneNode(true);
+      var cloneHidden=clone.querySelector('#seqHiddenText');
+      clone.style.cssText='position:absolute;top:'+mastRect.top+'px;left:0;width:100%;margin:0;padding:'+getComputedStyle(mastContainer).padding+';box-sizing:border-box;';
+      if(cloneHidden){ cloneHidden.style.fontSize='1.8px'; cloneHidden.style.opacity='0.01'; cloneHidden.style.animation='none'; }
+      ov.appendChild(clone);
+
+      // Anchor zoom origin to bottom-right of title (under the E in ATION)
+      clone.style.transformOrigin='72% 100%';
+      clone.style.transform='scale(1)';
+      clone.style.transition='none';
+
+      // Phase 1: hold 0.6s then zoom in
+      setTimeout(function(){
+        clone.style.transition='transform 1.5s cubic-bezier(0.4,0,0.15,1)';
+        clone.style.transform='scale(14)';
+      }, 600);
+
+      // Phase 2: text pop + chime at 2s
+      setTimeout(function(){
+        if(cloneHidden){
+          cloneHidden.style.transition='none';
+          cloneHidden.style.animation='seqTextPop 2.4s ease forwards';
+        }
+        try{
+          if(AC){ resumeAC();
+            var t2=AC.currentTime;
+            var g=AC.createGain(); g.connect(getMasterDest());
+            var o=AC.createOscillator(); o.type='sine';
+            o.frequency.setValueAtTime(880,t2);
+            o.frequency.exponentialRampToValueAtTime(1760,t2+0.1);
+            o.frequency.exponentialRampToValueAtTime(1320,t2+0.25);
+            g.gain.setValueAtTime(0.18,t2);
+            g.gain.exponentialRampToValueAtTime(0.001,t2+0.4);
+            o.connect(g); o.start(t2); o.stop(t2+0.45);
+          }
+        }catch(e){}
+      }, 2000);
+
+      // Phase 3: zoom back out at 4.6s
+      setTimeout(function(){
+        clone.style.transition='transform 1s cubic-bezier(0.4,0,0.6,1), opacity 0.6s 0.4s';
+        clone.style.transform='scale(1)';
+        clone.style.opacity='0';
+      }, 4600);
+
+      // Phase 4: done at 5.8s
       setTimeout(function(){
         if(ov.parentNode) ov.parentNode.removeChild(ov);
+        if(_origScroll>10){
+          window.scrollTo({top:_origScroll,behavior:'smooth'});
+        }
         cb();
-      }, 320);
-    }, 1650);
+      }, 5800);
+
+    }, 450);
   }
 
-  if(btnPro) btnPro.addEventListener('click',function(){
-    btnFx('pro');
-    if(!seqVisible){
-      // Single tap: show everything
-      playSeqIntro(function(){ showSeq(); });
-    } else {
-      // Already visible: need double tap to hide
-      seqTaps++; clearTimeout(seqTapTimer);
-      seqTapTimer=setTimeout(function(){ seqTaps=0; },400);
-      if(seqTaps>=2){ seqTaps=0; hideSeq(); }
-    }
-  });
-
-  // ── Pro panel controls ────────────────────────────────────
-  // Bar length buttons
-  // ── Slot system ──────────────────────────────────────────
   function updateSlotUI(){
     document.querySelectorAll('.pro-slot').forEach(function(btn){
       var slot=parseInt(btn.dataset.slot);
