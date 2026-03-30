@@ -90,14 +90,14 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .pro-beats{display:flex;gap:4px;flex-wrap:wrap;align-items:center;justify-content:center;opacity:1;pointer-events:none;}
 .pro-slot-btns{display:flex;gap:2px;margin-left:4px;}
 .pro-slot{min-width:20px;padding:3px 4px;font-size:8px;}
-.pro-slot.active{background:var(--bk);color:var(--bg);}
+.pro-slot.active{background:#fca5a5;color:#1c1c1c;border-color:#1c1c1c!important;font-weight:700;}
 .pro-slot.has-data{border-color:var(--ac);color:var(--ac);}
 .pro-slot.clone-src{background:#7c3aed!important;border-color:#4c1d95!important;color:#fff!important;}
 .pro-slot.clone-tgt{border-color:#7c3aed!important;border-style:dashed!important;}
-.pro-beat{width:10px;height:10px;border-radius:50%;background:#ccc;border:1.5px solid var(--br);transition:background .05s;flex-shrink:0;}
-.pro-beat.accent{background:#aaa;border-color:var(--bk);}
-.pro-beat.mid-accent{background:#bbb;border-color:#555;}
-.pro-beat.active{background:#ef4444;border-color:#991b1b;box-shadow:0 0 4px #ef4444;}
+.pro-beat{border-radius:50%;background:#ccc;border:1.5px solid var(--br);transition:background .05s;flex-shrink:0;}
+.pro-beat.accent{background:#888;border:2.5px solid #1c1c1c;}
+.pro-beat.mid-accent{background:#aaa;border:2px solid #444;}
+.pro-beat.active{background:#ef4444!important;border-color:#991b1b!important;box-shadow:0 0 4px #ef4444;}
 .pro-beat.erase-range{background:#fde047!important;border-color:#ca8a04!important;box-shadow:0 0 3px #fbbf24!important;}
 .pro-beat.erase-sel{background:#f97316!important;border-color:#c2410c!important;box-shadow:0 0 4px #f97316!important;}
 
@@ -212,6 +212,10 @@ window.onerror=function(msg,src,line,col,err){
     <button class="bsnd" id="sndD" onclick="setSoundStyle('D')">♪ Nature</button>
     <button class="bsnd" id="sndE" onclick="setSoundStyle('E')">♪ Industrial</button>
     <button class="bsnd" id="sndF" onclick="setSoundStyle('F')">🎹 Piano</button>
+    <button class="bsnd" id="sndG" onclick="setSoundStyle('G')">🎻 Violin</button>
+    <button class="bsnd" id="sndH" onclick="setSoundStyle('H')">🪈 Flute</button>
+    <button class="bsnd" id="sndI" onclick="setSoundStyle('I')">🎸 Guitar</button>
+    <button class="bsnd" id="sndJ" onclick="setSoundStyle('J')">🎸 Bass</button>
   </div>
 </div>
 
@@ -1914,7 +1918,7 @@ var STOCK_NAMES={A:['Kick','Snare','Closed HH','Open HH','Low Tom','Mid Tom','Hi
 
 function setSoundStyle(s){
   SOUND_STYLE=s;
-  ['A','B','C','D','E','F'].forEach(function(id){
+  ['A','B','C','D','E','F','G','H','I','J'].forEach(function(id){
     var b=document.getElementById('snd'+id); if(b) b.classList.toggle('active',s===id);
   });
   resumeAC();
@@ -2756,6 +2760,10 @@ function playBankSound(idx, eventVol){
   else if(_useStyle==='D') playBankD(_useIdx,_vol);
   else if(_useStyle==='E') playBankE(_useIdx,_vol);
   else if(_useStyle==='F') playBankF(_useIdx,_vol);
+  else if(_useStyle==='G') playBankG(_useIdx,_vol);
+  else if(_useStyle==='H') playBankH(_useIdx,_vol);
+  else if(_useStyle==='I') playBankI(_useIdx,_vol);
+  else if(_useStyle==='J') playBankJ(_useIdx,_vol);
   else playBankA(_useIdx,_vol);
 }
 
@@ -2811,6 +2819,121 @@ function _bsBird(baseFreq, vol){
 }
 
 // ── STYLE A: Classic Drums + Piano + Synth ───────────────────
+
+function playBankF(idx,_bankVol){
+  var _bv=(_bankVol!==undefined)?_bankVol:1.0;
+  var n=Math.max(0,Math.min(87,idx));
+  var freq=27.5*Math.pow(2,n/12);
+  var t=AC.currentTime;
+  var dec=Math.max(0.15,1.8-n*0.018);
+  var g=AC.createGain(); g.connect(getMasterDest());
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.linearRampToValueAtTime(0.45*_bv,t+0.003);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dec);
+  var o1=AC.createOscillator(); o1.type='triangle'; o1.frequency.value=freq;
+  o1.connect(g); o1.start(t); o1.stop(t+dec);
+  var g2=AC.createGain(); g2.gain.value=0.3; g2.connect(g);
+  var o2=AC.createOscillator(); o2.type='sine'; o2.frequency.value=freq*2;
+  o2.connect(g2); o2.start(t); o2.stop(t+dec);
+  var g3=AC.createGain(); g3.gain.value=0.12; g3.connect(g);
+  var o3=AC.createOscillator(); o3.type='sine'; o3.frequency.value=freq*3;
+  o3.connect(g3); o3.start(t); o3.stop(t+dec);
+}
+
+// ── VIOLIN (G) ──────────────────────────────────────────────
+function playBankG(idx,_bv){
+  if(!AC) return; _bv=_bv||1;
+  var n=Math.max(0,Math.min(87,idx));
+  var freq=196*Math.pow(2,n/12); // G3 base
+  var t=AC.currentTime;
+  var dec=Math.max(0.4,1.6-n*0.01);
+  var g=AC.createGain(); g.connect(getMasterDest());
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.linearRampToValueAtTime(0.35*_bv,t+0.12); // slow bow attack
+  g.gain.setValueAtTime(0.35*_bv,t+dec*0.7);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dec);
+  var o=AC.createOscillator(); o.type='sawtooth'; o.frequency.value=freq;
+  // Slight vibrato via LFO
+  var lfo=AC.createOscillator(); lfo.frequency.value=5.5;
+  var lfoG=AC.createGain(); lfoG.gain.value=freq*0.012;
+  lfo.connect(lfoG); lfoG.connect(o.frequency);
+  var f=AC.createBiquadFilter(); f.type='bandpass'; f.frequency.value=freq*2; f.Q.value=0.8;
+  o.connect(f); f.connect(g);
+  o.start(t); o.stop(t+dec); lfo.start(t); lfo.stop(t+dec);
+}
+
+// ── FLUTE (H) ────────────────────────────────────────────────
+function playBankH(idx,_bv){
+  if(!AC) return; _bv=_bv||1;
+  var n=Math.max(0,Math.min(87,idx));
+  var freq=261.6*Math.pow(2,n/12); // C4 base
+  var t=AC.currentTime;
+  var dec=Math.max(0.3,1.2-n*0.008);
+  var g=AC.createGain(); g.connect(getMasterDest());
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.linearRampToValueAtTime(0.28*_bv,t+0.06);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dec);
+  // Sine fundamental
+  var o1=AC.createOscillator(); o1.type='sine'; o1.frequency.value=freq;
+  // Breathy noise
+  var buf=AC.createBuffer(1,AC.sampleRate*0.08,AC.sampleRate);
+  var d=buf.getChannelData(0); for(var i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*0.12*_bv;
+  var ns=AC.createBufferSource(); ns.buffer=buf;
+  var nbp=AC.createBiquadFilter(); nbp.type='bandpass'; nbp.frequency.value=freq*1.5; nbp.Q.value=3;
+  var ng=AC.createGain(); ng.gain.setValueAtTime(0.5,t); ng.gain.exponentialRampToValueAtTime(0.0001,t+0.06);
+  ns.connect(nbp); nbp.connect(ng); ng.connect(getMasterDest());
+  // 3rd harmonic subtle
+  var o2=AC.createOscillator(); o2.type='sine'; o2.frequency.value=freq*3;
+  var g2=AC.createGain(); g2.gain.value=0.08;
+  o1.connect(g); o2.connect(g2); g2.connect(g);
+  o1.start(t); o1.stop(t+dec); o2.start(t); o2.stop(t+dec); ns.start(t);
+}
+
+// ── ACOUSTIC GUITAR (I) ──────────────────────────────────────
+function playBankI(idx,_bv){
+  if(!AC) return; _bv=_bv||1;
+  var n=Math.max(0,Math.min(87,idx));
+  var freq=110*Math.pow(2,n/12); // A2 base
+  var t=AC.currentTime;
+  var dec=Math.max(0.3,2.2-n*0.02);
+  var g=AC.createGain(); g.connect(getMasterDest());
+  g.gain.setValueAtTime(0.4*_bv,t);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dec);
+  // Karplus-Strong-ish: fundamental + harmonics with quick decay
+  var freqs=[1,2,3,4,5];
+  var vols=[0.5,0.25,0.15,0.08,0.04];
+  freqs.forEach(function(m,i2){
+    var o=AC.createOscillator(); o.type='triangle';
+    o.frequency.value=freq*m;
+    var og=AC.createGain(); og.gain.value=vols[i2];
+    o.connect(og); og.connect(g); o.start(t); o.stop(t+dec);
+  });
+  // Body resonance
+  var f=AC.createBiquadFilter(); f.type='peaking'; f.frequency.value=200; f.gain.value=4; f.Q.value=1;
+  g.connect(f); // note: g already connects to dest, this adds coloring
+}
+
+// ── BASS (J) ─────────────────────────────────────────────────
+function playBankJ(idx,_bv){
+  if(!AC) return; _bv=_bv||1;
+  var n=Math.max(0,Math.min(87,idx));
+  var freq=41.2*Math.pow(2,n/12); // E1 base (bass range)
+  var t=AC.currentTime;
+  var dec=Math.max(0.3,1.8-n*0.015);
+  var g=AC.createGain(); g.connect(getMasterDest());
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.linearRampToValueAtTime(0.5*_bv,t+0.015); // punchy attack
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dec);
+  var o1=AC.createOscillator(); o1.type='triangle'; o1.frequency.value=freq;
+  var o2=AC.createOscillator(); o2.type='sine'; o2.frequency.value=freq*2;
+  var g2=AC.createGain(); g2.gain.value=0.2;
+  // Click transient
+  var click=AC.createOscillator(); click.type='square'; click.frequency.value=freq*4;
+  var cg=AC.createGain(); cg.gain.setValueAtTime(0.15*_bv,t); cg.gain.exponentialRampToValueAtTime(0.0001,t+0.04);
+  var lp=AC.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=400;
+  o1.connect(g); o2.connect(g2); g2.connect(g); click.connect(cg); cg.connect(lp); lp.connect(getMasterDest());
+  o1.start(t); o1.stop(t+dec); o2.start(t); o2.stop(t+dec); click.start(t); click.stop(t+0.05);
+}
 function playBankA(idx,_bankVol){
   var t=AC.currentTime;
   var _bv=(_bankVol!==undefined)?_bankVol:1.0;
@@ -2820,7 +2943,7 @@ function playBankA(idx,_bankVol){
     function S(tp,f1,f2,v,d){_bsS(tp,f1,f2,v*_bv,d);}
     function N(v,d,lp){window._bsNVol=_bv;_bsN(v,d,lp);window._bsNVol=1.0;}
     switch(idx){
-      case 0: S('sine',120,40,0.8,0.35);N(0.3,0.04,200);break; // Kick
+      case 0: S('sine',120,40,1.2,0.35);N(0.45,0.04,200);break; // Kick (150% vol)
       case 1: N(0.7,0.18,3000);S('triangle',220,180,0.3,0.12);break; // Snare
       case 2: N(0.5,0.05,8000);break; // Closed HH
       case 3: N(0.4,0.3,7000);break;  // Open HH
@@ -4642,9 +4765,16 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         var isMid=(bpb>4&&idx%bpb===halfBar);
         var td=document.createElement(isBig?'button':'div');
         td.className='pro-beat'+(isAcc?' accent':isMid?' mid-accent':'');
-        td.style.cssText='width:'+sz+';height:'+sz+';flex-shrink:0;border-radius:50%;'+(isBig?'cursor:pointer;border:none;padding:0;touch-action:manipulation;background:#ccc;':'');
+        td.style.cssText='width:'+sz+';height:'+sz+';flex-shrink:0;border-radius:50%;'+(isBig?'cursor:pointer;padding:0;':'');
         td.dataset.beat=idx;
         if(isBig){
+          // Use touchend for reliable Android tap detection
+          var _dtTimer=null;
+          td.addEventListener('touchstart',function(e){ e.stopPropagation(); _dtTimer=setTimeout(function(){_dtTimer=null;},500); },{passive:true});
+          td.addEventListener('touchend',(function(beatIdx,btn){ return function(e){
+            e.stopPropagation(); e.preventDefault();
+            if(_dtTimer){ clearTimeout(_dtTimer); _dtTimer=null; openBeatEditor(beatIdx); }
+          }; })(idx,td),{passive:false});
           td.addEventListener('click',(function(beatIdx){ return function(e){
             e.stopPropagation(); openBeatEditor(beatIdx);
           }; })(idx));
@@ -5112,7 +5242,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(_seqIntroDone){ cb(); return; }
     _seqIntroDone=true;
     var _cbCalled=false;
-    var _safeTimer=setTimeout(function(){ if(!_cbCalled){_cbCalled=true;cb();} },8000);
+    var _safeTimer=setTimeout(function(){ if(!_cbCalled){_cbCalled=true;cb();} },9000);
     function done(){ clearTimeout(_safeTimer); if(!_cbCalled){_cbCalled=true;cb();} }
 
     var _origScroll=window.scrollY||document.documentElement.scrollTop||0;
@@ -5120,47 +5250,49 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
     setTimeout(function(){
       try{
-        // Full overlay with our own title — not a clone
         var ov=document.createElement('div');
-        ov.style.cssText='position:fixed;inset:0;z-index:9999;background:#e8e2d6;display:flex;align-items:center;justify-content:center;overflow:hidden;pointer-events:none;';
+        ov.style.cssText='position:fixed;inset:0;z-index:9999;background:#e8e2d6;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;pointer-events:none;';
         document.body.appendChild(ov);
 
-        // Title wrapper — we zoom this
-        var wrap=document.createElement('div');
-        wrap.style.cssText='position:relative;display:inline-block;';
+        // Main logo — matches sel-mast style
+        var logoWrap=document.createElement('div');
+        logoWrap.style.cssText='display:flex;flex-direction:column;align-items:center;position:relative;';
 
-        // Main title
-        var title=document.createElement('div');
-        title.style.cssText="font-family:'Abril Fatface',serif;font-size:28px;letter-spacing:3px;color:#1c1c1c;white-space:nowrap;";
-        title.innerHTML='SEQU<span style="color:#ef4444;">ATION</span>';
-        wrap.appendChild(title);
+        var h1=document.createElement('div');
+        h1.style.cssText="font-family:'Abril Fatface',serif;font-size:36px;letter-spacing:3px;color:#1c1c1c;line-height:1;";
+        h1.innerHTML='SEQU<span style="color:#ef4444;">ATION</span>';
+        logoWrap.appendChild(h1);
 
-        // Hidden text — positioned below the end of ATION, tiny until zoomed
+        var sub=document.createElement('div');
+        sub.style.cssText="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#555;margin-top:6px;";
+        sub.textContent='The Daily Arithmetic Puzzle';
+        logoWrap.appendChild(sub);
+
+        // Hidden +SEQUENCER text — sits right below the 'e' in 'Puzzle'
+        // Positioned at bottom-right of subtitle (end of 'Puzzle')
         var hidden=document.createElement('div');
-        hidden.style.cssText='position:absolute;font-family:"IBM Plex Mono",monospace;font-size:2px;letter-spacing:0.5px;color:#ef4444;white-space:nowrap;opacity:1;right:0;top:100%;margin-top:1px;text-align:right;';
+        hidden.style.cssText='position:absolute;font-family:"IBM Plex Mono",monospace;font-size:1.4px;letter-spacing:0.3px;color:#ef4444;white-space:nowrap;opacity:1;bottom:-1px;right:0;text-align:right;';
         hidden.textContent='+SEQUENCER';
-        wrap.appendChild(hidden);
+        logoWrap.appendChild(hidden);
 
-        ov.appendChild(wrap);
+        ov.appendChild(logoWrap);
 
-        // transformOrigin: zoom into bottom-right of title (under the E of ATION)
-        // right=0% of wrap width, bottom=100% of wrap height
-        wrap.style.transformOrigin='right bottom';
-        wrap.style.transform='scale(1)';
-        wrap.style.transition='none';
+        // Zoom origin: bottom-right (under the e in Puzzle)
+        logoWrap.style.transformOrigin='right bottom';
+        logoWrap.style.transform='scale(1)';
+        logoWrap.style.transition='none';
 
-        // Pause 0.7s then zoom in
+        // Hold 0.8s then zoom in
         setTimeout(function(){
-          wrap.style.transition='transform 1.6s cubic-bezier(0.4,0,0.1,1)';
-          wrap.style.transform='scale(12)';
-        }, 700);
+          logoWrap.style.transition='transform 1.8s cubic-bezier(0.4,0,0.1,1)';
+          logoWrap.style.transform='scale(14)';
+        }, 800);
 
-        // At 2.2s — hidden text is now big enough to read — animate it
+        // At 2.6s hidden text is readable — grow it + chime
         setTimeout(function(){
-          hidden.style.transition='font-size 0.3s ease, letter-spacing 0.3s ease, opacity 0.2s';
-          hidden.style.fontSize='3px';
-          hidden.style.letterSpacing='1px';
-          // chime
+          hidden.style.transition='font-size 0.3s, letter-spacing 0.3s';
+          hidden.style.fontSize='2px';
+          hidden.style.letterSpacing='0.6px';
           try{ if(AC){ resumeAC();
             var t2=AC.currentTime;
             var g=AC.createGain(); g.connect(getMasterDest());
@@ -5171,35 +5303,35 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
             g.gain.setValueAtTime(0.15,t2);
             g.gain.exponentialRampToValueAtTime(0.001,t2+0.4);
             o.connect(g); o.start(t2); o.stop(t2+0.45);
-          }}catch(e){}
-        }, 2200);
-
-        // Pop animation at 2.6s
-        setTimeout(function(){
-          hidden.style.transition='font-size 0.15s ease, letter-spacing 0.15s ease';
-          hidden.style.fontSize='3.8px';
-          hidden.style.letterSpacing='1.5px';
+          }}catch(e2){}
         }, 2600);
+
+        // Pop at 3.0s
         setTimeout(function(){
-          hidden.style.transition='font-size 0.2s ease, letter-spacing 0.2s ease';
-          hidden.style.fontSize='3px';
+          hidden.style.transition='font-size 0.12s, letter-spacing 0.12s';
+          hidden.style.fontSize='2.6px';
           hidden.style.letterSpacing='1px';
-        }, 2800);
-
-        // Hold, then zoom back out at 4.8s
+        }, 3000);
         setTimeout(function(){
-          wrap.style.transition='transform 1s cubic-bezier(0.4,0,0.6,1)';
-          wrap.style.transform='scale(1)';
-          ov.style.transition='opacity 0.5s 0.5s';
-          ov.style.opacity='0';
-        }, 4800);
+          hidden.style.transition='font-size 0.18s, letter-spacing 0.18s';
+          hidden.style.fontSize='2px';
+          hidden.style.letterSpacing='0.6px';
+        }, 3150);
 
-        // Done at 5.8s
+        // Zoom back out at 5.2s
+        setTimeout(function(){
+          logoWrap.style.transition='transform 1.1s cubic-bezier(0.4,0,0.6,1)';
+          logoWrap.style.transform='scale(1)';
+          ov.style.transition='opacity 0.5s 0.6s';
+          ov.style.opacity='0';
+        }, 5200);
+
+        // Done at 6.5s
         setTimeout(function(){
           if(ov.parentNode) ov.parentNode.removeChild(ov);
           if(_origScroll>10) window.scrollTo({top:_origScroll,behavior:'smooth'});
           done();
-        }, 5800);
+        }, 6500);
 
       }catch(err){ done(); }
     }, 400);
