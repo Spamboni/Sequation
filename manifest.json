@@ -1,18 +1,29 @@
 {
-  "background_color": "#ffffff",
-  "dir": "ltr",
-  "display": "standalone",
   "name": "Sequation",
-  "orientation": "any",
-  "scope": "/",
   "short_name": "Sequation",
-  "start_url": "/https://spamboni.github.io/Sequation/Sequation.html",
+  "description": "Math puzzle game with sequencer and sampler",
+  "id": "io.github.spamboni.sequation",
+  "start_url": "/Sequation/Sequation.html",
+  "scope": "/Sequation/",
+  "display": "standalone",
+  "background_color": "#e8e2d6",
   "theme_color": "#1c1c1c",
-  "id": "Sequation",
-  "description": "Math puzzle game",
+  "orientation": "portrait",
   "lang": "en",
-  "categories": [
-    "games",
-    "music"
+  "dir": "ltr",
+  "categories": ["games", "music"],
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/Spamboni/Sequation/main/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/Spamboni/Sequation/main/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
