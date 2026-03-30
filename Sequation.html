@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sequation">
+<link rel="manifest" href="manifest.json">
 
 <title>Sequation</title>
 <style>
@@ -8228,6 +8229,13 @@ document.getElementById('backBtn').addEventListener('click',showMenu);
 document.getElementById('undo').addEventListener('click',undo);
 document.getElementById('newp').addEventListener('click',newPuzzle);
 document.getElementById('nxt').addEventListener('click',newPuzzle);
+</script>
+<script>
+if('serviceWorker' in navigator){
+  var swCode='var CACHE="seq-v1";self.addEventListener("install",function(e){e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(["./Sequation.html"]);}));});self.addEventListener("fetch",function(e){e.respondWith(caches.match(e.request).then(function(r){return r||fetch(e.request);}));});';
+  var blob=new Blob([swCode],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(function(){});
+}
 </script>
 
 </html>
