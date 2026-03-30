@@ -111,6 +111,21 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .bt{min-width:44px;height:44px;padding:0 8px;border:2px solid var(--br);background:var(--w);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:2px 2px 0 var(--br);transition:transform 0.04s,box-shadow 0.04s,background 0.1s;touch-action:pan-y;}
 .bt.pressed{transform:translate(2px,2px)!important;box-shadow:0 0 0 var(--br)!important;}
 .bt.active-flash{background:var(--flash-bg,#ef4444)!important;color:#fff!important;border-color:#991b1b!important;}
+@keyframes seq-intro-zoom{
+  0%  { transform:scale(1) translateY(0);    opacity:1; }
+  40% { transform:scale(2.5) translateY(0);  opacity:1; }
+  65% { transform:scale(6) translateY(-8px); opacity:1; }
+  85% { transform:scale(9) translateY(-10px);opacity:1; }
+  100%{ transform:scale(9) translateY(-10px);opacity:0; }
+}
+@keyframes seq-plus-fade{
+  0%  { opacity:0; transform:translateY(8px); }
+  100%{ opacity:1; transform:translateY(0); }
+}
+#seqIntroOv{position:fixed;inset:0;z-index:9999;background:#e8e2d6;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
+#seqIntroOv .si-title{font-family:'Abril Fatface',serif;font-size:32px;letter-spacing:3px;color:#1c1c1c;position:relative;}
+#seqIntroOv .si-title span{color:#ef4444;}
+#seqIntroOv .si-plus{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;letter-spacing:3px;color:#ef4444;margin-top:2px;opacity:0;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;}
 @keyframes bt-spin{
   0%  {transform:rotate(0deg) scale(1);}
   40% {transform:rotate(200deg) scale(0.75);}
@@ -4661,25 +4676,172 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     container.innerHTML='';
     container.style.cssText='display:flex;flex-direction:column;align-items:center;gap:3px;width:100%;';
     var halfBar=Math.floor(bpb/2);
-    // Decide rows: if total <= 8 single row; else two rows
     var rowCount = (total > 8) ? 2 : 1;
     var perRow = Math.ceil(total / rowCount);
+    // Pro panel gets big tappable dots; toolbar gets small dots
+    var isBig=!smallTop;
     for(var r=0;r<rowCount;r++){
       var rowEl=document.createElement('div');
-      rowEl.style.cssText='display:flex;flex-direction:row;align-items:center;justify-content:center;gap:2px;flex-wrap:nowrap;';
-      var sz = (rowCount===2) ? '5px' : '7px'; // both rows small when 2-row layout
+      rowEl.style.cssText='display:flex;flex-direction:row;align-items:center;justify-content:center;gap:'+(isBig?'4px':'2px')+';flex-wrap:nowrap;';
+      var sz = isBig ? (rowCount===2?'18px':'22px') : (rowCount===2?'5px':'7px');
       for(var j=0;j<perRow;j++){
         var idx=r*perRow+j;
         if(idx>=total) break;
         var isAcc=(idx%bpb===0);
         var isMid=(bpb>4&&idx%bpb===halfBar);
-        var td=document.createElement('div');
+        var td=document.createElement(isBig?'button':'div');
         td.className='pro-beat'+(isAcc?' accent':isMid?' mid-accent':'');
-        td.style.cssText='width:'+sz+';height:'+sz+';flex-shrink:0;border-radius:50%;';
+        td.style.cssText='width:'+sz+';height:'+sz+';flex-shrink:0;border-radius:50%;'+(isBig?'cursor:pointer;border:none;padding:0;touch-action:manipulation;':'');
+        td.dataset.beat=idx;
+        if(isBig){
+          // Tap to open beat editor
+          td.addEventListener('click',(function(beatIdx){ return function(e){
+            e.stopPropagation();
+            openBeatEditor(beatIdx);
+          }; })(idx));
+        }
         rowEl.appendChild(td);
       }
       container.appendChild(rowEl);
     }
+  }
+
+  // ── Beat editor panel ──
+  function openBeatEditor(beatIdx){
+    // Remove any existing panel
+    var existing=document.getElementById('_beatEdPanel');
+    if(existing){
+      if(parseInt(existing.dataset.beat)===beatIdx){ existing.parentNode.removeChild(existing); return; }
+      existing.parentNode.removeChild(existing);
+    }
+
+    var loopMs=getLoopMs();
+    var beatMs=loopMs/totalBeats;
+    var beatStart=beatIdx*beatMs;
+    var beatEnd=beatStart+beatMs;
+    var NAMES=STOCK_NAMES[SOUND_STYLE]||[];
+    var bankSize=(PZ&&PZ.bank)?PZ.bank.length:0;
+
+    // Find which tiles fire on this beat (quantized events within this beat window)
+    function getBeatsOnBeat(){
+      var fired={};
+      tracks.forEach(function(tr){
+        tr.forEach(function(ev){
+          var _evBpm=ev.bpmAtRecord||bpm;
+          var t=ev.time*(_evBpm/bpm);
+          if(t>=beatStart-beatMs*0.45&&t<beatEnd-beatMs*0.05){
+            fired[ev.sndIdx]={sndIdx:ev.sndIdx,bankIdx:ev.bankIdx,vol:ev.vol||1,bpmAtRecord:ev.bpmAtRecord||bpm};
+          }
+        });
+      });
+      return fired;
+    }
+
+    var panel=document.createElement('div');
+    panel.id='_beatEdPanel';
+    panel.dataset.beat=beatIdx;
+    panel.style.cssText='position:fixed;z-index:800;background:#1c1c1c;border:1.5px solid #444;border-radius:8px;padding:10px;min-width:220px;max-width:88vw;box-shadow:0 4px 20px rgba(0,0,0,.7);display:flex;flex-direction:column;gap:6px;max-height:70vh;overflow-y:auto;';
+
+    // Position near the proBeats area
+    var anchor=document.getElementById('proBeats');
+    var ar=anchor?anchor.getBoundingClientRect():{top:200,left:20};
+    panel.style.top=Math.max(60,ar.top-10)+'px';
+    panel.style.left=Math.max(4,Math.min(ar.left,window.innerWidth-240))+'px';
+
+    var hdr=document.createElement('div');
+    hdr.style.cssText='display:flex;align-items:center;justify-content:space-between;';
+    var title=document.createElement('span');
+    title.style.cssText='font-family:monospace;font-size:10px;font-weight:700;color:#fff;';
+    title.textContent='BEAT '+(beatIdx+1)+' OF '+totalBeats;
+    var closeX=document.createElement('button');
+    closeX.textContent='✕'; closeX.style.cssText='font-family:monospace;font-size:10px;background:transparent;border:none;color:#888;cursor:pointer;';
+    closeX.onclick=function(){ if(panel.parentNode)panel.parentNode.removeChild(panel); };
+    hdr.appendChild(title); hdr.appendChild(closeX);
+    panel.appendChild(hdr);
+
+    var sub=document.createElement('div');
+    sub.style.cssText='font-family:monospace;font-size:8px;color:#666;';
+    sub.textContent='Tap to toggle tiles on this beat:';
+    panel.appendChild(sub);
+
+    function rebuildList(){
+      // remove old list if any
+      var old=panel.querySelector('.beat-tile-list');
+      if(old) old.parentNode.removeChild(old);
+      var fired=getBeatsOnBeat();
+      var list=document.createElement('div');
+      list.className='beat-tile-list';
+      list.style.cssText='display:flex;flex-direction:column;gap:3px;';
+
+      for(var i=0;i<bankSize;i++){
+        var isOn=!!fired[i];
+        var name=NAMES[i]||('Tile '+(i+1));
+        var row=document.createElement('div');
+        row.style.cssText='display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;cursor:pointer;'+(isOn?'background:#1e3a2a;':'');
+        var dot=document.createElement('div');
+        dot.style.cssText='width:10px;height:10px;border-radius:50%;flex-shrink:0;background:'+(isOn?'#4ade80':'#333')+';border:1.5px solid '+(isOn?'#4ade80':'#555')+';';
+        var lbl=document.createElement('span');
+        lbl.style.cssText='font-family:monospace;font-size:9px;flex:1;color:'+(isOn?'#4ade80':'#888')+';';
+        lbl.textContent=(i+1)+'. '+name;
+        var pvBtn=document.createElement('button');
+        pvBtn.textContent='>'; pvBtn.style.cssText='font-family:monospace;font-size:8px;padding:1px 5px;border:1px solid #555;border-radius:3px;background:transparent;color:#aaa;cursor:pointer;flex-shrink:0;';
+        pvBtn.addEventListener('click',(function(ii){return function(e){e.stopPropagation();playBankSound(ii,0.7);};})(i));
+        row.appendChild(dot); row.appendChild(lbl); row.appendChild(pvBtn);
+
+        row.addEventListener('click',(function(ii,wasOn){return function(){
+          if(wasOn){
+            // Remove all events for this tile on this beat
+            tracks.forEach(function(tr){
+              for(var ei=tr.length-1;ei>=0;ei--){
+                var _evBpm=tr[ei].bpmAtRecord||bpm;
+                var t=tr[ei].time*(_evBpm/bpm);
+                if(tr[ei].sndIdx===ii&&t>=beatStart-beatMs*0.45&&t<beatEnd-beatMs*0.05){
+                  tr.splice(ei,1);
+                }
+              }
+            });
+          } else {
+            // Add event at center of this beat
+            var newEv={sndIdx:ii,bankIdx:ii,time:beatStart+beatMs*0.5,vol:recVolume,bpmAtRecord:bpm};
+            if(tracks.length===0) tracks.push([]);
+            tracks[0].push(newEv);
+          }
+          if(isPlaying){ clearTimers(); schedulePlayback(); }
+          rebuildList();
+          // Update dot color to show has-events
+          updateBeatDotActivity();
+        };})(i,isOn));
+        list.appendChild(row);
+      }
+      panel.appendChild(list);
+    }
+    rebuildList();
+    document.body.appendChild(panel);
+
+    // Close on outside tap
+    setTimeout(function(){
+      function _close(e){ if(panel&&!panel.contains(e.target)){ if(panel.parentNode)panel.parentNode.removeChild(panel); document.removeEventListener('touchstart',_close,true); document.removeEventListener('mousedown',_close,true); } }
+      document.addEventListener('touchstart',_close,true);
+      document.addEventListener('mousedown',_close,true);
+    },50);
+  }
+
+  function updateBeatDotActivity(){
+    // Color pro-beat dots to show which beats have events
+    var loopMs=getLoopMs();
+    var beatMs=loopMs/totalBeats;
+    document.querySelectorAll('#proBeats .pro-beat').forEach(function(dot,bi){
+      var bs=bi*beatMs, be2=bs+beatMs;
+      var hasEv=false;
+      tracks.forEach(function(tr){ tr.forEach(function(ev){
+        var _evBpm=ev.bpmAtRecord||bpm;
+        var t=ev.time*(_evBpm/bpm);
+        if(t>=bs-beatMs*0.45&&t<be2-beatMs*0.05) hasEv=true;
+      }); });
+      if(!dot.classList.contains('active')){
+        dot.style.background=hasEv?'#4ade8066':'';
+      }
+    });
   }
 
   function buildBeatDots(){
@@ -4849,9 +5011,18 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       }
     }, loopMs);
     playTimers.push(endHandle);
+    if(typeof updateBeatDotActivity==='function') updateBeatDotActivity();
   }
 
   function onLoopEnd(){
+    // Apply pending bars change at loop boundary
+    if(_pendingBars!==null){
+      var nb=_pendingBars; _pendingBars=null;
+      var btn=document.getElementById('barsMenuBtn');
+      if(btn){ btn.style.color=''; }
+      applyBars(bars, nb);
+      return;
+    }
     // Save current recording
     if(recTrack && recTrack.length>0){
       slotTracks[currentSlot].push(recTrack);
@@ -4926,9 +5097,11 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     btnFx('stop'); stopAll();
   });
 
-  function doActualClear(){
+  function doActualClear(slots){
+    // slots: array of slot indices to clear, or null = current only
     btnFx('clear'); stopAll();
-    slotTracks[currentSlot]=[];
+    var toClear = slots || [currentSlot];
+    toClear.forEach(function(si){ slotTracks[si]=[]; });
     syncTracks();
     recTrack=null; isRecArmed=false;
     waitingForFirstNote=false;
@@ -4936,49 +5109,101 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   }
 
   if(btnClear) btnClear.addEventListener('click',function(){
-    // Check if there's anything to lose
-    var hasTracks=slotTracks[currentSlot]&&slotTracks[currentSlot].length>0;
-    if(!hasTracks){ doActualClear(); return; }
+    var anyTracks=slotTracks.some(function(st){ return st&&st.length>0; });
+    if(!anyTracks){ doActualClear([currentSlot]); return; }
 
-    // Build confirm dialog
     var ov=document.createElement('div');
     ov.style.cssText='position:fixed;inset:0;z-index:700;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);';
     var box=document.createElement('div');
-    box.style.cssText='background:#f5f0e8;border:2px solid #1c1c1c;border-radius:6px;padding:22px 20px;width:min(300px,88vw);font-family:monospace;text-align:center;';
+    box.style.cssText='background:#f5f0e8;border:2px solid #1c1c1c;border-radius:8px;padding:18px 16px;width:min(310px,90vw);font-family:monospace;display:flex;flex-direction:column;gap:10px;';
 
     var msg=document.createElement('div');
-    msg.style.cssText='font-size:12px;font-weight:700;letter-spacing:.5px;margin-bottom:6px;';
-    msg.textContent='Wait a second! 🎵';
+    msg.style.cssText='font-size:12px;font-weight:700;letter-spacing:.5px;text-align:center;';
+    msg.textContent='Clear Sequences ??';
+    box.appendChild(msg);
 
-    var sub=document.createElement('div');
-    sub.style.cssText='font-size:10px;color:#555;line-height:1.5;margin-bottom:18px;';
-    sub.textContent='Are you sure you want to destroy all you have worked so hard for?';
+    // Slot selector grid
+    var selLabel=document.createElement('div');
+    selLabel.style.cssText='font-size:9px;color:#888;text-align:center;';
+    selLabel.textContent='Tap to select which sequences to clear:';
+    box.appendChild(selLabel);
 
+    var grid=document.createElement('div');
+    grid.style.cssText='display:flex;gap:5px;justify-content:center;flex-wrap:wrap;';
+    var selected={};
+    // Pre-select current slot
+    selected[currentSlot]=true;
+
+    var slotBtns=[];
+    for(var si=0;si<8;si++){
+      var hasSt=slotTracks[si]&&slotTracks[si].length>0;
+      var sb=document.createElement('button');
+      sb.style.cssText='font-family:monospace;font-size:10px;font-weight:700;width:34px;height:34px;border-radius:4px;cursor:pointer;border:2px solid '+(hasSt?'#991b1b':'#ccc')+';background:'+(si===currentSlot?'#991b1b':'transparent')+';color:'+(si===currentSlot?'#fff':hasSt?'#991b1b':'#bbb')+';';
+      sb.textContent=''+(si+1);
+      sb.dataset.slot=si;
+      sb.dataset.has=hasSt?'1':'0';
+      (function(idx,btn){
+        btn.addEventListener('click',function(){
+          selected[idx]=!selected[idx];
+          btn.style.background=selected[idx]?'#991b1b':'transparent';
+          btn.style.color=selected[idx]?'#fff':(slotTracks[idx]&&slotTracks[idx].length>0)?'#991b1b':'#bbb';
+        });
+      })(si,sb);
+      slotBtns.push(sb);
+      grid.appendChild(sb);
+    }
+    box.appendChild(grid);
+
+    // Quick-select row
+    var quickRow=document.createElement('div');
+    quickRow.style.cssText='display:flex;gap:6px;justify-content:center;';
+    function mkQuick(label,fn){
+      var b=document.createElement('button');
+      b.textContent=label;
+      b.style.cssText='font-family:monospace;font-size:8px;padding:3px 8px;border:1px solid #888;border-radius:3px;background:transparent;color:#555;cursor:pointer;';
+      b.onclick=fn; return b;
+    }
+    quickRow.appendChild(mkQuick('ALL',function(){
+      for(var i=0;i<8;i++){ selected[i]=true; slotBtns[i].style.background='#991b1b'; slotBtns[i].style.color='#fff'; }
+    }));
+    quickRow.appendChild(mkQuick('NONE',function(){
+      for(var i=0;i<8;i++){ selected[i]=false; slotBtns[i].style.background='transparent'; slotBtns[i].style.color=(slotTracks[i]&&slotTracks[i].length>0)?'#991b1b':'#bbb'; }
+    }));
+    quickRow.appendChild(mkQuick('CURRENT',function(){
+      for(var i=0;i<8;i++){ selected[i]=(i===currentSlot); slotBtns[i].style.background=selected[i]?'#991b1b':'transparent'; slotBtns[i].style.color=selected[i]?'#fff':(slotTracks[i]&&slotTracks[i].length>0)?'#991b1b':'#bbb'; }
+    }));
+    box.appendChild(quickRow);
+
+    // Action buttons
     var btnRow=document.createElement('div');
-    btnRow.style.cssText='display:flex;flex-direction:column;gap:8px;';
+    btnRow.style.cssText='display:flex;flex-direction:column;gap:6px;margin-top:2px;';
 
     var saveBtn=document.createElement('button');
-    saveBtn.textContent='💾  Save first, then clear';
-    saveBtn.style.cssText='font-family:monospace;font-size:11px;font-weight:700;padding:9px;border:2px solid #1c1c1c;border-radius:4px;background:#1c1c1c;color:#f5f0e8;cursor:pointer;';
+    saveBtn.textContent='??  Save first, then clear';
+    saveBtn.style.cssText='font-family:monospace;font-size:10px;font-weight:700;padding:8px;border:2px solid #1c1c1c;border-radius:4px;background:#1c1c1c;color:#f5f0e8;cursor:pointer;';
     saveBtn.onclick=function(){
       document.body.removeChild(ov);
-      // Trigger save flow then clear after download starts
       document.getElementById('seqSave').click();
-      setTimeout(doActualClear, 800);
+      var toClr=Object.keys(selected).filter(function(k){return selected[k];}).map(Number);
+      setTimeout(function(){ doActualClear(toClr); },800);
     };
 
-    var yesBtn=document.createElement('button');
-    yesBtn.textContent='🗑  Yes, destroy it all';
-    yesBtn.style.cssText='font-family:monospace;font-size:11px;padding:9px;border:1.5px solid #991b1b;border-radius:4px;background:transparent;color:#991b1b;cursor:pointer;';
-    yesBtn.onclick=function(){ document.body.removeChild(ov); doActualClear(); };
+    var clearBtn=document.createElement('button');
+    clearBtn.textContent='??  Clear selected';
+    clearBtn.style.cssText='font-family:monospace;font-size:10px;padding:8px;border:1.5px solid #991b1b;border-radius:4px;background:transparent;color:#991b1b;cursor:pointer;';
+    clearBtn.onclick=function(){
+      var toClr=Object.keys(selected).filter(function(k){return selected[k];}).map(Number);
+      document.body.removeChild(ov);
+      if(toClr.length>0) doActualClear(toClr);
+    };
 
     var noBtn=document.createElement('button');
-    noBtn.textContent='← Keep working on it';
-    noBtn.style.cssText='font-family:monospace;font-size:11px;padding:9px;border:1.5px solid #888;border-radius:4px;background:transparent;color:#555;cursor:pointer;';
+    noBtn.textContent='←  Keep working on it';
+    noBtn.style.cssText='font-family:monospace;font-size:10px;padding:8px;border:1.5px solid #888;border-radius:4px;background:transparent;color:#555;cursor:pointer;';
     noBtn.onclick=function(){ document.body.removeChild(ov); };
 
-    btnRow.appendChild(saveBtn); btnRow.appendChild(yesBtn); btnRow.appendChild(noBtn);
-    box.appendChild(msg); box.appendChild(sub); box.appendChild(btnRow);
+    btnRow.appendChild(saveBtn); btnRow.appendChild(clearBtn); btnRow.appendChild(noBtn);
+    box.appendChild(btnRow);
     ov.appendChild(box); document.body.appendChild(ov);
   });
 
@@ -5048,11 +5273,48 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   var btnPuz=document.getElementById('seqPuz');
   if(btnPuz) btnPuz.addEventListener('click',function(){ btnFx('pro'); hideSeq(); });
 
+  var _seqIntroDone=false;
+
+  function playSeqIntro(cb){
+    if(_seqIntroDone){ cb(); return; }
+    _seqIntroDone=true;
+
+    var ov=document.createElement('div'); ov.id='seqIntroOv';
+    var titleWrap=document.createElement('div'); titleWrap.style.cssText='position:relative;display:inline-block;';
+    var titleEl=document.createElement('div'); titleEl.className='si-title';
+    titleEl.innerHTML='SEQU<span>ATION</span>';
+    var plusEl=document.createElement('div'); plusEl.className='si-plus';
+    plusEl.textContent='+ SEQUENCER';
+    titleWrap.appendChild(titleEl);
+    titleWrap.appendChild(plusEl);
+    ov.appendChild(titleWrap);
+    document.body.appendChild(ov);
+
+    // Phase 1: zoom into the E at end of SEQUATION (0-1.4s)
+    titleWrap.style.transformOrigin='85% 100%'; // right side, bottom (under the E)
+    titleWrap.style.animation='seq-intro-zoom 1.6s cubic-bezier(0.4,0,0.2,1) forwards';
+
+    // Phase 2: show "+ SEQUENCER" at 1.1s
+    setTimeout(function(){
+      plusEl.style.animation='seq-plus-fade 0.35s ease forwards';
+    }, 1050);
+
+    // Phase 3: fade out overlay at 1.6s, then callback
+    setTimeout(function(){
+      ov.style.transition='opacity 0.3s';
+      ov.style.opacity='0';
+      setTimeout(function(){
+        if(ov.parentNode) ov.parentNode.removeChild(ov);
+        cb();
+      }, 320);
+    }, 1650);
+  }
+
   if(btnPro) btnPro.addEventListener('click',function(){
     btnFx('pro');
     if(!seqVisible){
       // Single tap: show everything
-      showSeq();
+      playSeqIntro(function(){ showSeq(); });
     } else {
       // Already visible: need double tap to hide
       seqTaps++; clearTimeout(seqTapTimer);
