@@ -2898,7 +2898,7 @@ function playBankG(idx,_bv){
   var master=AC.createGain(); master.connect(dest);
   master.gain.setValueAtTime(0.0001,t);
   master.gain.linearRampToValueAtTime(0.0001,t+0.02);
-  master.gain.linearRampToValueAtTime(0.38*_bv,t+0.15); // bow grab
+  master.gain.linearRampToValueAtTime(0.19*_bv,t+0.15); // bow grab
   master.gain.setValueAtTime(0.38*_bv,t+dur*0.8);
   master.gain.exponentialRampToValueAtTime(0.0001,t+dur);
 
@@ -2937,7 +2937,7 @@ function playBankH(idx,_bv){
 
   var master=AC.createGain(); master.connect(dest);
   master.gain.setValueAtTime(0.0001,t);
-  master.gain.linearRampToValueAtTime(0.3*_bv,t+0.08);
+  master.gain.linearRampToValueAtTime(0.15*_bv,t+0.08);
   master.gain.setValueAtTime(0.3*_bv,t+dur*0.85);
   master.gain.exponentialRampToValueAtTime(0.0001,t+dur);
 
@@ -2999,7 +2999,7 @@ function playBankI(idx,_bv){
   var body=AC.createBiquadFilter(); body.type='peaking'; body.frequency.value=200; body.gain.value=5; body.Q.value=1.5;
   var air=AC.createBiquadFilter(); air.type='peaking'; air.frequency.value=3000; air.gain.value=3; air.Q.value=2;
 
-  var g=AC.createGain(); g.gain.setValueAtTime(_bv*0.55,t);
+  var g=AC.createGain(); g.gain.setValueAtTime(_bv*0.28,t);
   g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
 
   // String noise attack transient
@@ -3022,7 +3022,7 @@ function playBankJ(idx,_bv){
 
   var master=AC.createGain(); master.connect(dest);
   master.gain.setValueAtTime(0.0001,t);
-  master.gain.linearRampToValueAtTime(0.55*_bv,t+0.012);
+  master.gain.linearRampToValueAtTime(0.28*_bv,t+0.012);
   master.gain.exponentialRampToValueAtTime(0.0001,t+dur);
 
   // Sub sine — pure fundamentals
@@ -3102,74 +3102,224 @@ function playBankA(idx,_bankVol){
         var _ohg=AC.createGain(); _ohg.gain.setValueAtTime(0.45*_bv,_t); _ohg.gain.exponentialRampToValueAtTime(0.0001,_t+0.35);
         _ohn.connect(_ohbp); _ohbp.connect(_ohhp); _ohhp.connect(_ohg); _ohg.connect(_d); _ohn.start(_t); _ohn.stop(_t+0.4);
         break; }
-      case 4: S('sine',120,60,0.7,0.28);N(0.15,0.08,400);break; // Low tom
-      case 5: S('sine',180,90,0.65,0.22);N(0.12,0.07,500);break;// Mid tom
-      case 6: S('sine',260,130,0.6,0.18);N(0.1,0.06,600);break; // High tom
-      case 7: N(0.35,0.12,10000);break; // Shaker
-      case 8: N(0.25,0.6,9000);O('square',800,G(0.05,0.6),0.6);break; // Ride
-      case 9: N(0.6,1.2,11000);S('sawtooth',300,100,0.1,1.0);break; // Crash
-      // Piano C4-B4
-      case 10:case 11:case 12:case 13:case 14:case 15:case 16:case 17:case 18:case 19:case 20:case 21:
-        var pf=[261.6,277.2,293.7,311.1,329.6,349.2,370.0,392.0,415.3,440.0,466.2,493.9];
-        O('sine',pf[idx-10],G(0.5,1.2),1.2);break;
-      // Timpani
-      case 22:S('sine',90,55,0.9,0.6);N(0.2,0.08,300);break;
-      case 23:S('sine',110,65,0.85,0.55);break;
-      case 24:S('sine',130,75,0.8,0.5);break;
-      case 25:S('sine',150,85,0.75,0.45);break;
-      // Sawtooth hits
-      case 26:S('sawtooth',200,100,0.25,0.2);break;
-      case 27:S('sawtooth',300,150,0.22,0.18);break;
-      case 28:S('sawtooth',400,200,0.2,0.16);break;
-      case 29:S('sawtooth',500,250,0.18,0.15);break;
-      case 30:S('sawtooth',600,300,0.15,0.14);break;
-      // Triangle hits
-      case 31:O('triangle',300,G(0.45,0.5),0.5);break;
-      case 32:O('triangle',400,G(0.42,0.45),0.45);break;
-      case 33:O('triangle',500,G(0.4,0.4),0.4);break;
-      case 34:O('triangle',600,G(0.38,0.38),0.38);break;
-      case 35:O('triangle',700,G(0.35,0.35),0.35);break;
-      // Square synth
-      case 36:S('square',150,75,0.15,0.2);break;
-      case 37:S('square',200,100,0.14,0.18);break;
-      case 38:S('square',250,125,0.13,0.16);break;
-      case 39:S('square',300,150,0.12,0.15);break;
-      case 40:S('square',400,200,0.11,0.14);break;
-      // Synth plucks
-      case 41:S('sawtooth',110,55,0.3,0.3);break;
-      case 42:S('sawtooth',220,110,0.3,0.3);break;
-      case 43:S('sawtooth',330,165,0.28,0.28);break;
-      case 44:S('sawtooth',440,220,0.25,0.25);break;
-      case 45:S('sawtooth',550,275,0.22,0.22);break;
-      case 46:S('sawtooth',660,330,0.2,0.2);break;
-      // Wood/clap
-      case 47:S('sine',800,600,0.5,0.06);N(0.15,0.04,2000);break;
-      case 48:S('sine',1000,800,0.45,0.05);N(0.12,0.03,2500);break;
-      case 49:N(0.8,0.08,4000);break; // Clap
-      // Cowbell/metal
-      case 50:(function(){var g=G(0.4,0.5);O('square',562,g,0.5);O('square',845,g,0.5);})();break;
-      case 51:(function(){var g=G(0.35,0.8);O('sine',1200,g,0.8);O('sine',1800,g,0.8);})();break;
-      case 52:N(0.3,0.15,12000);S('square',900,450,0.1,0.12);break;
-      // Piano C5-G5
-      case 53:O('sine',523.3,G(0.45,1.0),1.0);break;
-      case 54:O('sine',554.4,G(0.45,1.0),1.0);break;
-      case 55:O('sine',587.3,G(0.45,1.0),1.0);break;
-      case 56:O('sine',622.3,G(0.45,1.0),1.0);break;
-      case 57:O('sine',659.3,G(0.45,1.0),1.0);break;
-      case 58:O('sine',698.5,G(0.45,1.0),1.0);break;
-      case 59:O('sine',784.0,G(0.45,1.0),1.0);break;
-      // Bass synth
-      case 60:S('sine',55,40,0.9,0.5);break;
-      case 61:S('sine',65,45,0.85,0.45);break;
-      case 62:S('sawtooth',80,50,0.3,0.3);break;
-      case 63:S('sawtooth',100,60,0.28,0.28);break;
-      // Sci-fi
-      case 64:S('sawtooth',1200,200,0.2,0.15);break;
-      case 65:S('sawtooth',800,1600,0.18,0.12);break;
-      case 66:S('square',600,1200,0.15,0.1);break;
-      case 67:S('square',1000,500,0.15,0.14);break;
-      case 68:S('sine',2000,200,0.25,0.2);break;
-      case 69:(function(){var g=G(0.4,0.8);O('sine',1800,g,0.8);})();break;
+      // ── Toms (4-6): body thump + shell resonance ──
+      case 4: { var _t=AC.currentTime,_d=getMasterDest();
+        var _o=AC.createOscillator(); _o.type='sine';
+        _o.frequency.setValueAtTime(105,_t); _o.frequency.exponentialRampToValueAtTime(55,_t+0.1);
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.75*_bv,_t); _g.gain.exponentialRampToValueAtTime(0.0001,_t+0.32);
+        var _n=AC.createBufferSource(); _n.buffer=_mkNoise(0.04);
+        var _nf=AC.createBiquadFilter(); _nf.type='bandpass'; _nf.frequency.value=350; _nf.Q.value=2;
+        var _ng=AC.createGain(); _ng.gain.setValueAtTime(0.18*_bv,_t); _ng.gain.exponentialRampToValueAtTime(0.0001,_t+0.05);
+        _o.connect(_g); _g.connect(_d); _n.connect(_nf); _nf.connect(_ng); _ng.connect(_d);
+        _o.start(_t); _o.stop(_t+0.35); _n.start(_t); _n.stop(_t+0.05); break; }
+      case 5: { var _t=AC.currentTime,_d=getMasterDest();
+        var _o=AC.createOscillator(); _o.type='sine';
+        _o.frequency.setValueAtTime(160,_t); _o.frequency.exponentialRampToValueAtTime(80,_t+0.08);
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.7*_bv,_t); _g.gain.exponentialRampToValueAtTime(0.0001,_t+0.26);
+        var _n=AC.createBufferSource(); _n.buffer=_mkNoise(0.035);
+        var _nf=AC.createBiquadFilter(); _nf.type='bandpass'; _nf.frequency.value=500; _nf.Q.value=2;
+        var _ng=AC.createGain(); _ng.gain.setValueAtTime(0.15*_bv,_t); _ng.gain.exponentialRampToValueAtTime(0.0001,_t+0.04);
+        _o.connect(_g); _g.connect(_d); _n.connect(_nf); _nf.connect(_ng); _ng.connect(_d);
+        _o.start(_t); _o.stop(_t+0.28); _n.start(_t); _n.stop(_t+0.04); break; }
+      case 6: { var _t=AC.currentTime,_d=getMasterDest();
+        var _o=AC.createOscillator(); _o.type='sine';
+        _o.frequency.setValueAtTime(230,_t); _o.frequency.exponentialRampToValueAtTime(110,_t+0.06);
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.65*_bv,_t); _g.gain.exponentialRampToValueAtTime(0.0001,_t+0.2);
+        var _n=AC.createBufferSource(); _n.buffer=_mkNoise(0.03);
+        var _nf=AC.createBiquadFilter(); _nf.type='bandpass'; _nf.frequency.value=700; _nf.Q.value=2;
+        var _ng=AC.createGain(); _ng.gain.setValueAtTime(0.12*_bv,_t); _ng.gain.exponentialRampToValueAtTime(0.0001,_t+0.03);
+        _o.connect(_g); _g.connect(_d); _n.connect(_nf); _nf.connect(_ng); _ng.connect(_d);
+        _o.start(_t); _o.stop(_t+0.22); _n.start(_t); _n.stop(_t+0.03); break; }
+      // ── Shaker (7): layered noise bursts ──
+      case 7: { var _t=AC.currentTime,_d=getMasterDest();
+        var _n=AC.createBufferSource(); _n.buffer=_mkNoise(0.1);
+        var _hp=AC.createBiquadFilter(); _hp.type='highpass'; _hp.frequency.value=6000;
+        var _bp=AC.createBiquadFilter(); _bp.type='peaking'; _bp.frequency.value=9000; _bp.gain.value=4; _bp.Q.value=2;
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.3*_bv,_t);
+        _g.gain.linearRampToValueAtTime(0.3*_bv,_t+0.02);
+        _g.gain.exponentialRampToValueAtTime(0.0001,_t+0.1);
+        _n.connect(_hp); _hp.connect(_bp); _bp.connect(_g); _g.connect(_d);
+        _n.start(_t); _n.stop(_t+0.1); break; }
+      // ── Ride cymbal (8): metallic shimmer ──
+      case 8: { var _t=AC.currentTime,_d=getMasterDest();
+        var freqs=[800,1247,1832,2518,3400]; var vols2=[0.06,0.05,0.04,0.03,0.02];
+        freqs.forEach(function(f,i){ var o=AC.createOscillator(); o.type='square'; o.frequency.value=f;
+          var g2=AC.createGain(); g2.gain.setValueAtTime(vols2[i]*_bv,_t); g2.gain.exponentialRampToValueAtTime(0.0001,_t+0.7);
+          o.connect(g2); g2.connect(_d); o.start(_t); o.stop(_t+0.72); });
+        var _n=AC.createBufferSource(); _n.buffer=_mkNoise(0.1);
+        var _nbp=AC.createBiquadFilter(); _nbp.type='bandpass'; _nbp.frequency.value=7000; _nbp.Q.value=2;
+        var _ng=AC.createGain(); _ng.gain.setValueAtTime(0.08*_bv,_t); _ng.gain.exponentialRampToValueAtTime(0.0001,_t+0.08);
+        _n.connect(_nbp); _nbp.connect(_ng); _ng.connect(_d); _n.start(_t); _n.stop(_t+0.1); break; }
+      // ── Crash cymbal (9): big wash ──
+      case 9: { var _t=AC.currentTime,_d=getMasterDest();
+        var _n=AC.createBufferSource(); _n.buffer=_mkNoise(1.5);
+        var _hp=AC.createBiquadFilter(); _hp.type='highpass'; _hp.frequency.value=3000;
+        var _lp=AC.createBiquadFilter(); _lp.type='lowpass'; _lp.frequency.value=14000;
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.55*_bv,_t); _g.gain.exponentialRampToValueAtTime(0.0001,_t+1.4);
+        var _bp=AC.createBiquadFilter(); _bp.type='peaking'; _bp.frequency.value=6000; _bp.gain.value=5; _bp.Q.value=1;
+        _n.connect(_hp); _hp.connect(_lp); _lp.connect(_bp); _bp.connect(_g); _g.connect(_d);
+        var _o=AC.createOscillator(); _o.type='sawtooth'; _o.frequency.value=280;
+        var _og=AC.createGain(); _og.gain.setValueAtTime(0.08*_bv,_t); _og.gain.exponentialRampToValueAtTime(0.0001,_t+0.15);
+        _o.connect(_og); _og.connect(_d); _o.start(_t); _o.stop(_t+0.18);
+        _n.start(_t); _n.stop(_t+1.5); break; }
+      // ── Piano C4-B4 (10-21): multi-partial ──
+      case 10:case 11:case 12:case 13:case 14:case 15:case 16:case 17:case 18:case 19:case 20:case 21: {
+        var _pf=[261.6,277.2,293.7,311.1,329.6,349.2,370.0,392.0,415.3,440.0,466.2,493.9];
+        var _f=_pf[idx-10]; var _t=AC.currentTime; var _d=getMasterDest();
+        var _dec=1.4;
+        [[1,0.6],[2,0.25],[3,0.1],[4.01,0.05]].forEach(function(p){
+          var o=AC.createOscillator(); o.type=p[0]===1?'triangle':'sine'; o.frequency.value=_f*p[0];
+          var g2=AC.createGain(); g2.gain.setValueAtTime(p[1]*_bv,_t); g2.gain.exponentialRampToValueAtTime(0.0001,_t+_dec*0.9);
+          o.connect(g2); g2.connect(_d); o.start(_t); o.stop(_t+_dec);
+        });
+        var _cn=AC.createBufferSource(); _cn.buffer=_mkNoise(0.008);
+        var _cf=AC.createBiquadFilter(); _cf.type='bandpass'; _cf.frequency.value=_f*3; _cf.Q.value=1;
+        var _cg=AC.createGain(); _cg.gain.setValueAtTime(0.1*_bv,_t); _cg.gain.exponentialRampToValueAtTime(0.0001,_t+0.01);
+        _cn.connect(_cf); _cf.connect(_cg); _cg.connect(_d); _cn.start(_t); _cn.stop(_t+0.01); break; }
+      // ── Timpani (22-25): deep resonant drums ──
+      case 22:case 23:case 24:case 25: { var _t=AC.currentTime,_d=getMasterDest();
+        var _tfreqs=[85,105,125,145]; var _tf=_tfreqs[idx-22];
+        var _o=AC.createOscillator(); _o.type='sine';
+        _o.frequency.setValueAtTime(_tf*1.3,_t); _o.frequency.exponentialRampToValueAtTime(_tf,_t+0.06);
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.85*_bv,_t); _g.gain.exponentialRampToValueAtTime(0.0001,_t+0.7);
+        var _o2=AC.createOscillator(); _o2.type='sine'; _o2.frequency.value=_tf*1.47; // 5th partial
+        var _g2=AC.createGain(); _g2.gain.setValueAtTime(0.15*_bv,_t); _g2.gain.exponentialRampToValueAtTime(0.0001,_t+0.25);
+        var _n=AC.createBufferSource(); _n.buffer=_mkNoise(0.05);
+        var _nf=AC.createBiquadFilter(); _nf.type='bandpass'; _nf.frequency.value=300; _nf.Q.value=2;
+        var _ng=AC.createGain(); _ng.gain.setValueAtTime(0.2*_bv,_t); _ng.gain.exponentialRampToValueAtTime(0.0001,_t+0.06);
+        _o.connect(_g); _g.connect(_d); _o2.connect(_g2); _g2.connect(_d);
+        _n.connect(_nf); _nf.connect(_ng); _ng.connect(_d);
+        _o.start(_t); _o.stop(_t+0.75); _o2.start(_t); _o2.stop(_t+0.28); _n.start(_t); _n.stop(_t+0.06); break; }
+      // ── Synth plucks (26-30): Karplus-Strong ──
+      case 26:case 27:case 28:case 29:case 30: { var _t=AC.currentTime,_d=getMasterDest();
+        var _plkf=[110,165,220,330,440][idx-26];
+        _karplusStrong(_plkf,1.2,0.4*_bv,_d); break; }
+      // ── Marimba/bell tones (31-35): sine + harmonics ──
+      case 31:case 32:case 33:case 34:case 35: { var _t=AC.currentTime,_d=getMasterDest();
+        var _mf=[293.7,370.0,440.0,523.3,659.3][idx-31];
+        var _dec2=0.8;
+        [[1,0.5],[2.76,0.2],[5.4,0.08]].forEach(function(p){
+          var o=AC.createOscillator(); o.type='sine'; o.frequency.value=_mf*p[0];
+          var g2=AC.createGain(); g2.gain.setValueAtTime(p[1]*_bv,_t); g2.gain.exponentialRampToValueAtTime(0.0001,_t+_dec2*p[1]*2);
+          o.connect(g2); g2.connect(_d); o.start(_t); o.stop(_t+_dec2);
+        });
+        var _cn=AC.createBufferSource(); _cn.buffer=_mkNoise(0.005);
+        var _cf=AC.createBiquadFilter(); _cf.type='bandpass'; _cf.frequency.value=_mf*2; _cf.Q.value=2;
+        var _cg=AC.createGain(); _cg.gain.setValueAtTime(0.3*_bv,_t); _cg.gain.exponentialRampToValueAtTime(0.0001,_t+0.008);
+        _cn.connect(_cf); _cf.connect(_cg); _cg.connect(_d); _cn.start(_t); _cn.stop(_t+0.008); break; }
+      // ── Synth bass (36-40): warm sub bass ──
+      case 36:case 37:case 38:case 39:case 40: { var _t=AC.currentTime,_d=getMasterDest();
+        var _sbf=[55,65,82,110,130][idx-36];
+        var _o=AC.createOscillator(); _o.type='triangle'; _o.frequency.value=_sbf;
+        var _o2=AC.createOscillator(); _o2.type='sine'; _o2.frequency.value=_sbf*2;
+        var _lp=AC.createBiquadFilter(); _lp.type='lowpass'; _lp.frequency.value=_sbf*4;
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.0001,_t); _g.gain.linearRampToValueAtTime(0.4*_bv,_t+0.015);
+        _g.gain.setValueAtTime(0.4*_bv,_t+0.08); _g.gain.exponentialRampToValueAtTime(0.0001,_t+0.35);
+        var _g2=AC.createGain(); _g2.gain.value=0.2;
+        _o.connect(_lp); _o2.connect(_g2); _g2.connect(_lp); _lp.connect(_g); _g.connect(_d);
+        _o.start(_t); _o.stop(_t+0.38); _o2.start(_t); _o2.stop(_t+0.38); break; }
+      // ── Synth leads (41-46): detuned saw leads ──
+      case 41:case 42:case 43:case 44:case 45:case 46: { var _t=AC.currentTime,_d=getMasterDest();
+        var _ldf=[110,138.6,164.8,220,261.6,329.6][idx-41];
+        var _dec3=0.5;
+        var _master=AC.createGain(); _master.connect(_d);
+        _master.gain.setValueAtTime(0.0001,_t); _master.gain.linearRampToValueAtTime(0.28*_bv,_t+0.01);
+        _master.gain.exponentialRampToValueAtTime(0.0001,_t+_dec3);
+        // Two detuned saws for fatness
+        [_ldf*0.998,_ldf*1.002].forEach(function(f){
+          var o=AC.createOscillator(); o.type='sawtooth'; o.frequency.value=f;
+          var lp=AC.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=_ldf*6; lp.Q.value=1.5;
+          o.connect(lp); lp.connect(_master); o.start(_t); o.stop(_t+_dec3+0.05);
+        }); break; }
+      // ── Clap (47-49): layered noise ──
+      case 47:case 48:case 49: { var _t=AC.currentTime,_d=getMasterDest();
+        var _delays=[0,0.01,0.02][idx-47];
+        [0,_delays].forEach(function(delay){
+          var _n=AC.createBufferSource(); _n.buffer=_mkNoise(0.055);
+          var _hp=AC.createBiquadFilter(); _hp.type='highpass'; _hp.frequency.value=1200;
+          var _bp=AC.createBiquadFilter(); _bp.type='peaking'; _bp.frequency.value=2500; _bp.gain.value=6; _bp.Q.value=2;
+          var _g=AC.createGain(); _g.gain.setValueAtTime(0.0001,_t+delay); _g.gain.linearRampToValueAtTime(0.7*_bv,_t+delay+0.002);
+          _g.gain.exponentialRampToValueAtTime(0.0001,_t+delay+0.06);
+          _n.connect(_hp); _hp.connect(_bp); _bp.connect(_g); _g.connect(_d);
+          _n.start(_t+delay); _n.stop(_t+delay+0.06);
+        }); break; }
+      // ── Cowbell (50): classic two-tone ──
+      case 50: { var _t=AC.currentTime,_d=getMasterDest();
+        [562,845].forEach(function(f){
+          var o=AC.createOscillator(); o.type='square'; o.frequency.value=f;
+          var lp=AC.createBiquadFilter(); lp.type='bandpass'; lp.frequency.value=f; lp.Q.value=5;
+          var g2=AC.createGain(); g2.gain.setValueAtTime(0.25*_bv,_t); g2.gain.exponentialRampToValueAtTime(0.0001,_t+0.55);
+          o.connect(lp); lp.connect(g2); g2.connect(_d); o.start(_t); o.stop(_t+0.58);
+        }); break; }
+      // ── Bell (51): singing bell ──
+      case 51: { var _t=AC.currentTime,_d=getMasterDest();
+        [[1,0.4],[2.76,0.15],[5.4,0.06],[8.93,0.03]].forEach(function(p){
+          var o=AC.createOscillator(); o.type='sine'; o.frequency.value=880*p[0];
+          var g2=AC.createGain(); g2.gain.setValueAtTime(p[1]*_bv,_t); g2.gain.exponentialRampToValueAtTime(0.0001,_t+1.0*p[1]*2.5);
+          o.connect(g2); g2.connect(_d); o.start(_t); o.stop(_t+1.2);
+        }); break; }
+      // ── Hi cymbal (52): bright metallic ──
+      case 52: { var _t=AC.currentTime,_d=getMasterDest();
+        var _n=AC.createBufferSource(); _n.buffer=_mkNoise(0.3);
+        var _hp=AC.createBiquadFilter(); _hp.type='highpass'; _hp.frequency.value=8000;
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.35*_bv,_t); _g.gain.exponentialRampToValueAtTime(0.0001,_t+0.25);
+        _n.connect(_hp); _hp.connect(_g); _g.connect(_d); _n.start(_t); _n.stop(_t+0.3); break; }
+      // ── Piano C5-G5 (53-59): multi-partial ──
+      case 53:case 54:case 55:case 56:case 57:case 58:case 59: { var _t=AC.currentTime,_d=getMasterDest();
+        var _pf2=[523.3,554.4,587.3,622.3,659.3,698.5,784.0][idx-53]; var _dec4=1.1;
+        [[1,0.55],[2,0.2],[3,0.08],[4.01,0.04]].forEach(function(p){
+          var o=AC.createOscillator(); o.type=p[0]===1?'triangle':'sine'; o.frequency.value=_pf2*p[0];
+          var g2=AC.createGain(); g2.gain.setValueAtTime(p[1]*_bv,_t); g2.gain.exponentialRampToValueAtTime(0.0001,_t+_dec4*0.85);
+          o.connect(g2); g2.connect(_d); o.start(_t); o.stop(_t+_dec4);
+        }); break; }
+      // ── Sub bass (60-63): deep Karplus ──
+      case 60:case 61:case 62:case 63: { var _t=AC.currentTime,_d=getMasterDest();
+        var _sbf2=[41.2,49.0,55.0,65.4][idx-60];
+        var _o=AC.createOscillator(); _o.type='sine'; _o.frequency.value=_sbf2;
+        var _lp2=AC.createBiquadFilter(); _lp2.type='lowpass'; _lp2.frequency.value=_sbf2*3;
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.0001,_t); _g.gain.linearRampToValueAtTime(0.55*_bv,_t+0.02);
+        _g.gain.exponentialRampToValueAtTime(0.0001,_t+0.6);
+        var _n=AC.createBufferSource(); _n.buffer=_mkNoise(0.015);
+        var _nf=AC.createBiquadFilter(); _nf.type='bandpass'; _nf.frequency.value=800; _nf.Q.value=2;
+        var _ng=AC.createGain(); _ng.gain.setValueAtTime(0.15*_bv,_t); _ng.gain.exponentialRampToValueAtTime(0.0001,_t+0.02);
+        _o.connect(_lp2); _lp2.connect(_g); _g.connect(_d);
+        _n.connect(_nf); _nf.connect(_ng); _ng.connect(_d);
+        _o.start(_t); _o.stop(_t+0.65); _n.start(_t); _n.stop(_t+0.02); break; }
+      // ── Sci-fi FX (64-69): sweeps and blips ──
+      case 64: { var _t=AC.currentTime,_d=getMasterDest();
+        var _o=AC.createOscillator(); _o.type='sawtooth';
+        _o.frequency.setValueAtTime(1200,_t); _o.frequency.exponentialRampToValueAtTime(150,_t+0.2);
+        var _lp3=AC.createBiquadFilter(); _lp3.type='lowpass'; _lp3.frequency.value=2000;
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.3*_bv,_t); _g.gain.exponentialRampToValueAtTime(0.0001,_t+0.22);
+        _o.connect(_lp3); _lp3.connect(_g); _g.connect(_d); _o.start(_t); _o.stop(_t+0.25); break; }
+      case 65: { var _t=AC.currentTime,_d=getMasterDest();
+        var _o=AC.createOscillator(); _o.type='sine';
+        _o.frequency.setValueAtTime(400,_t); _o.frequency.exponentialRampToValueAtTime(1600,_t+0.12);
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.25*_bv,_t); _g.gain.exponentialRampToValueAtTime(0.0001,_t+0.14);
+        _o.connect(_g); _g.connect(_d); _o.start(_t); _o.stop(_t+0.16); break; }
+      case 66: { var _t=AC.currentTime,_d=getMasterDest();
+        var _o=AC.createOscillator(); _o.type='square'; _o.frequency.value=880;
+        var lfo2=AC.createOscillator(); lfo2.frequency.value=18;
+        var lfog2=AC.createGain(); lfog2.gain.value=440;
+        lfo2.connect(lfog2); lfog2.connect(_o.frequency);
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.15*_bv,_t); _g.gain.exponentialRampToValueAtTime(0.0001,_t+0.18);
+        _o.connect(_g); _g.connect(_d); _o.start(_t); _o.stop(_t+0.2); lfo2.start(_t); lfo2.stop(_t+0.2); break; }
+      case 67: { var _t=AC.currentTime,_d=getMasterDest();
+        var _n=AC.createBufferSource(); _n.buffer=_mkNoise(0.08);
+        var _bp=AC.createBiquadFilter(); _bp.type='bandpass'; _bp.frequency.value=3000; _bp.Q.value=8;
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.4*_bv,_t); _g.gain.exponentialRampToValueAtTime(0.0001,_t+0.08);
+        _n.connect(_bp); _bp.connect(_g); _g.connect(_d); _n.start(_t); _n.stop(_t+0.08); break; }
+      case 68: { var _t=AC.currentTime,_d=getMasterDest();
+        var _o=AC.createOscillator(); _o.type='sine';
+        _o.frequency.setValueAtTime(2000,_t); _o.frequency.exponentialRampToValueAtTime(100,_t+0.3);
+        var _g=AC.createGain(); _g.gain.setValueAtTime(0.3*_bv,_t); _g.gain.exponentialRampToValueAtTime(0.0001,_t+0.32);
+        _o.connect(_g); _g.connect(_d); _o.start(_t); _o.stop(_t+0.35); break; }
+      case 69: { var _t=AC.currentTime,_d=getMasterDest();
+        [1760,2200,2640].forEach(function(f,i){
+          var o=AC.createOscillator(); o.type='sine'; o.frequency.value=f;
+          var g2=AC.createGain(); g2.gain.setValueAtTime(0.12*_bv,_t+i*0.04); g2.gain.exponentialRampToValueAtTime(0.0001,_t+i*0.04+0.15);
+          o.connect(g2); g2.connect(_d); o.start(_t+i*0.04); o.stop(_t+i*0.04+0.18);
+        }); break; }
       default:{
         // Chromatic piano extension — idx maps to chromatic scale from C2
         var _mf=440*Math.pow(2,(idx-57)/12); // idx 57 = A4 = 440Hz
@@ -4924,13 +5074,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     _floatLock.textContent=_scrollLocked?'🔒':'🔓';
     _floatLock.style.cssText='position:fixed;z-index:500;width:36px;height:36px;border-radius:50%;font-size:14px;border:2px solid #1c1c1c;background:#f5f0e8;color:#1c1c1c;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;padding:0;touch-action:none;user-select:none;right:12px;bottom:80px;';
     // Drag logic
-    var _dx=0,_dy=0,_dragging=false,_dragMoved=false;
+    var _dx=0,_dy=0,_dragging=false,_dragMoved=false,_flTouched=false;
     _floatLock.addEventListener('touchstart',function(e){
       e.preventDefault();
       var t=e.touches[0];
       var r=_floatLock.getBoundingClientRect();
       _dx=t.clientX-r.left; _dy=t.clientY-r.top;
-      _dragging=true; _dragMoved=false;
+      _dragging=true; _dragMoved=false; _flTouched=true;
     },{passive:false});
     _floatLock.addEventListener('touchmove',function(e){
       e.preventDefault();
@@ -4941,13 +5091,16 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       y=Math.max(0,Math.min(window.innerHeight-36,y));
       _floatLock.style.left=x+'px'; _floatLock.style.right='';
       _floatLock.style.top=y+'px'; _floatLock.style.bottom='';
-      _dragMoved=true;
+      // Only count as drag if moved more than 6px
+      if(Math.abs(t.clientX-(_dx+r.left))>6||Math.abs(t.clientY-(_dy+r.top))>6) _dragMoved=true;
     },{passive:false});
     _floatLock.addEventListener('touchend',function(e){
       e.preventDefault(); _dragging=false;
-      if(!_dragMoved) setScrollLock(!_scrollLocked);
+      if(!_dragMoved){ setScrollLock(!_scrollLocked); }
+      _dragMoved=false; // reset after each touch so next tap works
     },{passive:false});
-    _floatLock.addEventListener('click',function(){ if(!_dragMoved) setScrollLock(!_scrollLocked); _dragMoved=false; });
+    // click fires after touchend on desktop only — suppress on touch
+    _floatLock.addEventListener('click',function(){ if(!_flTouched) setScrollLock(!_scrollLocked); _flTouched=false; });
     document.body.appendChild(_floatLock);
   }
 
@@ -5074,6 +5227,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // Remove red highlights from all tiles
     document.querySelectorAll('#bank .bt').forEach(function(t){
       t.classList.remove('_beat-on');
+      t.style.background='';
+      t.style.color='';
+      t.style.borderColor='';
+      t.style.boxShadow='';
       t.style.outline='';
     });
     // Deselect all beat dots
@@ -5093,16 +5250,22 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     tracks.forEach(function(tr){ tr.forEach(function(ev){
       var _evBpm=ev.bpmAtRecord||bpm;
       var t=ev.time*(_evBpm/bpm);
-      if(t>=beatStart-beatMs*0.45&&t<beatEnd-beatMs*0.05) fired[ev.sndIdx]=true;
+      if(t>=beatStart-beatMs*0.5&&t<beatStart+beatMs*0.5) fired[ev.sndIdx]=true;
     }); });
     // Highlight tiles
     var tiles=document.querySelectorAll('#bank .bt');
     tiles.forEach(function(t,i){
       if(fired[i]){
-        t.style.outline='3px solid #ef4444';
+        t.style.background='#ef4444';
+        t.style.color='#fff';
+        t.style.borderColor='#991b1b';
+        t.style.boxShadow='0 0 8px #ef4444';
         t.classList.add('_beat-on');
       } else {
-        t.style.outline='';
+        t.style.background='';
+        t.style.color='';
+        t.style.borderColor='';
+        t.style.boxShadow='';
         t.classList.remove('_beat-on');
       }
     });
@@ -5143,7 +5306,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     tracks.forEach(function(tr){ tr.forEach(function(ev){
       var _evBpm=ev.bpmAtRecord||bpm;
       var t=ev.time*(_evBpm/bpm);
-      if(ev.sndIdx===tileIdx&&t>=beatStart-beatMs*0.45&&t<beatEnd-beatMs*0.05) wasOn=true;
+      if(ev.sndIdx===tileIdx&&t>=beatStart-beatMs*0.5&&t<beatStart+beatMs*0.5) wasOn=true;
     }); });
     if(wasOn){
       // Remove
@@ -5151,13 +5314,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         for(var ei=tr.length-1;ei>=0;ei--){
           var _evBpm=tr[ei].bpmAtRecord||bpm;
           var t=tr[ei].time*(_evBpm/bpm);
-          if(tr[ei].sndIdx===tileIdx&&t>=beatStart-beatMs*0.45&&t<beatEnd-beatMs*0.05) tr.splice(ei,1);
+          if(tr[ei].sndIdx===tileIdx&&t>=beatStart-beatMs*0.5&&t<beatStart+beatMs*0.5) tr.splice(ei,1);
         }
       });
     } else {
       // Add
       if(tracks.length===0) tracks.push([]);
-      tracks[0].push({sndIdx:tileIdx,bankIdx:tileIdx,time:beatStart+beatMs*0.5,vol:recVolume||1,bpmAtRecord:bpm});
+      tracks[0].push({sndIdx:tileIdx,bankIdx:tileIdx,time:beatStart,vol:recVolume||1,bpmAtRecord:bpm});
     }
     if(isPlaying){ clearTimers(); schedulePlayback(); }
     applyBeatEditHighlights();
@@ -5171,14 +5334,14 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // Big beat dots
     document.querySelectorAll('#proBeats .pro-beat').forEach(function(dot,bi){
       var bs=bi*beatMs, be2=bs+beatMs, hasEv=false;
-      tracks.forEach(function(tr){ tr.forEach(function(ev){ var _evBpm=ev.bpmAtRecord||bpm; var t=ev.time*(_evBpm/bpm); if(t>=bs-beatMs*0.45&&t<be2-beatMs*0.05) hasEv=true; }); });
+      tracks.forEach(function(tr){ tr.forEach(function(ev){ var _evBpm=ev.bpmAtRecord||bpm; var t=ev.time*(_evBpm/bpm); if(t>=bs-beatMs*0.5&&t<bs+beatMs*0.5) hasEv=true; }); });
       if(!dot.classList.contains('active')) dot.style.background=hasEv?'#4ade80':'';
     });
     // Sub dots — check second half of each beat window
     document.querySelectorAll('#proBeats .pro-beat-sub').forEach(function(sd){
       var bi=parseInt(sd.dataset.beat);
-      var bs=bi*beatMs+beatMs*0.5, be2=(bi+1)*beatMs, hasEv=false;
-      tracks.forEach(function(tr){ tr.forEach(function(ev){ var _evBpm=ev.bpmAtRecord||bpm; var t=ev.time*(_evBpm/bpm); if(t>=bs-beatMs*0.1&&t<be2-beatMs*0.05) hasEv=true; }); });
+      var bs=bi*beatMs+beatMs*0.5, be2=bs+beatMs*0.5, hasEv=false;
+      tracks.forEach(function(tr){ tr.forEach(function(ev){ var _evBpm=ev.bpmAtRecord||bpm; var t=ev.time*(_evBpm/bpm); if(t>=bs-beatMs*0.25&&t<bs+beatMs*0.25) hasEv=true; }); });
       sd.style.background=hasEv?'#4ade80':'#ddd';
       sd.style.borderColor=hasEv?'#22c55e':'#bbb';
     });
