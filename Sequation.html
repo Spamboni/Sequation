@@ -5323,25 +5323,36 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       tracks[0].push({sndIdx:tileIdx,bankIdx:tileIdx,time:beatStart,vol:recVolume||1,bpmAtRecord:bpm});
     }
     if(isPlaying){ clearTimers(); schedulePlayback(); }
-    applyBeatEditHighlights();
-    updateBeatDotActivity();
+    // Use setTimeout so any active-flash CSS from tile tap completes first
+    setTimeout(function(){ applyBeatEditHighlights(); updateBeatDotActivity(); }, 150);
     return true; // consumed
   };
 
 
   function updateBeatDotActivity(){
     var loopMs=getLoopMs(), beatMs=loopMs/totalBeats;
-    // Big beat dots
-    document.querySelectorAll('#proBeats .pro-beat').forEach(function(dot,bi){
-      var bs=bi*beatMs, be2=bs+beatMs, hasEv=false;
-      tracks.forEach(function(tr){ tr.forEach(function(ev){ var _evBpm=ev.bpmAtRecord||bpm; var t=ev.time*(_evBpm/bpm); if(t>=bs-beatMs*0.5&&t<bs+beatMs*0.5) hasEv=true; }); });
+    // Use dataset.beat for correct index — not forEach position (sub dots between big dots skew it)
+    document.querySelectorAll('#proBeats .pro-beat').forEach(function(dot){
+      var bi=parseInt(dot.dataset.beat);
+      if(isNaN(bi)) return;
+      var bs=bi*beatMs, hasEv=false;
+      tracks.forEach(function(tr){ tr.forEach(function(ev){
+        var _evBpm=ev.bpmAtRecord||bpm;
+        var t=ev.time*(_evBpm/bpm);
+        if(t>=bs-beatMs*0.48&&t<bs+beatMs*0.48) hasEv=true;
+      }); });
       if(!dot.classList.contains('active')) dot.style.background=hasEv?'#4ade80':'';
     });
-    // Sub dots — check second half of each beat window
+    // Sub dots — second half of beat window
     document.querySelectorAll('#proBeats .pro-beat-sub').forEach(function(sd){
       var bi=parseInt(sd.dataset.beat);
-      var bs=bi*beatMs+beatMs*0.5, be2=bs+beatMs*0.5, hasEv=false;
-      tracks.forEach(function(tr){ tr.forEach(function(ev){ var _evBpm=ev.bpmAtRecord||bpm; var t=ev.time*(_evBpm/bpm); if(t>=bs-beatMs*0.25&&t<bs+beatMs*0.25) hasEv=true; }); });
+      if(isNaN(bi)) return;
+      var bs=bi*beatMs+beatMs*0.5, hasEv=false;
+      tracks.forEach(function(tr){ tr.forEach(function(ev){
+        var _evBpm=ev.bpmAtRecord||bpm;
+        var t=ev.time*(_evBpm/bpm);
+        if(t>=bs-beatMs*0.24&&t<bs+beatMs*0.24) hasEv=true;
+      }); });
       sd.style.background=hasEv?'#4ade80':'#ddd';
       sd.style.borderColor=hasEv?'#22c55e':'#bbb';
     });
@@ -5751,7 +5762,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(_seqIntroDone){ cb(); return; }
     _seqIntroDone=true;
     var _cbCalled=false;
-    var _safeTimer=setTimeout(function(){ if(!_cbCalled){_cbCalled=true;cb();} },10000);
+    var _safeTimer=setTimeout(function(){ if(!_cbCalled){_cbCalled=true;cb();} },9000);
     function done(){ clearTimeout(_safeTimer); if(!_cbCalled){_cbCalled=true;cb();} }
 
     var _origScroll=window.scrollY||document.documentElement.scrollTop||0;
@@ -5759,52 +5770,52 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
     setTimeout(function(){
       try{
-        // ── Full-screen overlay ──
         var ov=document.createElement('div');
         ov.style.cssText='position:fixed;inset:0;z-index:9999;background:#e8e2d6;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;pointer-events:none;';
         document.body.appendChild(ov);
 
-        // ── Logo ──
         var logoWrap=document.createElement('div');
         logoWrap.style.cssText='display:flex;flex-direction:column;align-items:center;position:relative;';
+
         var h1=document.createElement('div');
         h1.style.cssText="font-family:'Abril Fatface',serif;font-size:36px;letter-spacing:3px;color:#1c1c1c;line-height:1;";
         h1.innerHTML='SEQU<span style="color:#ef4444;">ATION</span>';
         logoWrap.appendChild(h1);
+
+        // Subtitle — measure it so we can align +SEQUENCER under the final 'e'
         var sub=document.createElement('div');
-        sub.style.cssText="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#555;margin-top:6px;white-space:nowrap;";
+        sub.style.cssText="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#555;margin-top:6px;white-space:nowrap;position:relative;";
         sub.textContent='The Daily Arithmetic Puzzle';
         logoWrap.appendChild(sub);
 
-        // +SEQUENCER hidden under the final 'e' in Puzzle
-        // 'Puzzle' is the last word — 'e' is last char before nothing
-        // We position absolutely under the subtitle, right-aligned
-        // but offset LEFT by width of empty space after 'e' — which is 0 since 'e' is last
-        // To align under 'e': right:0 aligns to right edge of subtitle
-        // The subtitle ends with 'e' so right:0 = directly under it
-        var hidden=document.createElement('div');
-        hidden.style.cssText='position:absolute;font-family:"IBM Plex Mono",monospace;font-size:0.5px;letter-spacing:-0.02px;color:#ef4444;white-space:nowrap;opacity:1;bottom:0px;right:0;transform:translateY(100%);text-align:right;line-height:1;';
+        // +SEQUENCER: use a span at end of subtitle for precise alignment
+        // We add it as a child of sub, so it flows exactly after the last 'e'
+        var hiddenWrap=document.createElement('span');
+        hiddenWrap.style.cssText='position:relative;';
+        var hidden=document.createElement('span');
+        hidden.style.cssText='position:absolute;left:0;top:100%;font-family:"IBM Plex Mono",monospace;font-size:0.5px;letter-spacing:-0.02px;color:#ef4444;white-space:nowrap;line-height:1;';
         hidden.textContent='+SEQUENCER';
-        logoWrap.appendChild(hidden);
+        hiddenWrap.appendChild(hidden);
+        sub.appendChild(hiddenWrap);
+
         ov.appendChild(logoWrap);
 
-        // Zoom origin: right bottom of logoWrap = under 'e' in Puzzle
+        // Zoom origin: right bottom — under the 'e' at end of 'Puzzle'
         logoWrap.style.transformOrigin='right bottom';
         logoWrap.style.transform='scale(1)';
         logoWrap.style.transition='none';
 
-        // Phase 1: hold 0.7s, zoom in over 1.6s
+        // Hold 0.7s then zoom in
         setTimeout(function(){
           logoWrap.style.transition='transform 1.6s cubic-bezier(0.4,0,0.1,1)';
           logoWrap.style.transform='scale(14)';
         }, 700);
 
-        // Phase 2: at 2.4s — text readable, pop animation + chime
+        // At 2.4s — text readable, pop + chime
         setTimeout(function(){
           hidden.style.transition='font-size 0.15s, letter-spacing 0.15s';
           hidden.style.fontSize='0.62px';
-          hidden.style.letterSpacing='0.03px';
-          // Chime sound
+          hidden.style.letterSpacing='0.02px';
           try{ if(AC){ resumeAC();
             var t2=AC.currentTime;
             var g=AC.createGain(); g.connect(getMasterDest());
@@ -5816,155 +5827,32 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
             o.connect(g); o.start(t2); o.stop(t2+0.38);
           }}catch(e2){}
         }, 2400);
-        // Pop settle
         setTimeout(function(){
-          hidden.style.transition='font-size 0.2s, letter-spacing 0.2s';
+          hidden.style.transition='font-size 0.2s';
           hidden.style.fontSize='0.5px';
           hidden.style.letterSpacing='-0.02px';
-        }, 2600);
+        }, 2620);
 
-        // Phase 3: at 3.8s — SHATTER
+        // Hold reading time until 4.5s, then zoom back out slowly
         setTimeout(function(){
-          _shatterOverlay(ov, done, _origScroll);
-        }, 3800);
+          logoWrap.style.transition='transform 1.6s cubic-bezier(0.4,0,0.6,1)';
+          logoWrap.style.transform='scale(1)';
+          // Fade out starts 0.8s into zoom-back so logo is visible longer
+          setTimeout(function(){
+            ov.style.transition='opacity 1.0s';
+            ov.style.opacity='0';
+          }, 800);
+        }, 4500);
+
+        // Done at 6.8s
+        setTimeout(function(){
+          if(ov.parentNode) ov.parentNode.removeChild(ov);
+          if(_origScroll>10) window.scrollTo({top:_origScroll,behavior:'smooth'});
+          done();
+        }, 6800);
 
       }catch(err){ done(); }
     }, 400);
-  }
-
-  function _shatterOverlay(ov, done, origScroll){
-    try{
-      var W=window.innerWidth, H=window.innerHeight;
-      var COLS=6, ROWS=8, total=COLS*ROWS;
-      var canvas=document.createElement('canvas');
-      canvas.width=W; canvas.height=H;
-      canvas.style.cssText='position:absolute;inset:0;z-index:1;';
-      ov.appendChild(canvas);
-      var ctx=canvas.getContext('2d');
-
-      // Screenshot the overlay content into the canvas
-      ctx.fillStyle='#e8e2d6';
-      ctx.fillRect(0,0,W,H);
-
-      // Draw shatter crack lines first
-      function drawCracks(){
-        ctx.strokeStyle='rgba(0,0,0,0.35)';
-        ctx.lineWidth=1.5;
-        // Radiate cracks from center
-        var cx=W*0.5, cy=H*0.45;
-        var numCracks=14;
-        for(var i=0;i<numCracks;i++){
-          var angle=(i/numCracks)*Math.PI*2;
-          var len=Math.random()*W*0.6+W*0.2;
-          ctx.beginPath(); ctx.moveTo(cx,cy);
-          var jx=cx,jy=cy;
-          var segs=Math.floor(Math.random()*3)+2;
-          for(var s=0;s<segs;s++){
-            var segLen=len/segs;
-            var jitter=(Math.random()-0.5)*60;
-            jx+=Math.cos(angle)*segLen+jitter;
-            jy+=Math.sin(angle)*segLen+jitter;
-            ctx.lineTo(jx,jy);
-          }
-          ctx.stroke();
-        }
-      }
-
-      // Build shard pieces
-      var shards=[];
-      var cw=W/COLS, ch=H/ROWS;
-      for(var r=0;r<ROWS;r++){
-        for(var c=0;c<COLS;c++){
-          var x=c*cw, y=r*ch;
-          // Each shard gets random explosion vector
-          var angle=Math.atan2(y+ch/2-H*0.45, x+cw/2-W*0.5);
-          var speed=(Math.random()*8+4);
-          var rotSpeed=(Math.random()-0.5)*15;
-          shards.push({
-            x:x,y:y,w:cw,h:ch,
-            vx:Math.cos(angle)*speed+(Math.random()-0.5)*3,
-            vy:Math.sin(angle)*speed+(Math.random()-0.5)*3,
-            rot:0, rotV:rotSpeed,
-            alpha:1, imgX:x, imgY:y
-          });
-        }
-      }
-
-      // Flash white
-      ov.style.background='#fff';
-      setTimeout(function(){ ov.style.background='#e8e2d6'; },60);
-      setTimeout(function(){ ov.style.background='#fff'; },100);
-      setTimeout(function(){ ov.style.background='transparent'; },160);
-
-      // Impact sound — glass crack
-      try{ if(AC){ resumeAC();
-        var t3=AC.currentTime;
-        // Low thud
-        var bg=AC.createGain(); bg.connect(getMasterDest());
-        var bo=AC.createOscillator(); bo.type='sine';
-        bo.frequency.setValueAtTime(80,t3); bo.frequency.exponentialRampToValueAtTime(30,t3+0.15);
-        bg.gain.setValueAtTime(0.5,t3); bg.gain.exponentialRampToValueAtTime(0.001,t3+0.2);
-        bo.connect(bg); bo.start(t3); bo.stop(t3+0.22);
-        // Glass shatter noise
-        var nn=AC.createBufferSource(); nn.buffer=_mkNoise(0.4);
-        var nhp=AC.createBiquadFilter(); nhp.type='highpass'; nhp.frequency.value=4000;
-        var ng=AC.createGain(); ng.gain.setValueAtTime(0.6,t3+0.05); ng.gain.exponentialRampToValueAtTime(0.001,t3+0.45);
-        nn.connect(nhp); nhp.connect(ng); ng.connect(getMasterDest()); nn.start(t3+0.05); nn.stop(t3+0.45);
-        // High crack
-        var cg=AC.createGain(); cg.connect(getMasterDest());
-        var cn=AC.createBufferSource(); cn.buffer=_mkNoise(0.05);
-        var cbp=AC.createBiquadFilter(); cbp.type='bandpass'; cbp.frequency.value=8000; cbp.Q.value=2;
-        cg.gain.setValueAtTime(0.8,t3); cg.gain.exponentialRampToValueAtTime(0.001,t3+0.08);
-        cn.connect(cbp); cbp.connect(cg); cg.connect(getMasterDest()); cn.start(t3); cn.stop(t3+0.06);
-      }}catch(e3){}
-
-      drawCracks();
-
-      // Animate shards flying apart
-      var start=null;
-      var shardCanvas=document.createElement('canvas');
-      shardCanvas.width=W; shardCanvas.height=H;
-      shardCanvas.style.cssText='position:absolute;inset:0;z-index:2;pointer-events:none;';
-      ov.appendChild(shardCanvas);
-      var sc=shardCanvas.getContext('2d');
-
-      // Capture the cracked frame into an ImageData-like approach
-      // We'll just redraw the cream color for each shard
-      function animShards(ts){
-        if(!start) start=ts;
-        var elapsed=(ts-start)/1000;
-        sc.clearRect(0,0,W,H);
-        var allGone=true;
-        shards.forEach(function(s){
-          s.x+=s.vx*(1+elapsed*2);
-          s.y+=s.vy*(1+elapsed*2)+elapsed*4; // gravity
-          s.rot+=s.rotV;
-          s.alpha=Math.max(0,1-elapsed*1.2);
-          if(s.alpha>0){
-            allGone=false;
-            sc.save();
-            sc.translate(s.x+s.w/2,s.y+s.h/2);
-            sc.rotate(s.rot*Math.PI/180);
-            sc.globalAlpha=s.alpha;
-            sc.fillStyle='#e8e2d6';
-            sc.strokeStyle='rgba(0,0,0,0.2)';
-            sc.lineWidth=0.5;
-            sc.fillRect(-s.w/2,-s.h/2,s.w,s.h);
-            sc.strokeRect(-s.w/2,-s.h/2,s.w,s.h);
-            sc.restore();
-          }
-        });
-        if(!allGone && elapsed<1.2){
-          requestAnimationFrame(animShards);
-        } else {
-          if(ov.parentNode) ov.parentNode.removeChild(ov);
-          if(origScroll>10) window.scrollTo({top:origScroll,behavior:'smooth'});
-          done();
-        }
-      }
-      requestAnimationFrame(animShards);
-
-    }catch(e4){ if(ov.parentNode) ov.parentNode.removeChild(ov); done(); }
   }
 
   if(btnPro) btnPro.addEventListener('click',function(){
