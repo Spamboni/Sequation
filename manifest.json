@@ -1,29 +1,45 @@
 {
   "name": "Sequation",
   "short_name": "Sequation",
-  "description": "Math puzzle game with sequencer and sampler",
+  "description": "The daily arithmetic puzzle with a built-in sequencer and sampler. Solve math crosswords and make music.",
   "id": "io.github.spamboni.sequation",
-  "start_url": "/Sequation/Sequation.html",
-  "scope": "/Sequation/",
+  "start_url": "https://spamboni.github.io/Sequation/Sequation.html",
+  "scope": "https://spamboni.github.io/Sequation/",
   "display": "standalone",
   "background_color": "#e8e2d6",
   "theme_color": "#1c1c1c",
   "orientation": "portrait",
   "lang": "en",
   "dir": "ltr",
-  "categories": ["games", "music"],
+  "categories": ["games", "music", "puzzle"],
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/Spamboni/Sequation/main/icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://raw.githubusercontent.com/Spamboni/Sequation/main/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "./screenshot-mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Sequation puzzle and sequencer"
+    }
+  ],
+  "prefer_related_applications": false
 }
