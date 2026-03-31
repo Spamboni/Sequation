@@ -5250,7 +5250,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     tracks.forEach(function(tr){ tr.forEach(function(ev){
       var _evBpm=ev.bpmAtRecord||bpm;
       var t=ev.time*(_evBpm/bpm);
-      if(t>=beatStart-beatMs*0.5&&t<beatStart+beatMs*0.5) fired[ev.sndIdx]=true;
+      if(t>=beatStart-beatMs*0.48&&t<beatStart+beatMs*0.48) fired[ev.sndIdx]=true;
     }); });
     // Highlight tiles
     var tiles=document.querySelectorAll('#bank .bt');
@@ -5306,7 +5306,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     tracks.forEach(function(tr){ tr.forEach(function(ev){
       var _evBpm=ev.bpmAtRecord||bpm;
       var t=ev.time*(_evBpm/bpm);
-      if(ev.sndIdx===tileIdx&&t>=beatStart-beatMs*0.5&&t<beatStart+beatMs*0.5) wasOn=true;
+      if(ev.sndIdx===tileIdx&&t>=beatStart-beatMs*0.48&&t<beatStart+beatMs*0.48) wasOn=true;
     }); });
     if(wasOn){
       // Remove
@@ -5314,7 +5314,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         for(var ei=tr.length-1;ei>=0;ei--){
           var _evBpm=tr[ei].bpmAtRecord||bpm;
           var t=tr[ei].time*(_evBpm/bpm);
-          if(tr[ei].sndIdx===tileIdx&&t>=beatStart-beatMs*0.5&&t<beatStart+beatMs*0.5) tr.splice(ei,1);
+          if(tr[ei].sndIdx===tileIdx&&t>=beatStart-beatMs*0.48&&t<beatStart+beatMs*0.48) tr.splice(ei,1);
         }
       });
     } else {
@@ -5401,7 +5401,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   }
   function stopRec(){
     if(recTrack && recTrack.length > 0){
-      slotTracks[currentSlot].push(recTrack);
+      // Merge into single track rather than stacking — prevents note accumulation
+      if(slotTracks[currentSlot].length===0){
+        slotTracks[currentSlot].push([]);
+      }
+      var mainTrack=slotTracks[currentSlot][0];
+      recTrack.forEach(function(ev){ mainTrack.push(ev); });
       syncTracks();
       updateSlotUI();
     }
@@ -5524,7 +5529,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     }
     // Save current recording
     if(recTrack && recTrack.length>0){
-      slotTracks[currentSlot].push(recTrack);
+      if(slotTracks[currentSlot].length===0) slotTracks[currentSlot].push([]);
+      var _mt=slotTracks[currentSlot][0];
+      recTrack.forEach(function(ev){ _mt.push(ev); });
       syncTracks(); updateSlotUI();
       recTrack=null;
     }
@@ -5744,7 +5751,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(_seqIntroDone){ cb(); return; }
     _seqIntroDone=true;
     var _cbCalled=false;
-    var _safeTimer=setTimeout(function(){ if(!_cbCalled){_cbCalled=true;cb();} },9000);
+    var _safeTimer=setTimeout(function(){ if(!_cbCalled){_cbCalled=true;cb();} },10000);
     function done(){ clearTimeout(_safeTimer); if(!_cbCalled){_cbCalled=true;cb();} }
 
     var _origScroll=window.scrollY||document.documentElement.scrollTop||0;
@@ -5752,91 +5759,212 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
     setTimeout(function(){
       try{
+        // ── Full-screen overlay ──
         var ov=document.createElement('div');
         ov.style.cssText='position:fixed;inset:0;z-index:9999;background:#e8e2d6;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;pointer-events:none;';
         document.body.appendChild(ov);
 
-        // Main logo — matches sel-mast style
+        // ── Logo ──
         var logoWrap=document.createElement('div');
         logoWrap.style.cssText='display:flex;flex-direction:column;align-items:center;position:relative;';
-
         var h1=document.createElement('div');
         h1.style.cssText="font-family:'Abril Fatface',serif;font-size:36px;letter-spacing:3px;color:#1c1c1c;line-height:1;";
         h1.innerHTML='SEQU<span style="color:#ef4444;">ATION</span>';
         logoWrap.appendChild(h1);
-
         var sub=document.createElement('div');
-        sub.style.cssText="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#555;margin-top:6px;";
+        sub.style.cssText="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#555;margin-top:6px;white-space:nowrap;";
         sub.textContent='The Daily Arithmetic Puzzle';
         logoWrap.appendChild(sub);
 
-        // Hidden +SEQUENCER text — sits right below the 'e' in 'Puzzle'
-        // Positioned at bottom-right of subtitle (end of 'Puzzle')
+        // +SEQUENCER hidden under the final 'e' in Puzzle
+        // 'Puzzle' is the last word — 'e' is last char before nothing
+        // We position absolutely under the subtitle, right-aligned
+        // but offset LEFT by width of empty space after 'e' — which is 0 since 'e' is last
+        // To align under 'e': right:0 aligns to right edge of subtitle
+        // The subtitle ends with 'e' so right:0 = directly under it
         var hidden=document.createElement('div');
-        hidden.style.cssText='position:absolute;font-family:"IBM Plex Mono",monospace;font-size:0.55px;letter-spacing:-0.02px;color:#ef4444;white-space:nowrap;opacity:1;bottom:-0.5px;right:0;text-align:right;';
+        hidden.style.cssText='position:absolute;font-family:"IBM Plex Mono",monospace;font-size:0.5px;letter-spacing:-0.02px;color:#ef4444;white-space:nowrap;opacity:1;bottom:0px;right:0;transform:translateY(100%);text-align:right;line-height:1;';
         hidden.textContent='+SEQUENCER';
         logoWrap.appendChild(hidden);
-
         ov.appendChild(logoWrap);
 
-        // Zoom origin: bottom-right (under the e in Puzzle)
+        // Zoom origin: right bottom of logoWrap = under 'e' in Puzzle
         logoWrap.style.transformOrigin='right bottom';
         logoWrap.style.transform='scale(1)';
         logoWrap.style.transition='none';
 
-        // Hold 0.8s then zoom in
+        // Phase 1: hold 0.7s, zoom in over 1.6s
         setTimeout(function(){
-          logoWrap.style.transition='transform 1.8s cubic-bezier(0.4,0,0.1,1)';
+          logoWrap.style.transition='transform 1.6s cubic-bezier(0.4,0,0.1,1)';
           logoWrap.style.transform='scale(14)';
-        }, 800);
+        }, 700);
 
-        // At 2.6s hidden text is readable — grow it + chime
+        // Phase 2: at 2.4s — text readable, pop animation + chime
         setTimeout(function(){
-          hidden.style.transition='font-size 0.3s, letter-spacing 0.3s';
-          hidden.style.fontSize='0.55px';
-          hidden.style.letterSpacing='-0.02px';
+          hidden.style.transition='font-size 0.15s, letter-spacing 0.15s';
+          hidden.style.fontSize='0.62px';
+          hidden.style.letterSpacing='0.03px';
+          // Chime sound
           try{ if(AC){ resumeAC();
             var t2=AC.currentTime;
             var g=AC.createGain(); g.connect(getMasterDest());
             var o=AC.createOscillator(); o.type='sine';
             o.frequency.setValueAtTime(880,t2);
-            o.frequency.exponentialRampToValueAtTime(1760,t2+0.1);
-            o.frequency.exponentialRampToValueAtTime(1320,t2+0.25);
-            g.gain.setValueAtTime(0.15,t2);
-            g.gain.exponentialRampToValueAtTime(0.001,t2+0.4);
-            o.connect(g); o.start(t2); o.stop(t2+0.45);
+            o.frequency.exponentialRampToValueAtTime(1760,t2+0.08);
+            o.frequency.exponentialRampToValueAtTime(1320,t2+0.2);
+            g.gain.setValueAtTime(0.15,t2); g.gain.exponentialRampToValueAtTime(0.001,t2+0.35);
+            o.connect(g); o.start(t2); o.stop(t2+0.38);
           }}catch(e2){}
+        }, 2400);
+        // Pop settle
+        setTimeout(function(){
+          hidden.style.transition='font-size 0.2s, letter-spacing 0.2s';
+          hidden.style.fontSize='0.5px';
+          hidden.style.letterSpacing='-0.02px';
         }, 2600);
 
-        // Pop at 3.0s
+        // Phase 3: at 3.8s — SHATTER
         setTimeout(function(){
-          hidden.style.transition='font-size 0.12s, letter-spacing 0.12s';
-          hidden.style.fontSize='0.68px';
-          hidden.style.letterSpacing='0.02px';
-        }, 3000);
-        setTimeout(function(){
-          hidden.style.transition='font-size 0.18s, letter-spacing 0.18s';
-          hidden.style.fontSize='0.55px';
-          hidden.style.letterSpacing='-0.02px';
-        }, 3150);
-
-        // Zoom back out at 5.2s
-        setTimeout(function(){
-          logoWrap.style.transition='transform 1.1s cubic-bezier(0.4,0,0.6,1)';
-          logoWrap.style.transform='scale(1)';
-          ov.style.transition='opacity 0.5s 0.6s';
-          ov.style.opacity='0';
-        }, 5200);
-
-        // Done at 6.5s
-        setTimeout(function(){
-          if(ov.parentNode) ov.parentNode.removeChild(ov);
-          if(_origScroll>10) window.scrollTo({top:_origScroll,behavior:'smooth'});
-          done();
-        }, 6500);
+          _shatterOverlay(ov, done, _origScroll);
+        }, 3800);
 
       }catch(err){ done(); }
     }, 400);
+  }
+
+  function _shatterOverlay(ov, done, origScroll){
+    try{
+      var W=window.innerWidth, H=window.innerHeight;
+      var COLS=6, ROWS=8, total=COLS*ROWS;
+      var canvas=document.createElement('canvas');
+      canvas.width=W; canvas.height=H;
+      canvas.style.cssText='position:absolute;inset:0;z-index:1;';
+      ov.appendChild(canvas);
+      var ctx=canvas.getContext('2d');
+
+      // Screenshot the overlay content into the canvas
+      ctx.fillStyle='#e8e2d6';
+      ctx.fillRect(0,0,W,H);
+
+      // Draw shatter crack lines first
+      function drawCracks(){
+        ctx.strokeStyle='rgba(0,0,0,0.35)';
+        ctx.lineWidth=1.5;
+        // Radiate cracks from center
+        var cx=W*0.5, cy=H*0.45;
+        var numCracks=14;
+        for(var i=0;i<numCracks;i++){
+          var angle=(i/numCracks)*Math.PI*2;
+          var len=Math.random()*W*0.6+W*0.2;
+          ctx.beginPath(); ctx.moveTo(cx,cy);
+          var jx=cx,jy=cy;
+          var segs=Math.floor(Math.random()*3)+2;
+          for(var s=0;s<segs;s++){
+            var segLen=len/segs;
+            var jitter=(Math.random()-0.5)*60;
+            jx+=Math.cos(angle)*segLen+jitter;
+            jy+=Math.sin(angle)*segLen+jitter;
+            ctx.lineTo(jx,jy);
+          }
+          ctx.stroke();
+        }
+      }
+
+      // Build shard pieces
+      var shards=[];
+      var cw=W/COLS, ch=H/ROWS;
+      for(var r=0;r<ROWS;r++){
+        for(var c=0;c<COLS;c++){
+          var x=c*cw, y=r*ch;
+          // Each shard gets random explosion vector
+          var angle=Math.atan2(y+ch/2-H*0.45, x+cw/2-W*0.5);
+          var speed=(Math.random()*8+4);
+          var rotSpeed=(Math.random()-0.5)*15;
+          shards.push({
+            x:x,y:y,w:cw,h:ch,
+            vx:Math.cos(angle)*speed+(Math.random()-0.5)*3,
+            vy:Math.sin(angle)*speed+(Math.random()-0.5)*3,
+            rot:0, rotV:rotSpeed,
+            alpha:1, imgX:x, imgY:y
+          });
+        }
+      }
+
+      // Flash white
+      ov.style.background='#fff';
+      setTimeout(function(){ ov.style.background='#e8e2d6'; },60);
+      setTimeout(function(){ ov.style.background='#fff'; },100);
+      setTimeout(function(){ ov.style.background='transparent'; },160);
+
+      // Impact sound — glass crack
+      try{ if(AC){ resumeAC();
+        var t3=AC.currentTime;
+        // Low thud
+        var bg=AC.createGain(); bg.connect(getMasterDest());
+        var bo=AC.createOscillator(); bo.type='sine';
+        bo.frequency.setValueAtTime(80,t3); bo.frequency.exponentialRampToValueAtTime(30,t3+0.15);
+        bg.gain.setValueAtTime(0.5,t3); bg.gain.exponentialRampToValueAtTime(0.001,t3+0.2);
+        bo.connect(bg); bo.start(t3); bo.stop(t3+0.22);
+        // Glass shatter noise
+        var nn=AC.createBufferSource(); nn.buffer=_mkNoise(0.4);
+        var nhp=AC.createBiquadFilter(); nhp.type='highpass'; nhp.frequency.value=4000;
+        var ng=AC.createGain(); ng.gain.setValueAtTime(0.6,t3+0.05); ng.gain.exponentialRampToValueAtTime(0.001,t3+0.45);
+        nn.connect(nhp); nhp.connect(ng); ng.connect(getMasterDest()); nn.start(t3+0.05); nn.stop(t3+0.45);
+        // High crack
+        var cg=AC.createGain(); cg.connect(getMasterDest());
+        var cn=AC.createBufferSource(); cn.buffer=_mkNoise(0.05);
+        var cbp=AC.createBiquadFilter(); cbp.type='bandpass'; cbp.frequency.value=8000; cbp.Q.value=2;
+        cg.gain.setValueAtTime(0.8,t3); cg.gain.exponentialRampToValueAtTime(0.001,t3+0.08);
+        cn.connect(cbp); cbp.connect(cg); cg.connect(getMasterDest()); cn.start(t3); cn.stop(t3+0.06);
+      }}catch(e3){}
+
+      drawCracks();
+
+      // Animate shards flying apart
+      var start=null;
+      var shardCanvas=document.createElement('canvas');
+      shardCanvas.width=W; shardCanvas.height=H;
+      shardCanvas.style.cssText='position:absolute;inset:0;z-index:2;pointer-events:none;';
+      ov.appendChild(shardCanvas);
+      var sc=shardCanvas.getContext('2d');
+
+      // Capture the cracked frame into an ImageData-like approach
+      // We'll just redraw the cream color for each shard
+      function animShards(ts){
+        if(!start) start=ts;
+        var elapsed=(ts-start)/1000;
+        sc.clearRect(0,0,W,H);
+        var allGone=true;
+        shards.forEach(function(s){
+          s.x+=s.vx*(1+elapsed*2);
+          s.y+=s.vy*(1+elapsed*2)+elapsed*4; // gravity
+          s.rot+=s.rotV;
+          s.alpha=Math.max(0,1-elapsed*1.2);
+          if(s.alpha>0){
+            allGone=false;
+            sc.save();
+            sc.translate(s.x+s.w/2,s.y+s.h/2);
+            sc.rotate(s.rot*Math.PI/180);
+            sc.globalAlpha=s.alpha;
+            sc.fillStyle='#e8e2d6';
+            sc.strokeStyle='rgba(0,0,0,0.2)';
+            sc.lineWidth=0.5;
+            sc.fillRect(-s.w/2,-s.h/2,s.w,s.h);
+            sc.strokeRect(-s.w/2,-s.h/2,s.w,s.h);
+            sc.restore();
+          }
+        });
+        if(!allGone && elapsed<1.2){
+          requestAnimationFrame(animShards);
+        } else {
+          if(ov.parentNode) ov.parentNode.removeChild(ov);
+          if(origScroll>10) window.scrollTo({top:origScroll,behavior:'smooth'});
+          done();
+        }
+      }
+      requestAnimationFrame(animShards);
+
+    }catch(e4){ if(ov.parentNode) ov.parentNode.removeChild(ov); done(); }
   }
 
   if(btnPro) btnPro.addEventListener('click',function(){
@@ -5870,7 +5998,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   function switchSlot(slot){
     // Save current recording if in progress
     if(recTrack && recTrack.length>0){
-      slotTracks[currentSlot].push(recTrack);
+      if(slotTracks[currentSlot].length===0) slotTracks[currentSlot].push([]);
+      var _mt=slotTracks[currentSlot][0];
+      recTrack.forEach(function(ev){ _mt.push(ev); });
       syncTracks(); updateSlotUI();
       recTrack=null;
     }
