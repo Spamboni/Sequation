@@ -2797,17 +2797,27 @@ function _bsG(vol,dec){
 }
 function _bsO(type,freq,g,dur){
   var t=AC.currentTime;
+  var _pr=window._currentPitchRatio||1;
   var o=AC.createOscillator();o.type=type;
-  o.frequency.setValueAtTime(freq,t);
+  o._baseFreq=freq;
+  o.frequency.setValueAtTime(freq*_pr,t);
   o.connect(g);o.start(t);o.stop(t+dur);
+  if(!window._activeOscs) window._activeOscs=[];
+  window._activeOscs.push(o);
+  o.addEventListener('ended',function(){ var i=window._activeOscs.indexOf(o); if(i>=0) window._activeOscs.splice(i,1); });
 }
 function _bsS(type,f1,f2,vol,dur){
   var t=AC.currentTime;
+  var _pr=window._currentPitchRatio||1;
   var g=_bsG(vol,dur);
   var o=AC.createOscillator();o.type=type;
-  o.frequency.setValueAtTime(f1,t);
-  o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  o._baseFreq=f1;
+  o.frequency.setValueAtTime(f1*_pr,t);
+  o.frequency.exponentialRampToValueAtTime(f2*_pr,t+dur);
   o.connect(g);o.start(t);o.stop(t+dur);
+  if(!window._activeOscs) window._activeOscs=[];
+  window._activeOscs.push(o);
+  o.addEventListener('ended',function(){ var i=window._activeOscs.indexOf(o); if(i>=0) window._activeOscs.splice(i,1); });
 }
 function _bsN(vol,dec,lpFreq){
   var t=AC.currentTime;
@@ -5054,6 +5064,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     pitchSlider.addEventListener('input',function(){
       _pitchBend=parseFloat(this.value)*_pitchRange;
       pitchLbl.textContent=(_pitchBend>=0?'+':'')+_pitchBend.toFixed(1);
+      var _pr2=Math.pow(2,_pitchBend/12);
+      window._currentPitchRatio=_pr2;
+      if(window._activeOscs&&AC){
+        window._activeOscs.forEach(function(o){
+          try{ if(o._baseFreq) o.frequency.setTargetAtTime(o._baseFreq*_pr2,AC.currentTime,0.02); }catch(e){}
+        });
+      }
     });
     // Spring return when released
     pitchSlider.addEventListener('touchend',function(){
@@ -5075,6 +5092,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       _pitchBend*=0.75;
       if(Math.abs(_pitchBend)<0.05){ _pitchBend=0; clearInterval(_pitchReturnTimer); _pitchReturnTimer=null; }
       if(pitchSlider) pitchSlider.value=(_pitchBend/_pitchRange)||0;
+      window._currentPitchRatio=Math.pow(2,_pitchBend/12);
       if(pitchLbl) pitchLbl.textContent=(_pitchBend>=0?'+':'')+_pitchBend.toFixed(1);
     },30);
   }
@@ -5274,7 +5292,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         sd.className='pro-beat-sub';
         sd.dataset.beat=i;
         sd.dataset.sub='1';
-        sd.style.cssText='width:8px;height:8px;border-radius:50%;background:#ddd;border:1px solid #bbb;cursor:pointer;padding:0;flex-shrink:0;touch-action:none;';
+        sd.style.cssText='width:8px;height:8px;border-radius:50%;background:#ccc;border:1px solid #bbb;cursor:pointer;padding:0;flex-shrink:0;touch-action:none;';
         (function(btn,bi){
           var _st=false;
           btn.addEventListener('touchstart',function(e){ e.stopPropagation(); e.preventDefault(); _st=true; },{passive:false});
@@ -5422,8 +5440,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         if(t>=_bs2&&t<_be2) hasEv=true;
       });
       dot.classList.toggle('_has-ev', hasEv);
+      // Always update — active state handled by updateBeatDot separately
       if(!dot.classList.contains('active')){
-        dot.style.setProperty('background', hasEv?'#444':'', 'important');
+        dot.style.setProperty('background', hasEv?'#444':'#ccc', 'important');
         dot.style.boxShadow='';
       }
      });
@@ -5438,7 +5457,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         if(t>=bs-beatMs*0.25&&t<bs+beatMs*0.25) hasEv=true;
       });
       sd.classList.toggle('_sev',hasEv);
-      sd.style.setProperty('background',hasEv?'#555':'','important');
+      sd.style.setProperty('background',hasEv?'#555':'#ccc','important');
       sd.style.borderColor=hasEv?'#444':'#bbb';
       sd.style.boxShadow='none';
       sd.classList.toggle('_has-ev', hasEv);
@@ -5484,12 +5503,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // Sub dots handled by half-beat setTimeout in beat clock — just restore green here
     container.querySelectorAll('.pro-beat-sub').forEach(function(d){
       var _sev=d.classList.contains('_sev');
-      d.style.setProperty('background',_sev?'#555':'','important');
+      d.style.setProperty('background',_sev?'#555':'#ccc','important');
       d.style.borderColor=_sev?'#444':'#bbb';
       d.style.boxShadow='none';
-      if(false){
-        d.style.background='#ddd'; d.style.borderColor='#bbb'; d.style.boxShadow='none';
-      }
     });
     var tbDots = document.querySelectorAll('#toolbarBeatDots .pro-beat');
     var tbCount = tbDots.length;
