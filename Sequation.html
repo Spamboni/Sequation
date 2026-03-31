@@ -5349,7 +5349,11 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         var _bs2=Math.max(0,bs-beatMs*0.5), _be2=Math.min(loopMs-1,bs+beatMs*0.5);
         if(t>=_bs2&&t<_be2) hasEv=true;
       });
-      if(!dot.classList.contains('active')) dot.style.background=hasEv?'#4ade80':'';
+      dot.classList.toggle('_has-ev', hasEv);
+      if(!dot.classList.contains('active')){
+        dot.style.background=hasEv?'#4ade80':'';
+        dot.style.boxShadow=hasEv?'0 0 4px #4ade8066':'';
+      }
     });
     // Sub dots — second half of each beat window
     document.querySelectorAll('#proBeats .pro-beat-sub').forEach(function(sd){
@@ -5382,7 +5386,28 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var container = document.getElementById('proBeats');
     if(!container) return;
     var dots = container.querySelectorAll('.pro-beat');
-    dots.forEach(function(d,i){ d.classList.toggle('active', i===beat); });
+    dots.forEach(function(d){
+      var isAct=(parseInt(d.dataset.beat)===beat);
+      d.classList.toggle('active', isAct);
+      var hasEv=d.classList.contains('_has-ev');
+      if(isAct){
+        d.style.background='#ef4444';
+        d.style.boxShadow='0 0 8px #ef4444';
+        // Clear red after half a beat interval
+        (function(dot,hEv){
+          setTimeout(function(){
+            if(dot.classList.contains('active')){
+              dot.classList.remove('active');
+              dot.style.background=hEv?'#4ade80':'';
+              dot.style.boxShadow=hEv?'0 0 4px #4ade8066':'';
+            }
+          }, Math.round((60000/bpm)/(beatsPerBar/4)*0.5));
+        })(d, hasEv);
+      } else {
+        d.style.background=hasEv?'#4ade80':'';
+        d.style.boxShadow=hasEv?'0 0 4px #4ade8066':'';
+      }
+    });
     // Sub dots handled by half-beat setTimeout in beat clock — just restore green here
     container.querySelectorAll('.pro-beat-sub').forEach(function(d){
       if(d.classList.contains('_has-ev')){
