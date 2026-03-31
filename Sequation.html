@@ -87,7 +87,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .pro-bar-btns{display:flex;gap:3px;}
 .pro-bpm{font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:700;width:52px;border:1.5px solid var(--br);border-radius:3px;padding:3px 5px;background:var(--w);color:var(--bk);text-align:center;}
 .pro-tap{font-family:"IBM Plex Mono",monospace;font-size:9px;font-weight:700;letter-spacing:1px;padding:4px 8px;border:1.5px solid var(--bk);border-radius:3px;background:var(--bk);color:var(--bg);cursor:pointer;}
-.pro-beats{display:flex;gap:4px;flex-wrap:wrap;align-items:center;justify-content:center;opacity:1;pointer-events:none;}
+.pro-beats{display:flex;gap:4px;flex-wrap:wrap;align-items:center;justify-content:center;opacity:1;pointer-events:auto;}
 .pro-slot-btns{display:flex;gap:2px;margin-left:4px;}
 .pro-slot{min-width:20px;padding:3px 4px;font-size:8px;}
 .pro-slot.active{background:#fca5a5!important;color:#1c1c1c!important;border:2px solid #1c1c1c!important;font-weight:700;}
@@ -4960,10 +4960,19 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   function updateBeatDotActivity(){
     var loopMs=getLoopMs(), beatMs=loopMs/totalBeats;
+    // Big beat dots
     document.querySelectorAll('#proBeats .pro-beat').forEach(function(dot,bi){
       var bs=bi*beatMs, be2=bs+beatMs, hasEv=false;
       tracks.forEach(function(tr){ tr.forEach(function(ev){ var _evBpm=ev.bpmAtRecord||bpm; var t=ev.time*(_evBpm/bpm); if(t>=bs-beatMs*0.45&&t<be2-beatMs*0.05) hasEv=true; }); });
       if(!dot.classList.contains('active')) dot.style.background=hasEv?'#4ade80':'';
+    });
+    // Sub dots — check second half of each beat window
+    document.querySelectorAll('#proBeats .pro-beat-sub').forEach(function(sd){
+      var bi=parseInt(sd.dataset.beat);
+      var bs=bi*beatMs+beatMs*0.5, be2=(bi+1)*beatMs, hasEv=false;
+      tracks.forEach(function(tr){ tr.forEach(function(ev){ var _evBpm=ev.bpmAtRecord||bpm; var t=ev.time*(_evBpm/bpm); if(t>=bs-beatMs*0.1&&t<be2-beatMs*0.05) hasEv=true; }); });
+      sd.style.background=hasEv?'#4ade80':'#ddd';
+      sd.style.borderColor=hasEv?'#22c55e':'#bbb';
     });
   }
   function buildBeatDots(){
