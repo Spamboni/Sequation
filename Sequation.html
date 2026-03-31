@@ -5196,8 +5196,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       }
       container.appendChild(td);
 
-      // Small subdivision dot ("and") — between this beat and next
-      if(isBig && i<total-1){
+      // Small subdivision dot ("and") — after every big dot including last
+      if(isBig){
         var sd=document.createElement('button');
         sd.className='pro-beat-sub';
         sd.dataset.beat=i;
@@ -5346,7 +5346,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       allEvs.forEach(function(ev){
         var _evBpm=ev.bpmAtRecord||bpm;
         var t=ev.time*(_evBpm/bpm);
-        if(t>=bs-beatMs*0.5&&t<bs+beatMs*0.5) hasEv=true;
+        var _bs2=Math.max(0,bs-beatMs*0.5), _be2=Math.min(loopMs-1,bs+beatMs*0.5);
+        if(t>=_bs2&&t<_be2) hasEv=true;
       });
       if(!dot.classList.contains('active')) dot.style.background=hasEv?'#4ade80':'';
     });
@@ -5382,21 +5383,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(!container) return;
     var dots = container.querySelectorAll('.pro-beat');
     dots.forEach(function(d,i){ d.classList.toggle('active', i===beat); });
-    // Sub dots fire on the "and" — half beat after their big dot
-    // Sub dot i sits between big dot i and i+1, so it fires when beat === i+1
-    // (i.e. the previous big dot just lit, now we're at the "and")
-    // Special case: last sub dot fires when beat wraps to 0
+    // Sub dots handled by half-beat setTimeout in beat clock — just restore green here
     container.querySelectorAll('.pro-beat-sub').forEach(function(d){
-      var db=parseInt(d.dataset.beat);
-      var prevBeat=(beat-1+totalBeats)%totalBeats;
-      var isActive=(db===prevBeat);
-      if(isActive){
-        d.style.background='#f87171'; d.style.borderColor='#ef4444'; d.style.boxShadow='0 0 3px #ef4444';
-      } else if(!d.classList.contains('_has-ev')){
-        d.style.background='#ddd'; d.style.borderColor='#bbb'; d.style.boxShadow='none';
-      } else {
-        // Restore green if was active but has event
+      if(d.classList.contains('_has-ev')){
         d.style.background='#4ade80'; d.style.borderColor='#16a34a'; d.style.boxShadow='0 0 4px #4ade80';
+      } else {
+        d.style.background='#ddd'; d.style.borderColor='#bbb'; d.style.boxShadow='none';
       }
     });
     var tbDots = document.querySelectorAll('#toolbarBeatDots .pro-beat');
@@ -5473,7 +5465,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // e.g. 4 subdivisions: 1 quarter note each; 8: 1 eighth each; 12: 1 eighth-triplet each
     var ms = (60000/bpm) / (beatsPerBar/4);
     var _clockStart=Date.now();
-    var _nextBeat=0;
+    var _subTimer=null;
     beatInterval = setInterval(function(){
       if(!isPlaying && !waitingForFirstNote){ stopBeatClock(); return; }
       // Sync beat index to actual elapsed time to prevent drift
@@ -5481,6 +5473,24 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var expectedBeat=Math.round(elapsed/ms);
       currentBeat=expectedBeat % totalBeats;
       if(proMode) updateBeatDot(currentBeat);
+      // Fire sub dot halfway through this beat
+      if(_subTimer) clearTimeout(_subTimer);
+      var _cb=currentBeat;
+      _subTimer=setTimeout(function(){
+        if(!isPlaying) return;
+        // Light up sub dot for beat _cb (the "and" after beat _cb)
+        document.querySelectorAll('#proBeats .pro-beat-sub').forEach(function(d){
+          var db=parseInt(d.dataset.beat);
+          var isActive=(db===_cb);
+          if(isActive){
+            d.style.background='#f87171'; d.style.borderColor='#ef4444'; d.style.boxShadow='0 0 3px #ef4444';
+          } else if(!d.classList.contains('_has-ev')){
+            d.style.background='#ddd'; d.style.borderColor='#bbb'; d.style.boxShadow='none';
+          } else {
+            d.style.background='#4ade80'; d.style.borderColor='#16a34a'; d.style.boxShadow='0 0 4px #4ade80';
+          }
+        });
+      }, Math.round(ms/2));
       if(clickOn){
         var beatInBar = currentBeat % beatsPerBar;
         var clickLevel = 0;
@@ -5497,6 +5507,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   }
   function stopBeatClock(){
     if(beatInterval){ clearInterval(beatInterval); beatInterval=null; }
+    if(typeof _subTimer!=='undefined'&&_subTimer){ clearTimeout(_subTimer); }
     currentBeat = 0;
     updateBeatDot(-1); // clear all
   }
