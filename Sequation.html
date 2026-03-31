@@ -5446,9 +5446,15 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // ms per beat-light tick = (60000/bpm) / (beatsPerBar/4)
     // e.g. 4 subdivisions: 1 quarter note each; 8: 1 eighth each; 12: 1 eighth-triplet each
     var ms = (60000/bpm) / (beatsPerBar/4);
+    var _clockStart=Date.now();
+    var _nextBeat=0;
     beatInterval = setInterval(function(){
       if(!isPlaying && !waitingForFirstNote){ stopBeatClock(); return; }
-      if(proMode) updateBeatDot(currentBeat % totalBeats);
+      // Sync beat index to actual elapsed time to prevent drift
+      var elapsed=Date.now()-_clockStart;
+      var expectedBeat=Math.round(elapsed/ms);
+      currentBeat=expectedBeat % totalBeats;
+      if(proMode) updateBeatDot(currentBeat);
       if(clickOn){
         var beatInBar = currentBeat % beatsPerBar;
         var clickLevel = 0;
@@ -5460,8 +5466,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         }
         playClick(clickLevel);
       }
-      currentBeat++;
-      if(proMode && isLooping && currentBeat >= totalBeats){ currentBeat=0; }
+      if(proMode && isLooping && currentBeat >= totalBeats-1){ currentBeat=0; }
     }, ms);
   }
   function stopBeatClock(){
@@ -5530,6 +5535,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     }, loopMs);
     playTimers.push(endHandle);
     if(typeof updateBeatDotActivity==='function') updateBeatDotActivity();
+    // Show beat 0 dot immediately (interval fires after first ms delay)
+    if(proMode) updateBeatDot(0);
   }
 
   function onLoopEnd(){
