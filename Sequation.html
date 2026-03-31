@@ -5325,42 +5325,48 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // Play the sound so you hear what you're adding/removing
     playBankSound(tileIdx, recVolume||1);
     if(isPlaying){ clearTimers(); schedulePlayback(); }
-    // Use setTimeout so any active-flash CSS from tile tap completes first
-    setTimeout(function(){ applyBeatEditHighlights(); updateBeatDotActivity(); }, 150);
+    // Update highlights immediately
+    applyBeatEditHighlights();
+    updateBeatDotActivity();
     return true; // consumed
   };
 
 
   function updateBeatDotActivity(){
     var loopMs=getLoopMs(), beatMs=loopMs/totalBeats;
-    // Use dataset.beat for correct index — not forEach position (sub dots between big dots skew it)
+    // Include recTrack so notes show green immediately while recording
+    var allEvs=[];
+    tracks.forEach(function(tr){ tr.forEach(function(ev){ allEvs.push(ev); }); });
+    if(recTrack) recTrack.forEach(function(ev){ allEvs.push(ev); });
+
     document.querySelectorAll('#proBeats .pro-beat').forEach(function(dot){
       var bi=parseInt(dot.dataset.beat);
       if(isNaN(bi)) return;
       var bs=bi*beatMs, hasEv=false;
-      tracks.forEach(function(tr){ tr.forEach(function(ev){
+      allEvs.forEach(function(ev){
         var _evBpm=ev.bpmAtRecord||bpm;
         var t=ev.time*(_evBpm/bpm);
-        if(t>=bs-beatMs*0.48&&t<bs+beatMs*0.48) hasEv=true;
-      }); });
+        if(t>=bs-beatMs*0.5&&t<bs+beatMs*0.5) hasEv=true;
+      });
       if(!dot.classList.contains('active')) dot.style.background=hasEv?'#4ade80':'';
     });
-    // Sub dots — second half of beat window
+    // Sub dots — second half of each beat window
     document.querySelectorAll('#proBeats .pro-beat-sub').forEach(function(sd){
       var bi=parseInt(sd.dataset.beat);
       if(isNaN(bi)) return;
       var bs=bi*beatMs+beatMs*0.5, hasEv=false;
-      tracks.forEach(function(tr){ tr.forEach(function(ev){
+      allEvs.forEach(function(ev){
         var _evBpm=ev.bpmAtRecord||bpm;
         var t=ev.time*(_evBpm/bpm);
-        if(t>=bs-beatMs*0.24&&t<bs+beatMs*0.24) hasEv=true;
-      }); });
+        if(t>=bs-beatMs*0.25&&t<bs+beatMs*0.25) hasEv=true;
+      });
       sd.style.background=hasEv?'#4ade80':'#ddd';
       sd.style.borderColor=hasEv?'#16a34a':'#bbb';
       sd.style.boxShadow=hasEv?'0 0 4px #4ade80':'none';
       sd.classList.toggle('_has-ev', hasEv);
     });
   }
+
   function buildBeatDots(){
     totalBeats = bars * beatsPerBar;
     // ── Pro panel beats ──
@@ -5376,14 +5382,21 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(!container) return;
     var dots = container.querySelectorAll('.pro-beat');
     dots.forEach(function(d,i){ d.classList.toggle('active', i===beat); });
-    // Sub dots: dim red glow when beat passes, preserve green if has hit
+    // Sub dots fire on the "and" — half beat after their big dot
+    // Sub dot i sits between big dot i and i+1, so it fires when beat === i+1
+    // (i.e. the previous big dot just lit, now we're at the "and")
+    // Special case: last sub dot fires when beat wraps to 0
     container.querySelectorAll('.pro-beat-sub').forEach(function(d){
       var db=parseInt(d.dataset.beat);
-      var isActive=(db===beat);
+      var prevBeat=(beat-1+totalBeats)%totalBeats;
+      var isActive=(db===prevBeat);
       if(isActive){
         d.style.background='#f87171'; d.style.borderColor='#ef4444'; d.style.boxShadow='0 0 3px #ef4444';
       } else if(!d.classList.contains('_has-ev')){
         d.style.background='#ddd'; d.style.borderColor='#bbb'; d.style.boxShadow='none';
+      } else {
+        // Restore green if was active but has event
+        d.style.background='#4ade80'; d.style.borderColor='#16a34a'; d.style.boxShadow='0 0 4px #4ade80';
       }
     });
     var tbDots = document.querySelectorAll('#toolbarBeatDots .pro-beat');
@@ -5445,6 +5458,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var qt = quantizeTime(rawTime);
       qt = Math.max(0, Math.min(loopMs - 10, qt));
       recTrack.push({ sndIdx:sndIdx, bankIdx:bankIdx, time:qt, bpmAtRecord:bpm, vol:parseFloat(recVolume)||1.0 });
+      updateBeatDotActivity();
     }
   };
 
