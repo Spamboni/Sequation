@@ -95,7 +95,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .pro-slot.clone-src{background:#7c3aed!important;border-color:#4c1d95!important;color:#fff!important;}
 .pro-slot.clone-tgt{border-color:#7c3aed!important;border-style:dashed!important;}
 .pro-beat{border-radius:50%;background:#ccc;border:1.5px solid var(--br);flex-shrink:0;}
-.pro-beat.accent{background:#888;border:2.5px solid #1c1c1c;}
+.pro-beat.accent{border:2.5px solid #1c1c1c;}
 .pro-beat.mid-accent{background:#aaa;border:2px solid #444;}
 .pro-beat.active{background:#ef4444!important;border-color:#991b1b!important;box-shadow:0 0 4px #ef4444;}
 .pro-beat.erase-range{background:#fde047!important;border-color:#ca8a04!important;box-shadow:0 0 3px #fbbf24!important;}
@@ -5271,7 +5271,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       td.dataset.beat=i;
       td.dataset.sub='0';
       if(isBig){
-        td.style.cssText='width:'+bigSz+';height:'+bigSz+';border-radius:50%;cursor:pointer;padding:0;flex-shrink:0;touch-action:none;';
+        td.style.cssText='width:'+bigSz+';height:'+bigSz+';border-radius:50%;cursor:pointer;padding:0;flex-shrink:0;touch-action:none;'; td.style.setProperty('background','#ccc','important');
         (function(btn,bi){
           var _touched=false;
           btn.addEventListener('touchstart',function(e){ e.stopPropagation(); e.preventDefault(); _touched=true; },{passive:false});
@@ -5422,31 +5422,16 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   };
 
 
-  function updateBeatDotActivity(){
-    var loopMs=getLoopMs(), beatMs=loopMs/totalBeats;
-    // Include recTrack so notes show green immediately while recording
-    var allEvs=[];
-    tracks.forEach(function(tr){ tr.forEach(function(ev){ allEvs.push(ev); }); });
-    if(recTrack) recTrack.forEach(function(ev){ allEvs.push(ev); });
+  function _getEvs(){
+    var evs=[];
+    tracks.forEach(function(tr){ tr.forEach(function(ev){ evs.push(ev); }); });
+    if(recTrack) recTrack.forEach(function(ev){ evs.push(ev); });
+    return evs;
+  }
 
-    document.querySelectorAll('#proBeats .pro-beat').forEach(function(dot){
-      var bi=parseInt(dot.dataset.beat);
-      if(isNaN(bi)) return;
-      var bs=bi*beatMs, hasEv=false;
-      allEvs.forEach(function(ev){
-        var _evBpm=ev.bpmAtRecord||bpm;
-        var t=ev.time*(_evBpm/bpm);
-        var _bs2=Math.max(0,bs-beatMs*0.5), _be2=Math.min(loopMs-1,bs+beatMs*0.5);
-        if(t>=_bs2&&t<_be2) hasEv=true;
-      });
-      dot.classList.toggle('_has-ev', hasEv);
-      // Always update — active state handled by updateBeatDot separately
-      if(!dot.classList.contains('active')){
-        dot.style.setProperty('background', hasEv?'#444':'#ccc', 'important');
-        dot.style.boxShadow='';
-      }
-     });
-    // Sub dots — second half of each beat window
+  function updateSubDots(){
+    var loopMs=getLoopMs(), beatMs=loopMs/totalBeats;
+    var allEvs=_getEvs();
     document.querySelectorAll('#proBeats .pro-beat-sub').forEach(function(sd){
       var bi=parseInt(sd.dataset.beat);
       if(isNaN(bi)) return;
@@ -5459,9 +5444,28 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       sd.classList.toggle('_sev',hasEv);
       sd.style.setProperty('background',hasEv?'#555':'#ccc','important');
       sd.style.borderColor=hasEv?'#444':'#bbb';
-      sd.style.boxShadow='none';
-      sd.classList.toggle('_has-ev', hasEv);
     });
+  }
+
+  function updateBeatDotActivity(){
+    var loopMs=getLoopMs(), beatMs=loopMs/totalBeats;
+    var allEvs=_getEvs();
+    document.querySelectorAll('#proBeats .pro-beat').forEach(function(dot){
+      var bi=parseInt(dot.dataset.beat);
+      if(isNaN(bi)) return;
+      var bs=bi*beatMs, hasEv=false;
+      allEvs.forEach(function(ev){
+        var _evBpm=ev.bpmAtRecord||bpm;
+        var t=ev.time*(_evBpm/bpm);
+        if(t>=Math.max(0,bs-beatMs*0.5)&&t<Math.min(loopMs-1,bs+beatMs*0.5)) hasEv=true;
+      });
+      dot.classList.toggle('_has-ev', hasEv);
+      if(!dot.classList.contains('active')){
+        dot.style.setProperty('background', hasEv?'#444':'#ccc', 'important');
+        dot.style.boxShadow='';
+      }
+    });
+    updateSubDots();
   }
 
   function buildBeatDots(){
@@ -5490,23 +5494,17 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
           setTimeout(function(){
             if(dot.classList.contains('active')){
               dot.classList.remove('active');
-              dot.style.background=hEv?'#444':'';
+              dot.style.setProperty('background', hEv?'#444':'#ccc', 'important');
               dot.style.boxShadow='';
             }
           }, Math.round((60000/bpm)/(beatsPerBar/4)*0.5));
         })(d, hasEv);
       } else {
-        d.style.setProperty('background', hasEv?'#444':'', 'important');
+        d.style.setProperty('background', hasEv?'#444':'#ccc', 'important');
         d.style.boxShadow='';
       }
     });
-    // Sub dots handled by half-beat setTimeout in beat clock — just restore green here
-    container.querySelectorAll('.pro-beat-sub').forEach(function(d){
-      var _sev=d.classList.contains('_sev');
-      d.style.setProperty('background',_sev?'#555':'#ccc','important');
-      d.style.borderColor=_sev?'#444':'#bbb';
-      d.style.boxShadow='none';
-    });
+    // Sub dots managed by updateBeatDotActivity only
     var tbDots = document.querySelectorAll('#toolbarBeatDots .pro-beat');
     var tbCount = tbDots.length;
     tbDots.forEach(function(d,i){
@@ -5588,7 +5586,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var elapsed=Date.now()-_clockStart;
       var expectedBeat=Math.round(elapsed/ms);
       currentBeat=expectedBeat % totalBeats;
-      if(proMode){ updateBeatDot(currentBeat); updateBeatDotActivity(); }
+      if(proMode){ updateBeatDot(currentBeat); updateSubDots(); }
       // Fire sub dot halfway through this beat
       if(_subTimer) clearTimeout(_subTimer);
       var _cb=currentBeat;
