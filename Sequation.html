@@ -5420,10 +5420,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       });
       dot.classList.toggle('_has-ev', hasEv);
       if(!dot.classList.contains('active')){
-        dot.style.setProperty('background',hasEv?'#444':'','important');
+        dot.style.setProperty('background', hasEv?'#444':'', 'important');
         dot.style.boxShadow='';
       }
-    });
+     });
     // Sub dots — second half of each beat window
     document.querySelectorAll('#proBeats .pro-beat-sub').forEach(function(sd){
       var bi=parseInt(sd.dataset.beat);
@@ -5434,8 +5434,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         var t=ev.time*(_evBpm/bpm);
         if(t>=bs-beatMs*0.25&&t<bs+beatMs*0.25) hasEv=true;
       });
-      sd.style.background=hasEv?'#555':'#ccc';
-      sd.style.borderColor=hasEv?'#333':'#bbb';
+      sd.style.setProperty('background',hasEv?'#555':'','important');
+      sd.style.borderColor=hasEv?'#444':'#bbb';
       sd.style.boxShadow='none';
       sd.classList.toggle('_has-ev', hasEv);
     });
@@ -5996,7 +5996,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   if(btnPro) btnPro.addEventListener('click',function(){
     btnFx('pro');
     if(!seqVisible){
-      playSeqIntro(function(){ showSeq(); });
+      showSeq();
     } else {
       // Already visible: need double tap to hide
       seqTaps++; clearTimeout(seqTapTimer);
@@ -7591,6 +7591,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     ov.appendChild(trimLbl);
     ov.appendChild(waveWrap);
     ov.appendChild(envLbl); ov.appendChild(envRow);
+    ov.appendChild(fxTabRow);
+    ov.appendChild(reverbBody);
+    ov.appendChild(flangerBody);
+    ov.appendChild(chorusBody);
     ov.appendChild(volLbl); ov.appendChild(volRow);
     ov.appendChild(eqRow._eqHeader); // _eqBody already inside _eqHeader
     ov.appendChild(bottomRow);
@@ -7599,6 +7603,59 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // ── Envelope apply ──
     function applyEnvelope(){ applyProcessing(); } // alias
 
+    function applyFXChain(buf, meta2){
+        var sr=buf.sampleRate, len=buf.length, nch=buf.numberOfChannels;
+        var rvb=meta2.reverb||{on:false,size:0.5,wet:0.3,damping:0.5};
+        var fln=meta2.flanger||{on:false,rate:0.5,depth:0.5,feedback:0.3,wet:0.5};
+        var cho=meta2.chorus||{on:false,rate:1,depth:0.3,delay:0.02,wet:0.4};
+        if(!rvb.on&&!fln.on&&!cho.on){ meta2._fxPromise=null; return; }
+        var tailMs=rvb.on?(rvb.size*4):0.1;
+        var offLen=len+Math.ceil(sr*tailMs);
+        var ctx2=new OfflineAudioContext(nch,offLen,sr);
+        var src2=ctx2.createBufferSource(); src2.buffer=buf;
+        var lastN=src2;
+        if(fln.on){
+          var fDelay=ctx2.createDelay(0.02);
+          var fLFO=ctx2.createOscillator(); fLFO.frequency.value=fln.rate;
+          var fLFOG=ctx2.createGain(); fLFOG.gain.value=fln.depth*0.005;
+          fLFO.connect(fLFOG); fLFOG.connect(fDelay.delayTime);
+          var fFB=ctx2.createGain(); fFB.gain.value=fln.feedback;
+          var fWet=ctx2.createGain(); fWet.gain.value=fln.wet;
+          var fDry=ctx2.createGain(); fDry.gain.value=1-fln.wet;
+          lastN.connect(fDelay); fDelay.connect(fFB); fFB.connect(fDelay);
+          fDelay.connect(fWet); lastN.connect(fDry);
+          var fMix=ctx2.createGain(); fWet.connect(fMix); fDry.connect(fMix);
+          fLFO.start(0); lastN=fMix;
+        }
+        if(cho.on){
+          var cDelay=ctx2.createDelay(0.05); cDelay.delayTime.value=cho.delay;
+          var cLFO=ctx2.createOscillator(); cLFO.frequency.value=cho.rate;
+          var cLFOG=ctx2.createGain(); cLFOG.gain.value=cho.depth*0.005;
+          cLFO.connect(cLFOG); cLFOG.connect(cDelay.delayTime);
+          var cWet=ctx2.createGain(); cWet.gain.value=cho.wet;
+          var cDry=ctx2.createGain(); cDry.gain.value=1-cho.wet;
+          lastN.connect(cDelay); cDelay.connect(cWet); lastN.connect(cDry);
+          var cMix=ctx2.createGain(); cWet.connect(cMix); cDry.connect(cMix);
+          cLFO.start(0); lastN=cMix;
+        }
+        if(rvb.on){
+          var irLen=Math.ceil(sr*Math.max(0.1,rvb.size*4));
+          var irBuf=ctx2.createBuffer(2,irLen,sr);
+          for(var c=0;c<2;c++){
+            var d=irBuf.getChannelData(c);
+            for(var i=0;i<irLen;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/irLen,rvb.damping*8+0.5);
+          }
+          var conv=ctx2.createConvolver(); conv.buffer=irBuf;
+          var rWet=ctx2.createGain(); rWet.gain.value=rvb.wet;
+          var rDry=ctx2.createGain(); rDry.gain.value=1-rvb.wet;
+          lastN.connect(conv); conv.connect(rWet); lastN.connect(rDry);
+          var rMix=ctx2.createGain(); rWet.connect(rMix); rDry.connect(rMix);
+          lastN=rMix;
+        }
+        lastN.connect(ctx2.destination);
+        src2.start(0);
+        meta2._fxPromise=ctx2.startRendering();
+      }
     function applyProcessing(){
       _userModified = true;
       // For stock use preserved source buffer so trim/envelope apply to original
@@ -7681,12 +7738,18 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         lastNode.connect(offCtx.destination);
         src.start(0);
         offCtx.startRendering().then(function(rendered){
-          userSamples[tileIdx]=rendered;
-          if(window._updateSampleIcons) window._updateSampleIcons();
-          existingLbl.textContent=isStock?'🎵 Stock + effects saved!':'🎤 Sample saved!'; existingLbl.style.color='#4ade80';
-          testBtn.style.display='';
-          statusEl.textContent='Tap TEST to preview · REC to re-record'; statusEl.style.color='#aaa';
-          drawWaveform();
+          // Apply FX if any
+          applyFXChain(rendered,meta);
+          function _finalizeSave(finalBuf){
+            userSamples[tileIdx]=finalBuf;
+            if(window._updateSampleIcons) window._updateSampleIcons();
+            existingLbl.textContent=isStock?'🎵 Stock + effects saved!':'🎤 Sample saved!'; existingLbl.style.color='#4ade80';
+            testBtn.style.display='';
+            statusEl.textContent='Tap TEST to preview · REC to re-record'; statusEl.style.color='#aaa';
+            drawWaveform();
+          }
+          if(meta._fxPromise){ meta._fxPromise.then(function(r2){ meta._fxPromise=null; _finalizeSave(r2); }).catch(function(){ _finalizeSave(rendered); }); }
+          else { _finalizeSave(rendered); }
         }).catch(function(){
           userSamples[tileIdx]=envBuf;
           if(window._updateSampleIcons) window._updateSampleIcons();
