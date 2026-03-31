@@ -5898,6 +5898,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     syncTracks();
     updateSlotUI();
     pendingSlot=-1;
+    // Clear beat edit mode and refresh dot activity for new slot
+    clearBeatEditMode();
+    updateBeatDotActivity();
   }
 
   function switchSlotWhenReady(slot){
