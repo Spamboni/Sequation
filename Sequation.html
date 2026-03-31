@@ -5322,6 +5322,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       if(tracks.length===0) tracks.push([]);
       tracks[0].push({sndIdx:tileIdx,bankIdx:tileIdx,time:beatStart,vol:recVolume||1,bpmAtRecord:bpm});
     }
+    // Play the sound so you hear what you're adding/removing
+    playBankSound(tileIdx, recVolume||1);
     if(isPlaying){ clearTimers(); schedulePlayback(); }
     // Use setTimeout so any active-flash CSS from tile tap completes first
     setTimeout(function(){ applyBeatEditHighlights(); updateBeatDotActivity(); }, 150);
@@ -5354,7 +5356,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         if(t>=bs-beatMs*0.24&&t<bs+beatMs*0.24) hasEv=true;
       }); });
       sd.style.background=hasEv?'#4ade80':'#ddd';
-      sd.style.borderColor=hasEv?'#22c55e':'#bbb';
+      sd.style.borderColor=hasEv?'#16a34a':'#bbb';
+      sd.style.boxShadow=hasEv?'0 0 4px #4ade80':'none';
+      sd.classList.toggle('_has-ev', hasEv);
     });
   }
   function buildBeatDots(){
@@ -5372,8 +5376,16 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(!container) return;
     var dots = container.querySelectorAll('.pro-beat');
     dots.forEach(function(d,i){ d.classList.toggle('active', i===beat); });
-    // Also dim sub dots when beat advances
-    container.querySelectorAll('.pro-beat-sub').forEach(function(d){ d.style.background='#ddd'; });
+    // Sub dots: dim red glow when beat passes, preserve green if has hit
+    container.querySelectorAll('.pro-beat-sub').forEach(function(d){
+      var db=parseInt(d.dataset.beat);
+      var isActive=(db===beat);
+      if(isActive){
+        d.style.background='#f87171'; d.style.borderColor='#ef4444'; d.style.boxShadow='0 0 3px #ef4444';
+      } else if(!d.classList.contains('_has-ev')){
+        d.style.background='#ddd'; d.style.borderColor='#bbb'; d.style.boxShadow='none';
+      }
+    });
     var tbDots = document.querySelectorAll('#toolbarBeatDots .pro-beat');
     var tbCount = tbDots.length;
     tbDots.forEach(function(d,i){
