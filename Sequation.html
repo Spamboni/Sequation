@@ -63,10 +63,10 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .bank-row{display:flex;flex-direction:row;align-items:flex-start;flex:1;touch-action:pan-y;}
 .bsize-col{position:relative;flex-shrink:0;width:28px;height:96px;cursor:pointer;touch-action:none;border-bottom:2px solid var(--bk);display:flex;align-items:stretch;}
 /* Horizontal version of size slider for seq toolbar */
-.bsize-col-h{position:relative;height:28px;cursor:ew-resize;touch-action:none;border:2px solid var(--bk);border-radius:3px;background:var(--w);overflow:hidden;display:flex;align-items:center;min-width:40px;}
+.bsize-col-h{position:relative;height:18px;cursor:ew-resize;touch-action:none;border:1.5px solid var(--bk);border-radius:3px;background:var(--w);overflow:hidden;display:flex;align-items:center;min-width:40px;}
 .bsize-col-h .sizebar-fill{position:absolute;left:0;top:0;bottom:0;background:#93c5fd;border-radius:2px 0 0 2px;pointer-events:none;}
-.bsize-col-h .sizebar-handle{position:absolute;top:50%;width:14px;height:22px;background:var(--bk);border-radius:3px;transform:translate(-50%,-50%);z-index:3;cursor:ew-resize;pointer-events:none;}
-.bsize-col-h .sizebar-arrows{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:9px;color:var(--bk);pointer-events:none;z-index:5;white-space:nowrap;font-weight:700;}
+.bsize-col-h .sizebar-handle{position:absolute;top:50%;width:10px;height:14px;background:var(--bk);border-radius:2px;transform:translate(-50%,-50%);z-index:3;cursor:ew-resize;pointer-events:none;}
+.bsize-col-h .sizebar-arrows{position:absolute;top:50%;transform:translateY(-50%);font-size:7px;color:var(--bk);pointer-events:none;z-index:5;font-weight:700;display:flex;flex-direction:column;align-items:center;line-height:1;gap:0;}
 .sizebar-lock{display:none;}
 .seq-btns{display:none;}
 .seq-btn{height:28px;min-width:28px;font-size:13px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bk);border-radius:3px;background:var(--w);cursor:pointer;user-select:none;touch-action:manipulation;padding:0 5px;transition:background .12s;}
@@ -105,7 +105,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 
 .sizebar-fill{position:absolute;bottom:0;left:0;right:0;background:#93c5fd;transition:height .05s;}
 .sizebar-handle{position:absolute;left:-2px;right:-2px;height:8px;background:var(--bk);border-radius:2px;pointer-events:none;transition:bottom .05s;z-index:3;}
-.sizebar-arrows{position:absolute;left:50%;transform:translate(-50%,50%);width:22px;height:20px;border:1.5px solid var(--bk);border-radius:3px;background:var(--w);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;line-height:1.1;color:var(--bk);pointer-events:none;transition:bottom .05s;z-index:4;}
+.sizebar-arrows{position:absolute;left:50%;transform:translate(-50%,50%);width:16px;height:16px;border:1.5px solid var(--bk);border-radius:3px;background:var(--w);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:6px;line-height:1;color:var(--bk);pointer-events:none;transition:bottom .05s;z-index:4;}
 .sizebar-lbl{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--bk);text-align:center;line-height:1.6;pointer-events:none;user-select:none;}
 .bt{min-width:44px;height:44px;padding:0 8px;border:2px solid var(--br);background:var(--w);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:2px 2px 0 var(--br);transition:transform 0.04s,box-shadow 0.04s,background 0.1s;touch-action:pan-y;}
 .bt.pressed{transform:translate(2px,2px)!important;box-shadow:0 0 0 var(--br)!important;}
@@ -146,6 +146,71 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);min-height:100dv
 .wico{font-size:48px;}.wt{font-family:'Abril Fatface',serif;font-size:30px;color:var(--ac);}
 .ws{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--mu);}
 .wnxt{margin-top:4px;background:var(--bk);color:var(--bg);border:none;border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:11px 24px;cursor:pointer;}
+
+.cslider-wrap { position:relative; flex:1; cursor:ew-resize; touch-action:none; flex-shrink:0; }
+.cslider-canvas { display:block; width:100%; height:100%; }
+
+input[type=range] { -webkit-appearance:none; appearance:none; background:transparent; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:0; height:0; }
+input[type=range]::-webkit-slider-runnable-track { background:transparent; }
+input[type=range]::-moz-range-thumb { width:0; height:0; border:none; }
+input[type=range]::-moz-range-track { background:transparent; }
+
+/* ── Button shadows — toolbar + pro panel ─────────────────── */
+.seq-btn {
+  box-shadow: 0 3px 7px rgba(0,0,0,0.38), 0 1px 3px rgba(0,0,0,0.25);
+  transition: box-shadow 0.1s, transform 0.1s;
+}
+.seq-btn:active { box-shadow: 0 1px 2px rgba(0,0,0,0.2); transform: translateY(1px); }
+
+#seqPuz  { box-shadow: 0 3px 8px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.3); }
+#seqRec  { box-shadow: 0 3px 8px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.3); }
+#seqRec.active { box-shadow: 0 4px 12px rgba(0,0,0,0.65), 0 2px 4px rgba(0,0,0,0.4); }
+#seqPlay { box-shadow: 0 3px 8px rgba(0,0,0,0.42), 0 1px 3px rgba(0,0,0,0.28); }
+#seqPlay.playing { box-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 2px 4px rgba(0,0,0,0.38); }
+#seqSave { box-shadow: 0 3px 8px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.28); }
+#seqLoad { box-shadow: 0 3px 8px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.28); }
+#seqClear { box-shadow: 0 3px 8px rgba(0,0,0,0.42), 0 1px 3px rgba(0,0,0,0.28); }
+#seqSndBtn { box-shadow: 0 3px 8px rgba(0,0,0,0.42), 0 1px 3px rgba(0,0,0,0.28); }
+#seqScrollLock { box-shadow: 0 3px 7px rgba(0,0,0,0.42), 0 1px 3px rgba(0,0,0,0.28); }
+#seqScrollLock.active { box-shadow: 0 4px 10px rgba(0,0,0,0.65), 0 2px 4px rgba(0,0,0,0.45); }
+#seqErase { box-shadow: 0 3px 8px rgba(0,0,0,0.42), 0 1px 3px rgba(0,0,0,0.28); }
+#seqErase.active { box-shadow: 0 4px 12px rgba(0,0,0,0.65), 0 2px 4px rgba(0,0,0,0.45); }
+#colorTagBtn { box-shadow: 0 3px 8px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.28); }
+#copyModeBtn { box-shadow: 0 3px 8px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.28); }
+#btnSensToggle { box-shadow: 0 3px 7px rgba(0,0,0,0.38), 0 1px 3px rgba(0,0,0,0.25); }
+#btnSensToggle.active { box-shadow: 0 4px 10px rgba(0,0,0,0.6), 0 2px 4px rgba(0,0,0,0.38); }
+#btnSpinToggle { box-shadow: 0 3px 7px rgba(0,0,0,0.38), 0 1px 3px rgba(0,0,0,0.25); }
+#btnSpinToggle.active { box-shadow: 0 4px 10px rgba(0,0,0,0.6), 0 2px 4px rgba(0,0,0,0.38); }
+#btnParticleToggle { box-shadow: 0 3px 7px rgba(0,0,0,0.38), 0 1px 3px rgba(0,0,0,0.25); }
+#btnParticleToggle.active { box-shadow: 0 4px 10px rgba(0,0,0,0.6), 0 2px 4px rgba(0,0,0,0.38); }
+#seqPro { box-shadow: 0 3px 8px rgba(0,0,0,0.48), 0 1px 3px rgba(0,0,0,0.32); }
+#seqPro.active { box-shadow: 0 4px 12px rgba(0,0,0,0.65), 0 2px 4px rgba(0,0,0,0.45); }
+
+.pro-btn {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.32), 0 1px 2px rgba(0,0,0,0.22);
+  transition: box-shadow 0.1s, transform 0.1s;
+}
+.pro-btn:active { box-shadow: 0 1px 2px rgba(0,0,0,0.15); transform: translateY(1px); }
+.pro-btn.active { box-shadow: 0 3px 8px rgba(0,0,0,0.58), inset 0 1px 3px rgba(0,0,0,0.32); }
+
+.pro-slot {
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  transition: box-shadow 0.1s;
+}
+.pro-slot.active { box-shadow: 0 3px 8px rgba(0,0,0,0.58), 0 1px 3px rgba(0,0,0,0.35); }
+
+.pro-feel { box-shadow: 0 2px 5px rgba(0,0,0,0.28); }
+.pro-feel.active { box-shadow: 0 3px 8px rgba(0,0,0,0.55), inset 0 1px 2px rgba(0,0,0,0.28); }
+
+#barsMenuBtn { box-shadow: 0 2px 6px rgba(0,0,0,0.38), 0 1px 2px rgba(0,0,0,0.22); }
+#proClick.active { box-shadow: 0 3px 9px rgba(0,0,0,0.62), inset 0 1px 3px rgba(0,0,0,0.38); }
+#proAccent.active { box-shadow: 0 3px 9px rgba(0,0,0,0.62), inset 0 1px 3px rgba(0,0,0,0.38); }
+#proTap, #tbTapBtn { box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
+#eraseConfirm { box-shadow: 0 3px 8px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.32); }
+.bsnd { box-shadow: 0 2px 5px rgba(0,0,0,0.28); }
+.bsnd.active { box-shadow: 0 3px 8px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.35); }
+.seq-pro-btn { box-shadow: 0 3px 8px rgba(0,0,0,0.48), 0 1px 3px rgba(0,0,0,0.32); }
 </style>
 </head>
 <body>
@@ -201,10 +266,10 @@ window.onerror=function(msg,src,line,col,err){
   </div>
   <div class="info-bar"><span class="blbl">Tap a square · then a number · tap placed to return · pinch to zoom · double-tap resets zoom</span></div>
   <div class="gscroll"><div class="grid-clip" id="gridClip"><div class="grid" id="grid"></div></div></div>
-  <div class="bank-outer"><div class="seq-toolbar" id="seqToolbar"><div class="seq-toolbar-row"><button class="seq-btn seq-btn-sq" id="seqPuz" style="font-size:8px;font-weight:700;flex-shrink:0;">PUZ</button><div class="bsize-col-h" id="sizeBar" style="flex:1;min-width:40px;max-width:45%;"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">◀▶</div></div><button class="seq-btn seq-btn-sq" id="seqRec" title="Record" style="display:none;flex-shrink:0;">⏺</button><button class="seq-btn seq-btn-lg" id="seqPlay" title="Play/Stop" style="display:none;flex-shrink:0;height:36px;width:36px;font-size:18px;">▶</button><div style="flex:1;"></div><button class="seq-btn seq-btn-sq" id="seqSave" title="Save" style="display:none;flex-shrink:0;">💾</button><button class="seq-btn seq-btn-sq" id="seqLoad" title="Load" style="display:none;flex-shrink:0;">📂</button><button class="seq-btn seq-btn-sq" id="seqClear" title="Clear" style="display:none;flex-shrink:0;">🗑</button><button class="seq-btn seq-btn-sq" id="seqSndBtn" title="Sound Style" style="display:none;flex-shrink:0;font-size:11px;">♪</button><button class="seq-btn seq-btn-sq" id="seqScrollLock" title="Lock Scroll" style="display:none;flex-shrink:0;font-size:11px;">🔓</button></div><div class="seq-toolbar-row" id="tbRow2" style="display:none;"><div style="width:28px;flex-shrink:0;"></div><div class="bsize-col-h" id="gapSlider" style="flex:1;min-width:40px;max-width:45%;"><div class="sizebar-fill" id="gapSliderFill"></div><div class="sizebar-handle" id="gapSliderHandle"></div><div class="sizebar-arrows" id="gapSliderArrows">◀▶</div></div><div style="flex:1;"></div><button class="seq-btn seq-btn-sq" id="seqErase" title="Erase Beats" style="display:none;flex-shrink:0;">✂</button><button class="seq-btn seq-btn-sq" id="colorTagBtn" title="Color tiles" style="display:none;flex-shrink:0;">🎨</button><button class="seq-btn seq-btn-sq" id="copyModeBtn" title="Copy sample" style="display:none;flex-shrink:0;">📋</button></div><div class="seq-toolbar-row" id="tbBpmRow" style="display:none;gap:3px;align-items:stretch;"><div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;"><input id="tbBpmInput" type="number" min="40" max="300" value="120" style="width:46px;font-size:11px;font-weight:700;border:1.5px solid var(--br);border-radius:3px;padding:2px 3px;background:var(--w);color:var(--bk);text-align:center;"><button class="seq-btn" id="tbTapBtn" style="font-size:8px;font-weight:700;padding:3px 4px;">TAP</button></div><div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;"><div style="display:flex;gap:2px;"><button class="pro-slot" data-slot="0" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">1</button><button class="pro-slot" data-slot="1" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">2</button><button class="pro-slot" data-slot="2" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">3</button><button class="pro-slot" data-slot="3" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">4</button></div><div style="display:flex;gap:2px;align-items:center;"><button class="pro-slot" data-slot="4" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">5</button><button class="pro-slot" data-slot="5" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">6</button><button class="pro-slot" data-slot="6" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">7</button><button class="pro-slot" data-slot="7" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">8</button></div></div><div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;min-width:80px;max-width:90px;"><div style="display:flex;gap:2px;align-items:center;"><span style="font-family:monospace;font-size:7px;color:#888;flex-shrink:0;">VOL</span><input type="range" id="tbVolSlider" min="0.05" max="1" step="0.05" value="1" style="flex:1;accent-color:#ef4444;min-width:0;"></div><div style="display:flex;gap:2px;"><button class="seq-btn active" id="btnSensToggle" title="Tap sensitivity (hold for settings)" style="flex:1;font-size:10px;padding:2px 0;">&#x1F44B;</button><button class="seq-btn seq-btn-sq" id="btnSpinToggle" title="Spin on/off" style="font-size:10px;">&#x1F300;</button><button class="seq-btn seq-btn-sq" id="btnParticleToggle" title="Particles on/off" style="font-size:10px;">&#x2728;</button></div></div></div><div id="toolbarBeat" style="display:none;flex-direction:column;align-items:center;gap:2px;width:100%;padding:2px 0;"><div id="toolbarBeatDots" style="display:flex;gap:2px;flex-wrap:wrap;align-items:center;justify-content:center;width:100%;"></div></div></div><div id="_pitchTopDock" style="display:none;width:100%;background:#f5f0e8;border-bottom:1.5px solid #7c3aed;padding:2px 4px;align-items:center;gap:4px;"></div><div class="bank-row" style="position:relative;"><div id="_pitchLeftDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:#f5f0e8;"></div><div class="bsize-wrap" id="sizeSideWrap"><div class="bsize-col" id="sizeBarV"><div class="sizebar-fill" id="sizeBarFillV"></div><div class="sizebar-handle" id="sizeBarHandleV"></div><div class="sizebar-arrows" id="sizeBarArrowsV">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="width:28px;font-size:8px;">SEQ</button></div><div class="bank"><div class="btiles" id="bank"></div></div><div id="_pitchRightDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:#f5f0e8;"></div></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div>
-<div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row" id="pitchBendRow" style="gap:6px;align-items:center;justify-content:flex-end;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;">
+  <div class="bank-outer"><div class="seq-toolbar" id="seqToolbar"><div class="seq-toolbar-row"><button class="seq-btn seq-btn-sq" id="seqPuz" style="font-size:8px;font-weight:700;flex-shrink:0;">PUZ</button><div class="bsize-col-h" id="sizeBar" style="flex:1;min-width:40px;max-width:45%;"><div class="sizebar-fill" id="sizeBarFill"></div><div class="sizebar-handle" id="sizeBarHandle"></div><div class="sizebar-arrows" id="sizeBarArrows">◀<br>▶</div></div><button class="seq-btn seq-btn-sq" id="seqRec" title="Record" style="display:none;flex-shrink:0;">⏺</button><button class="seq-btn seq-btn-lg" id="seqPlay" title="Play/Stop" style="display:none;flex-shrink:0;height:36px;width:36px;font-size:18px;">▶</button><div style="flex:1;"></div><button class="seq-btn seq-btn-sq" id="seqSave" title="Save" style="display:none;flex-shrink:0;">💾</button><button class="seq-btn seq-btn-sq" id="seqLoad" title="Load" style="display:none;flex-shrink:0;">📂</button><button class="seq-btn seq-btn-sq" id="seqClear" title="Clear" style="display:none;flex-shrink:0;">🗑</button><button class="seq-btn seq-btn-sq" id="seqSndBtn" title="Sound Style" style="display:none;flex-shrink:0;font-size:11px;">♪</button><button class="seq-btn seq-btn-sq" id="seqScrollLock" title="Lock Scroll" style="display:none;flex-shrink:0;font-size:11px;">🔓</button></div><div class="seq-toolbar-row" id="tbRow2" style="display:none;"><div style="width:28px;flex-shrink:0;"></div><div class="bsize-col-h" id="gapSlider" style="flex:1;min-width:40px;max-width:45%;"><div class="sizebar-fill" id="gapSliderFill"></div><div class="sizebar-handle" id="gapSliderHandle"></div><div class="sizebar-arrows" id="gapSliderArrows">◀<br>▶</div></div><div style="flex:1;"></div><button class="seq-btn seq-btn-sq" id="seqErase" title="Erase Beats" style="display:none;flex-shrink:0;">✂</button><button class="seq-btn seq-btn-sq" id="colorTagBtn" title="Color tiles" style="display:none;flex-shrink:0;">🎨</button><button class="seq-btn seq-btn-sq" id="copyModeBtn" title="Copy sample" style="display:none;flex-shrink:0;">📋</button></div><div class="seq-toolbar-row" id="tbBpmRow" style="display:none;gap:3px;align-items:stretch;"><div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;"><input id="tbBpmInput" type="number" min="40" max="300" value="120" style="width:46px;font-size:11px;font-weight:700;border:1.5px solid var(--br);border-radius:3px;padding:2px 3px;background:var(--w);color:var(--bk);text-align:center;"><button class="seq-btn" id="tbTapBtn" style="font-size:8px;font-weight:700;padding:3px 4px;">TAP</button></div><div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;"><div style="display:flex;gap:2px;"><button class="pro-slot" data-slot="0" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">1</button><button class="pro-slot" data-slot="1" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">2</button><button class="pro-slot" data-slot="2" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">3</button><button class="pro-slot" data-slot="3" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">4</button></div><div style="display:flex;gap:2px;align-items:center;"><button class="pro-slot" data-slot="4" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">5</button><button class="pro-slot" data-slot="5" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">6</button><button class="pro-slot" data-slot="6" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">7</button><button class="pro-slot" data-slot="7" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--br);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">8</button></div></div><div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;min-width:80px;max-width:90px;"><div style="display:flex;gap:2px;"><button class="seq-btn" id="btnSensToggle" title="Tap sensitivity (hold for settings)" style="flex:1;font-size:10px;padding:2px 0;">&#x1F44B;</button><button class="seq-btn seq-btn-sq" id="btnSpinToggle" title="Spin on/off" style="font-size:10px;">&#x1F300;</button><button class="seq-btn seq-btn-sq" id="btnParticleToggle" title="Particles on/off" style="font-size:10px;">&#x2728;</button></div></div></div><div id="toolbarBeat" style="display:none;flex-direction:column;align-items:center;gap:2px;width:100%;padding:2px 0;"><div id="toolbarBeatDots" style="display:flex;gap:2px;flex-wrap:wrap;align-items:center;justify-content:center;width:100%;"></div></div></div><div id="_pitchTopDock" style="display:none;width:100%;background:#f5f0e8;padding:2px 4px;align-items:center;gap:4px;"></div><div class="bank-row" style="position:relative;"><div id="_pitchLeftDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:#f5f0e8;"></div><div class="bsize-wrap" id="sizeSideWrap"><div class="bsize-col" id="sizeBarV"><div class="sizebar-fill" id="sizeBarFillV"></div><div class="sizebar-handle" id="sizeBarHandleV"></div><div class="sizebar-arrows" id="sizeBarArrowsV">▲<br>▼</div><span class="sizebar-lbl">S<br>I<br>Z<br>E</span></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="width:28px;font-size:8px;">SEQ</button></div><div class="bank"><div class="btiles" id="bank"></div></div><div id="_pitchRightDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:#f5f0e8;"></div></div><div id="_pitchBottomDock" style="display:none;width:100%;background:#f5f0e8;padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div id="_volBottomDock" style="display:none;width:100%;background:#f5f0e8;padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div>
+<div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row" id="pitchBendRow" style="gap:4px;align-items:center;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;display:grid;grid-template-columns:36px 1fr auto auto auto;">
 <span class="pro-lbl" style="font-size:7px;white-space:nowrap;">PITCH</span>
-<input type="range" id="pitchBendSlider" min="-1" max="1" step="0.01" value="0" style="flex:1;max-width:130px;accent-color:#7c3aed;touch-action:none;">
+<div class="cslider-wrap" id="pitchSliderWrap" style="height:22px;filter:drop-shadow(0px 4px 8px rgba(124,58,237,0.7)) drop-shadow(0px 2px 4px rgba(0,0,0,0.4));"><canvas class="cslider-canvas" id="pitchSliderCanvas"></canvas><input type="range" id="pitchBendSlider" min="-1" max="1" step="0.01" value="0" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ew-resize;z-index:5;-webkit-appearance:none;appearance:none;background:transparent;pointer-events:auto;"></div>
 <span class="pro-lbl" id="pitchBendLbl" style="font-size:7px;min-width:22px;text-align:right;">0</span>
 <span class="pro-lbl" style="font-size:7px;white-space:nowrap;margin-left:4px;">RNG</span>
 <select id="pitchBendRange" style="font-family:monospace;font-size:8px;border:1px solid #ccc;border-radius:3px;background:var(--w);color:var(--bk);padding:1px 2px;">
@@ -217,7 +282,14 @@ window.onerror=function(msg,src,line,col,err){
 </select>
 <button id="pitchUndockBtn" title="Undock pitch slider" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;flex-shrink:0;">⊞</button>
 </div>
-<div class="pro-row pro-top" style="justify-content:space-between;align-items:center;gap:4px;"><button id="barsMenuBtn" class="pro-btn active" style="flex-shrink:0;font-size:8px;padding:3px 6px;white-space:nowrap;">BARS&nbsp;2</button><div class="pro-beats" id="proBeats" style="flex:1;justify-content:center;"></div><div id="undockBeats" style="display:none;"></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"></div></div><div class="pro-row" id="recVolRow" style="justify-content:flex-end;gap:6px;"><span class="pro-lbl" style="font-size:7px;white-space:nowrap;">REC VOL</span><input type="range" id="_recVolSlider" min="0.05" max="1" step="0.05" value="1" style="width:130px;accent-color:#ef4444;"><span class="pro-lbl" id="_recVolLbl" style="font-size:7px;min-width:28px;">100%</span><button id="_recVolBoost" title="Enable boost above 100%" style="font-family:monospace;font-size:7px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">+</button><button id="undockRecVol" title="Undock REC VOL" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">⊞</button></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:6px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">FEEL</span><div class="pro-bar-btns" id="feelBtns"><button class="pro-btn pro-feel active" data-feel="4" data-q-auto="1/4">4</button><button class="pro-btn pro-feel" data-feel="6" data-q-auto="1/4t">6</button><button class="pro-btn pro-feel" data-feel="8" data-q-auto="1/8">8</button><button class="pro-btn pro-feel" data-feel="12" data-q-auto="1/8t">12</button><button class="pro-btn pro-feel" data-feel="16" data-q-auto="1/16">16</button></div></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;"><span class="pro-lbl">MASTER EQ</span><div style="display:flex;gap:6px;"><button id="masterEQBasicTab" style="flex:1;font-family:monospace;font-size:8px;font-weight:700;padding:5px 0;border:1.5px solid #ccc;border-radius:4px;background:#e8e2d6;color:#888;cursor:pointer;letter-spacing:.5px;touch-action:manipulation;">BASIC</button><button id="masterEQParamTab" style="flex:1;font-family:monospace;font-size:8px;font-weight:700;padding:5px 0;border:1.5px solid #ccc;border-radius:4px;background:#e8e2d6;color:#888;cursor:pointer;letter-spacing:.5px;touch-action:manipulation;">PARAMETRIC</button></div><div id="masterEQBasicBody" style="display:none;flex-direction:column;gap:4px;"><div style="display:flex;align-items:center;justify-content:flex-end;"><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div id="masterEQParamBody" style="display:none;flex-direction:column;align-items:center;gap:4px;"><canvas id="masterEQCanvas" width="280" height="80" style="width:280px;height:80px;border:1.5px solid #ccc;border-radius:4px;background:#1c1c1c;display:block;cursor:crosshair;touch-action:none;"></canvas><div id="masterEQBandControls" style="display:flex;flex-direction:column;gap:4px;width:100%;"></div></div></div>
+<div class="pro-row" id="volRow" style="gap:4px;align-items:center;display:grid;grid-template-columns:36px 1fr auto auto auto;">
+<span class="pro-lbl" style="font-size:7px;white-space:nowrap;">VOL</span>
+<div class="cslider-wrap" id="volSliderWrap" style="height:22px;filter:drop-shadow(0px 4px 8px rgba(239,68,68,0.7)) drop-shadow(0px 2px 4px rgba(0,0,0,0.4));"><canvas class="cslider-canvas" id="volSliderCanvas"></canvas><input type="range" id="tbVolSlider" min="0.05" max="1" step="0.05" value="1" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ew-resize;z-index:5;-webkit-appearance:none;appearance:none;background:transparent;pointer-events:auto;"></div>
+<span class="pro-lbl" id="volLbl" style="font-size:7px;min-width:28px;text-align:right;">100%</span>
+<button id="volLockBtn" title="Lock volume" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;flex-shrink:0;">🔓</button>
+<button id="volUndockBtn" title="Undock volume slider" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;flex-shrink:0;">⊞</button>
+</div>
+<div class="pro-row pro-top" style="justify-content:space-between;align-items:center;gap:4px;"><button id="barsMenuBtn" class="pro-btn active" style="flex-shrink:0;font-size:8px;padding:3px 6px;white-space:nowrap;">BARS&nbsp;2</button><div class="pro-beats" id="proBeats" style="flex:1;justify-content:center;"></div><div id="undockBeats" style="display:none;"></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"></div></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:6px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">FEEL</span><div class="pro-bar-btns" id="feelBtns"><button class="pro-btn pro-feel active" data-feel="4" data-q-auto="1/4">4</button><button class="pro-btn pro-feel" data-feel="6" data-q-auto="1/4t">6</button><button class="pro-btn pro-feel" data-feel="8" data-q-auto="1/8">8</button><button class="pro-btn pro-feel" data-feel="12" data-q-auto="1/8t">12</button><button class="pro-btn pro-feel" data-feel="16" data-q-auto="1/16">16</button></div></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid #ccc;padding-top:5px;margin-top:2px;"><span class="pro-lbl">MASTER EQ</span><div style="display:flex;gap:6px;"><button id="masterEQBasicTab" style="flex:1;font-family:monospace;font-size:8px;font-weight:700;padding:5px 0;border:1.5px solid #ccc;border-radius:4px;background:#e8e2d6;color:#888;cursor:pointer;letter-spacing:.5px;touch-action:manipulation;">BASIC</button><button id="masterEQParamTab" style="flex:1;font-family:monospace;font-size:8px;font-weight:700;padding:5px 0;border:1.5px solid #ccc;border-radius:4px;background:#e8e2d6;color:#888;cursor:pointer;letter-spacing:.5px;touch-action:manipulation;">PARAMETRIC</button></div><div id="masterEQBasicBody" style="display:none;flex-direction:column;gap:4px;"><div style="display:flex;align-items:center;justify-content:flex-end;"><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:#aaa;">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:#7c3aed;cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div id="masterEQParamBody" style="display:none;flex-direction:column;align-items:center;gap:4px;"><canvas id="masterEQCanvas" width="280" height="80" style="width:280px;height:80px;border:1.5px solid #ccc;border-radius:4px;background:#1c1c1c;display:block;cursor:crosshair;touch-action:none;"></canvas><div id="masterEQBandControls" style="display:flex;flex-direction:column;gap:4px;width:100%;"></div></div></div>
 <div class="pro-row" id="eraseRow" style="display:none;background:#fff3e0;border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#c2410c;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:#555;font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:#f97316;border-color:#c2410c;color:#fff;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:#666;"></span></div></div></div>
 
   <div class="bsnd-label" id="sndLabel" style="display:none;">Sound Style</div>
@@ -5113,113 +5185,592 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     _pitchReturnTimer=setInterval(function(){
       _pitchBend*=0.75;
       if(Math.abs(_pitchBend)<0.05){ _pitchBend=0; clearInterval(_pitchReturnTimer); _pitchReturnTimer=null; }
-      if(pitchSlider) pitchSlider.value=(_pitchBend/_pitchRange)||0;
+      var _pv=(_pitchBend/_pitchRange)||0;
+      if(pitchSlider) pitchSlider.value=_pv;
+      // Also update float widget input if undocked
+      var _flSl=document.getElementById('_pitch_fl_sl');
+      if(_flSl) _flSl.value=_pv;
       window._currentPitchRatio=Math.pow(2,_pitchBend/12);
       if(pitchLbl) pitchLbl.textContent=(_pitchBend>=0?'+':'')+_pitchBend.toFixed(1);
+      // Update float label too
+      var _flLb=document.getElementById('_pitch_fl_lb');
+      if(_flLb) _flLb.textContent=(_pitchBend>=0?'+':'')+_pitchBend.toFixed(1);
+      if(window._syncPitchBar) window._syncPitchBar(_pv);
+      // Trigger redraw of float canvas via input event
+      if(_flSl){ _flSl.dispatchEvent(new Event('input')); }
     },30);
   }
 
   // Expose pitch ratio for playBankSound
   window._getPitchRatio=function(){ return Math.pow(2,_pitchBend/12); };
 
-  // ── Pitch slider undock / drag / snap / dock ──────────────────────────
-  var _pitchFloat=null;
-  var _pitchDocked=true;
-  var _pitchOrientation='h'; // 'h'=horizontal, 'v'=vertical
-  var _pitchDockedSide=null; // null=floating, 'left','right'=bank sides, 'top-left','top-center','top-right'=bank top
-
-  function _syncFloatSlider(){
-    var sl=document.getElementById('_pfl_sl');
-    var lb=document.getElementById('_pfl_lb');
-    if(sl) sl.value=(_pitchRange>0?_pitchBend/_pitchRange:0);
-    if(lb) lb.textContent=(_pitchBend>=0?'+':'')+_pitchBend.toFixed(1);
+  // ── Slider color helpers ─────────────────────────────────────
+  function _darkenHex(hex, amt){
+    // amt 0-1: 0=unchanged, 1=black
+    var r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+    r=Math.round(r*(1-amt)); g=Math.round(g*(1-amt)); b=Math.round(b*(1-amt));
+    return 'rgb('+r+','+g+','+b+')';
+  }
+  function _hexWithAlpha(hex, alpha){
+    var r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+    return 'rgba('+r+','+g+','+b+','+alpha+')';
   }
 
-  function _buildFloatWidget(){
-    if(_pitchFloat&&_pitchFloat.parentNode) _pitchFloat.parentNode.removeChild(_pitchFloat);
-    var isV=_pitchOrientation==='v';
-    var fw=document.createElement('div');
-    fw.id='_pitchFloatWidget';
-    fw.style.cssText='position:fixed;z-index:600;background:#f5f0e8;border:1.5px solid #7c3aed;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;gap:3px;touch-action:none;user-select:none;padding:2px 4px;'
-      +(isV?'flex-direction:column;':'flex-direction:row;');
+  // ── Generic dockable slider factory ──────────────────────────────────
+  // Creates a floating/dockable slider widget
+  // cfg: { id, label, color, min, max, step, value, onChange, onRelease }
+  function _makeDockableSlider(cfg){
+    var _float=null;
+    var _docked=true;
+    var _orient='h';
+    var _dockedSide=null;
+    var _locked=false;
+    var _snapSide=null;
+    var _snapHint=null;
+    var SLOTS=['_'+cfg.id+'TopDock','_'+cfg.id+'BottomDock','_'+cfg.id+'LeftDock','_'+cfg.id+'RightDock'];
 
-    // Drag handle
-    var handle=document.createElement('div');
-    handle.style.cssText='font-size:11px;color:#aaa;cursor:grab;flex-shrink:0;padding:4px 5px;min-width:22px;min-height:22px;display:flex;align-items:center;justify-content:center;'
-      +(isV?'writing-mode:vertical-lr;min-height:36px;':'');
-    handle.textContent='⠿';
-    handle.id='_pfl_handle';
+    function _getSlider(){ return document.getElementById('_'+cfg.id+'_fl_sl'); }
+    function _getLbl(){ return document.getElementById('_'+cfg.id+'_fl_lb'); }
 
-    // Slider
-    var sl=document.createElement('input');
-    sl.type='range'; sl.min='-1'; sl.max='1'; sl.step='0.01';
-    sl.value=(_pitchRange>0?_pitchBend/_pitchRange:0);
-    sl.id='_pfl_sl';
-    if(isV){
-      sl.style.cssText='writing-mode:vertical-lr;direction:rtl;height:130px;width:36px;accent-color:#7c3aed;cursor:pointer;touch-action:none;flex-shrink:0;';
-    } else {
-      sl.style.cssText='width:140px;height:36px;accent-color:#7c3aed;cursor:pointer;touch-action:none;flex-shrink:0;';
+    function _build(docked){
+      if(_float&&_float.parentNode) _float.parentNode.removeChild(_float);
+      var isV=_orient==='v';
+      var fw=document.createElement('div');
+      fw.id='_'+cfg.id+'FloatWidget';
+
+      if(docked){
+        fw.style.cssText='position:relative;z-index:1;display:flex;align-items:center;gap:2px;touch-action:none;user-select:none;padding:2px 0;background:transparent;'
+          +(isV?'flex-direction:column;':'flex-direction:row;');
+      } else {
+        fw.style.cssText='position:fixed;z-index:600;background:#f5f0e8;border:1.5px solid '+cfg.color+';border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;gap:3px;touch-action:none;user-select:none;padding:2px 4px;'
+      // Prevent touches on widget from reaching tiles/grid below
+      fw.addEventListener('touchstart',function(e){ e.stopPropagation(); },{passive:true});
+          +(isV?'flex-direction:column;':'flex-direction:row;');
+      }
+
+      // ── Shared pinch/drag state ────────────────────────────────
+      var _fdx=0,_fdy=0,_fdrag=false,_fmoved=false;
+      var _p1id=-1,_p2id=-1,_pinching=false,_pinchStartDist=0,_pinchStartSize=0;
+      var _sizeLocked=false; // locks slider length when docked
+
+      // ── Custom bar-style slider ───────────────────────────────────
+      var _savedSize=cfg._savedSliderSize||(isV?130:140);
+
+      // Wrapper div (the visible bar)
+      var slWrap=document.createElement('div');
+      slWrap.style.cssText='position:relative;flex-shrink:0;touch-action:none;cursor:'+(isV?'ns-resize':'ew-resize')+';overflow:visible;filter:drop-shadow(0px 3px 6px '+_hexWithAlpha(cfg.color,0.6)+');'
+        +(isV?'width:22px;height:'+_savedSize+'px;':'height:22px;width:'+_savedSize+'px;');
+      slWrap.id='_'+cfg.id+'_fl_wrap';
+
+      // Canvas for mixer-style rendering
+      var slCanvas=document.createElement('canvas');
+      slCanvas.id='_'+cfg.id+'_fl_cv';
+      slCanvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;';
+      slWrap.appendChild(slCanvas);
+      // (slFill and slHandle removed — canvas draws them)
+      var slFill=null; var slHandle=null;
+
+      // Native hidden range for value
+      var sl=document.createElement('input');
+      sl.type='range'; sl.min=cfg.min; sl.max=cfg.max; sl.step=cfg.step; sl.value=cfg.value;
+      sl.id='_'+cfg.id+'_fl_sl';
+      sl.style.cssText='position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:'+(isV?'ns-resize':'ew-resize')+';z-index:5;-webkit-appearance:none;appearance:none;background:transparent;'
+        +(isV?'writing-mode:vertical-lr;direction:rtl;transform:scaleY(-1);':'');
+      // Stop touches on the slider from reaching tiles below
+      sl.addEventListener('touchstart',function(e){ e.stopPropagation(); },{passive:true});
+      sl.addEventListener('click',function(e){ e.stopPropagation(); });
+      slWrap.appendChild(sl);
+
+      function _updateBarVisual(v){
+        var mn=parseFloat(cfg.min),mx=parseFloat(cfg.max);
+        var pct=(v-mn)/(mx-mn);
+        var isCenter=(mn<0&&mx>0);
+        var cvId='_'+cfg.id+'_fl_cv';
+        var _isV=isV; // capture NOW before any async
+        var _sz=_savedSize;
+        setTimeout(function(){ _drawMixerSliderV(cvId,pct,cfg.color,isCenter,_isV,_sz); },10);
+      }
+      function _drawMixerSliderV(canvasId,pct,color,isCenter,vertical,_fallbackSize){
+        var cv=document.getElementById(canvasId); if(!cv) return;
+        var wrap=cv.parentElement; if(!wrap) return;
+        // Use actual DOM dimensions
+        var cW=Math.max(1, wrap.offsetWidth||22);
+        var cH=Math.max(1, wrap.offsetHeight||(_fallbackSize||140));
+        cv.width=cW; cv.height=cH;
+        var ctx=cv.getContext('2d');
+        ctx.clearRect(0,0,cW,cH);
+        // Auto-detect orientation from actual dimensions rather than trusting the passed flag
+        var vertical=(cH>cW);
+        var PAD=2, R=3;
+        var drawW=cW, drawH=cH, trackThick;
+        if(vertical){
+          trackThick=Math.round(drawW*0.65);
+        } else {
+          trackThick=Math.round(drawH*0.55);
+        }
+
+        var trackX, trackY, trackLen;
+        if(vertical){
+          trackX=Math.round((drawW-trackThick)/2); trackY=PAD;
+          trackLen=drawH-PAD*2;
+        } else {
+          trackX=PAD; trackY=Math.round((drawH-trackThick)/2);
+          trackLen=drawW-PAD*2;
+        }
+
+        // Position of handle along the track
+        // For vertical: invert so dragging up = higher value
+        var _drawPct=vertical?(1-pct):pct;
+        var handlePos=Math.round(PAD+trackLen*_drawPct);
+        var _centerDrawPct=vertical?0.5:0.5; // center always midpoint visually
+        var fillStart=isCenter?Math.round(PAD+trackLen/2):PAD;
+        var fillEnd=handlePos;
+        if(isCenter&&_drawPct>0.5){ fillStart=Math.round(PAD+trackLen/2); fillEnd=handlePos; }
+        else if(isCenter&&_drawPct<0.5){ fillStart=handlePos; fillEnd=Math.round(PAD+trackLen/2); }
+        var fillLen=Math.abs(fillEnd-fillStart);
+
+        // ── Draw track ──
+        ctx.beginPath();
+        if(vertical){
+          ctx.moveTo(trackX+R,trackY); ctx.lineTo(trackX+trackThick-R,trackY);
+          ctx.arcTo(trackX+trackThick,trackY,trackX+trackThick,trackY+R,R);
+          ctx.lineTo(trackX+trackThick,trackY+trackLen-R);
+          ctx.arcTo(trackX+trackThick,trackY+trackLen,trackX+trackThick-R,trackY+trackLen,R);
+          ctx.lineTo(trackX+R,trackY+trackLen);
+          ctx.arcTo(trackX,trackY+trackLen,trackX,trackY+trackLen-R,R);
+          ctx.lineTo(trackX,trackY+R);
+          ctx.arcTo(trackX,trackY,trackX+R,trackY,R);
+        } else {
+          ctx.moveTo(trackX+R,trackY); ctx.lineTo(trackX+trackLen-R,trackY);
+          ctx.arcTo(trackX+trackLen,trackY,trackX+trackLen,trackY+R,R);
+          ctx.lineTo(trackX+trackLen,trackY+trackThick-R);
+          ctx.arcTo(trackX+trackLen,trackY+trackThick,trackX+trackLen-R,trackY+trackThick,R);
+          ctx.lineTo(trackX+R,trackY+trackThick);
+          ctx.arcTo(trackX,trackY+trackThick,trackX,trackY+trackThick-R,R);
+          ctx.lineTo(trackX,trackY+R);
+          ctx.arcTo(trackX,trackY,trackX+R,trackY,R);
+        }
+        ctx.closePath();
+        ctx.fillStyle=_hexWithAlpha(color,0.07); ctx.fill();
+        ctx.strokeStyle=_darkenHex(color,0.28); ctx.lineWidth=1.5; ctx.stroke();
+
+        // ── Hatch fill ──
+        if(fillLen>1){
+          ctx.save(); ctx.beginPath();
+          if(vertical){
+            var fs=Math.min(fillStart,fillEnd);
+            ctx.rect(trackX+1,fs,trackThick-2,fillLen);
+          } else {
+            var fs2=Math.min(fillStart,fillEnd);
+            ctx.rect(fs2,trackY+1,fillLen,trackThick-2);
+          }
+          ctx.clip();
+          var fs3=Math.min(fillStart,fillEnd);
+          if(vertical){
+            ctx.globalAlpha=0.45; ctx.fillStyle=color;
+            ctx.fillRect(trackX+1,fs3,trackThick-2,fillLen);
+            ctx.globalAlpha=0.85; ctx.strokeStyle=_darkenHex(color,0.15); ctx.lineWidth=1.2;
+            for(var yi=fs3-trackThick;yi<fs3+fillLen+trackThick;yi+=6){
+              ctx.beginPath(); ctx.moveTo(trackX+1,yi); ctx.lineTo(trackX+trackThick-1,yi+trackThick); ctx.stroke();
+            }
+          } else {
+            ctx.globalAlpha=0.45; ctx.fillStyle=color;
+            ctx.fillRect(fs3,trackY+1,fillLen,trackThick-2);
+            ctx.globalAlpha=0.85; ctx.strokeStyle=_darkenHex(color,0.15); ctx.lineWidth=1.2;
+            for(var xi=fs3-trackThick;xi<fs3+fillLen+trackThick;xi+=6){
+              ctx.beginPath(); ctx.moveTo(xi,trackY+1); ctx.lineTo(xi+trackThick,trackY+trackThick-1); ctx.stroke();
+            }
+          }
+          ctx.globalAlpha=1; ctx.restore();
+        }
+
+        // ── Handle ──
+        ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=3;
+        ctx.shadowOffsetX=vertical?0:1; ctx.shadowOffsetY=vertical?1:1;
+        ctx.fillStyle='#1a1a1a';
+        // Handle: fixed physical size, overhangs track by 4px each side
+        var hx, hy, hw, hh;
+        if(vertical){
+          hw=Math.min(cW+4, 28); hh=12; hx=-2; hy=handlePos-hh/2;
+        } else {
+          hw=12; hh=Math.min(cH+4, 28); hx=handlePos-hw/2; hy=-2;
+        }
+        ctx.beginPath();
+        ctx.moveTo(hx+2,hy); ctx.lineTo(hx+hw-2,hy);
+        ctx.arcTo(hx+hw,hy,hx+hw,hy+2,2);
+        ctx.lineTo(hx+hw,hy+hh-2);
+        ctx.arcTo(hx+hw,hy+hh,hx+hw-2,hy+hh,2);
+        ctx.lineTo(hx+2,hy+hh);
+        ctx.arcTo(hx,hy+hh,hx,hy+hh-2,2);
+        ctx.lineTo(hx,hy+2);
+        ctx.arcTo(hx,hy,hx+2,hy,2);
+        ctx.closePath(); ctx.fill();
+        ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0;
+        ctx.strokeStyle='#000'; ctx.lineWidth=1; ctx.stroke();
+        // Grip lines
+        ctx.strokeStyle='#666'; ctx.lineWidth=1;
+        var gcx=hx+hw/2, gcy=hy+hh/2;
+        if(vertical){
+          [-3,0,3].forEach(function(dx){
+            ctx.beginPath(); ctx.moveTo(gcx+dx,hy+2); ctx.lineTo(gcx+dx,hy+hh-2); ctx.stroke();
+          });
+        } else {
+          [-3,0,3].forEach(function(dy){
+            ctx.beginPath(); ctx.moveTo(hx+2,gcy+dy); ctx.lineTo(hx+hw-2,gcy+dy); ctx.stroke();
+          });
+        }
+      }
+      _updateBarVisual(parseFloat(cfg.value));
+      sl.addEventListener('input',function(){ _updateBarVisual(parseFloat(this.value)); });
+
+      // ── Left handle: drag to move (floating) or resize length (docked) ──
+      var handleL=document.createElement('div');
+      handleL.style.cssText='font-size:11px;color:#aaa;cursor:'+(docked?(isV?'ns-resize':'ew-resize'):'grab')+';flex-shrink:0;padding:4px 5px;min-width:22px;min-height:22px;display:flex;align-items:center;justify-content:center;touch-action:none;'
+        +(isV?'writing-mode:vertical-lr;min-height:36px;':'');
+      handleL.textContent='⠿';
+
+      handleL.addEventListener('touchstart',function(e){
+        e.preventDefault(); e.stopPropagation();
+        var t=e.changedTouches[0];
+        _p1id=t.identifier;
+        if(docked){
+          // Resize mode when docked (unless size locked)
+          if(!_sizeLocked){
+            _pinching=false;
+            var cur=isV?(parseInt(sl.style.height)||_savedSize):(parseInt(sl.style.width)||_savedSize);
+            _pinchStartDist=isV?t.clientY:t.clientX;
+            _pinchStartSize=cur;
+            _fdrag=true; // reuse drag flag for resize
+          }
+        } else {
+          // Move mode when floating
+          var r=fw.getBoundingClientRect();
+          _fdx=t.clientX-r.left; _fdy=t.clientY-r.top;
+          _fdrag=true; _fmoved=false;
+        }
+      },{passive:false});
+
+      document.addEventListener('touchmove',function(e){
+        if(!_fdrag&&!_pinching) return;
+
+        if(_pinching&&_p1id>=0&&_p2id>=0){
+          // Two-finger pinch resize (floating only)
+          var t1=null,t2=null;
+          for(var i=0;i<e.touches.length;i++){
+            if(e.touches[i].identifier===_p1id) t1=e.touches[i];
+            if(e.touches[i].identifier===_p2id) t2=e.touches[i];
+          }
+          if(t1&&t2){
+            e.preventDefault();
+            var dx=t2.clientX-t1.clientX,dy=t2.clientY-t1.clientY;
+            var dist=Math.sqrt(dx*dx+dy*dy)||1;
+            var n=Math.max(40,Math.min(320,Math.round(_pinchStartSize*(dist/_pinchStartDist))));
+            var _sw2=document.getElementById('_'+cfg.id+'_fl_wrap');
+            if(_sw2){ if(isV){_sw2.style.height=n+'px';} else {_sw2.style.width=n+'px';} }
+            cfg._savedSliderSize=n;
+            var _psl=document.getElementById('_'+cfg.id+'_fl_sl');
+            if(_psl) _psl.dispatchEvent(new Event('input'));
+          }
+          return;
+        }
+
+        if(_fdrag){
+          e.preventDefault();
+          var t=null;
+          for(var i=0;i<e.touches.length;i++){if(e.touches[i].identifier===_p1id){t=e.touches[i];break;}}
+          if(!t&&e.touches.length>0) t=e.touches[0];
+          if(!t) return;
+
+          if(docked){
+            // Resize slider length
+            if(_sizeLocked) return;
+            var delta=isV?(t.clientY-_pinchStartDist):(t.clientX-_pinchStartDist);
+            var n=Math.max(40,Math.min(320,Math.round(_pinchStartSize+delta)));
+            var _sw=document.getElementById('_'+cfg.id+'_fl_wrap');
+            if(_sw){ if(isV){_sw.style.height=n+'px';} else {_sw.style.width=n+'px';} }
+            cfg._savedSliderSize=n;
+            // Redraw canvas immediately at new size
+            var _rsl=document.getElementById('_'+cfg.id+'_fl_sl');
+            if(_rsl) _rsl.dispatchEvent(new Event('input'));
+          } else {
+            // Move widget
+            var fw2=document.getElementById('_'+cfg.id+'FloatWidget'); if(!fw2)return;
+            var fw2r=fw2.getBoundingClientRect(); var fww=fw2r.width||150;
+            var x=t.clientX-_fdx, y=t.clientY-_fdy;
+            x=Math.max(-(fww-40),Math.min(window.innerWidth-40,x));
+            y=Math.max(4,Math.min(window.innerHeight-40,y));
+            fw2.style.left=x+'px'; fw2.style.right=''; fw2.style.top=y+'px'; fw2.style.bottom='';
+            _fmoved=true; _checkSnap(t.clientX,t.clientY);
+          }
+        }
+      },{passive:false});
+
+      document.addEventListener('touchend',function(e){
+        for(var i=0;i<e.changedTouches.length;i++){
+          var id=e.changedTouches[i].identifier;
+          if(id===_p1id) _p1id=-1;
+          if(id===_p2id){ _p2id=-1; _pinching=false; }
+        }
+        if(_fdrag&&!docked){
+          _fdrag=false; _hideHint(); _snapSide=null;
+          if(_fmoved){ var t=e.changedTouches[0]; _trySnap(t.clientX,t.clientY); }
+        } else {
+          _fdrag=false;
+        }
+      },{passive:true});
+
+      // ── Label ────────────────────────────────────────────────────
+      var lb=document.createElement('span');
+      lb.id='_'+cfg.id+'_fl_lb';
+      lb.style.cssText='font-family:monospace;font-size:7px;color:'+cfg.color+';flex-shrink:0;'+(isV?'text-align:center;':'min-width:28px;');
+      lb.textContent=cfg.fmtLabel(parseFloat(sl.value));
+
+      // ── Lock button (always shown) ────────────────────────────────
+      // Floating: locks position to screen (z-index boost)
+      // Docked: locks slider length (prevents resize drag)
+      var lockBtn=document.createElement('button');
+      lockBtn.textContent=_locked?'🔒':'🔓';
+      lockBtn.style.cssText='font-size:9px;padding:2px 4px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;flex-shrink:0;';
+      lockBtn.title=docked?'Lock slider length':'Lock position';
+      lockBtn.addEventListener('click',function(){
+        if(docked){
+          _sizeLocked=!_sizeLocked;
+          lockBtn.textContent=_sizeLocked?'🔒':'🔓';
+          lockBtn.style.color=_sizeLocked?cfg.color:'#888';
+          lockBtn.style.borderColor=_sizeLocked?cfg.color:'#888';
+          handleL.style.opacity=_sizeLocked?'0.3':'1';
+          handleL.style.cursor=_sizeLocked?'default':(isV?'ns-resize':'ew-resize');
+        } else {
+          _locked=!_locked;
+          lockBtn.textContent=_locked?'🔒':'🔓';
+          lockBtn.style.color=_locked?cfg.color:'#888';
+          lockBtn.style.borderColor=_locked?cfg.color:'#888';
+          fw.style.zIndex=_locked?'700':'600';
+        }
+      });
+
+      // ── Flip button — only when floating ─────────────────────────
+      var flipBtn=null;
+      if(!docked){
+        flipBtn=document.createElement('button');
+        flipBtn.title='Rotate orientation';
+        flipBtn.style.cssText='font-size:13px;padding:2px 4px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;flex-shrink:0;line-height:1;';
+        flipBtn.textContent='↺';
+        flipBtn.addEventListener('click',function(){
+          _orient=(_orient==='h')?'v':'h';
+          var r=fw.getBoundingClientRect();
+          _build(false);
+          _float.style.left=r.left+'px'; _float.style.top=r.top+'px';
+        });
+      }
+
+      // ── Right handle — only when floating (drag + pinch partner) ─
+      var handleR=null;
+      if(!docked){
+        handleR=document.createElement('div');
+        handleR.style.cssText='font-size:11px;color:#aaa;cursor:grab;flex-shrink:0;padding:4px 5px;min-width:22px;min-height:22px;display:flex;align-items:center;justify-content:center;touch-action:none;'
+          +(isV?'writing-mode:vertical-lr;min-height:36px;':'');
+        handleR.textContent='⠿';
+        handleR.addEventListener('touchstart',function(e){
+          e.preventDefault(); e.stopPropagation();
+          var t=e.changedTouches[0];
+          if(_p1id>=0&&_p2id<0){
+            // Second finger = start pinch
+            _p2id=t.identifier;
+            var t1=null;
+            for(var i=0;i<e.touches.length;i++){if(e.touches[i].identifier===_p1id){t1=e.touches[i];break;}}
+            if(t1){
+              var dx=t.clientX-t1.clientX,dy=t.clientY-t1.clientY;
+              _pinchStartDist=Math.sqrt(dx*dx+dy*dy)||1;
+              _pinchStartSize=isV?(parseInt(sl.style.height)||_savedSize):(parseInt(sl.style.width)||_savedSize);
+              _pinching=true; _fdrag=false;
+            }
+          } else if(_p1id<0){
+            // Solo drag from right handle
+            _p1id=t.identifier;
+            var r=fw.getBoundingClientRect();
+            _fdx=t.clientX-r.left; _fdy=t.clientY-r.top;
+            _fdrag=true; _fmoved=false;
+          }
+        },{passive:false});
+      }
+
+      // ── Dock button ───────────────────────────────────────────────
+      var dockBtn=document.createElement('button');
+      dockBtn.textContent=docked?'⊞':'⊟';
+      dockBtn.title=docked?'Undock':'Dock to panel';
+      dockBtn.style.cssText='font-size:9px;padding:2px 4px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;flex-shrink:0;';
+      dockBtn.addEventListener('click',function(){
+        if(_dockedSide){
+          _dockedSide=null;
+          SLOTS.forEach(function(id){ var s=document.getElementById(id); if(s){s.innerHTML='';s.style.display='none';} });
+          _float=null; _orient='h'; _build(false);
+          setTimeout(function(){
+            if(!_float)return;
+            var fw2=_float.getBoundingClientRect();
+            _float.style.left=Math.max(4,Math.round((window.innerWidth-(fw2.width||200))/2))+'px';
+            _float.style.top=Math.round(window.innerHeight*0.35)+'px';
+          },20);
+        } else { _dockToPanel(); }
+      });
+
+      // Slider events
+      sl.addEventListener('input',function(){
+        if(_locked)return;
+        cfg.value=parseFloat(sl.value);
+        lb.textContent=cfg.fmtLabel(parseFloat(sl.value));
+        cfg.onChange(parseFloat(sl.value));
+      });
+      sl.addEventListener('touchend',function(){ if(cfg.onRelease) cfg.onRelease(); });
+      sl.addEventListener('mouseup',function(){ if(cfg.onRelease) cfg.onRelease(); });
+
+      // ── Assemble: handleL | sl | lb | lock | flip | handleR | dock ──
+      fw.appendChild(handleL);
+      fw.appendChild(slWrap);
+      fw.appendChild(lb);
+      fw.appendChild(lockBtn);
+      if(flipBtn) fw.appendChild(flipBtn);
+      fw.appendChild(dockBtn);
+      if(handleR) fw.appendChild(handleR);
+
+      if(!docked) document.body.appendChild(fw);
+      _float=fw;
     }
 
-    // Label
-    var lb=document.createElement('span');
-    lb.id='_pfl_lb';
-    lb.style.cssText='font-family:monospace;font-size:7px;color:#7c3aed;flex-shrink:0;'+(isV?'text-align:center;':'min-width:22px;');
-    lb.textContent=(_pitchBend>=0?'+':'')+_pitchBend.toFixed(1);
+    function _getSide(cx,cy){
+      var bank=document.getElementById('bank'); if(!bank)return null;
+      var br=bank.getBoundingClientRect(); var zone=60;
+      if(cy>=br.top-20&&cy<=br.bottom+20){
+        if(cx>=br.left-zone&&cx<br.left+zone) return {side:'left',br:br};
+        if(cx>br.right-zone&&cx<=br.right+zone) return {side:'right',br:br};
+      }
+      if(cy>=br.top-zone&&cy<br.top+20&&cx>=br.left&&cx<=br.right){
+        var third=br.width/3;
+        if(cx<br.left+third) return {side:'top-left',br:br};
+        if(cx>br.right-third) return {side:'top-right',br:br};
+        return {side:'top-center',br:br};
+      }
+      if(cy>br.bottom-20&&cy<=br.bottom+zone&&cx>=br.left&&cx<=br.right){
+        var third2=br.width/3;
+        if(cx<br.left+third2) return {side:'bot-left',br:br};
+        if(cx>br.right-third2) return {side:'bot-right',br:br};
+        return {side:'bot-center',br:br};
+      }
+      return null;
+    }
 
-    // RNG select
-    var rng=document.createElement('select');
-    rng.style.cssText='font-family:monospace;font-size:7px;border:1px solid #ccc;border-radius:3px;background:#f5f0e8;color:#1c1c1c;padding:1px;flex-shrink:0;';
-    [1,2,3,4,5,7].forEach(function(v){
-      var o=document.createElement('option');
-      o.value=v; o.textContent=v;
-      if(v===_pitchRange) o.selected=true;
-      rng.appendChild(o);
-    });
+    function _checkSnap(cx,cy){
+      var res=_getSide(cx,cy);
+      var side=res?res.side:null;
+      if(side!==_snapSide){ _snapSide=side; if(side) _showHint(side,res.br); else _hideHint(); }
+    }
 
-    // Flip button
-    var flipBtn=document.createElement('button');
-    flipBtn.textContent=isV?'↔':'↕';
-    flipBtn.title='Flip orientation';
-    flipBtn.style.cssText='font-family:monospace;font-size:9px;padding:2px 4px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;flex-shrink:0;';
+    function _showHint(side,br){
+      if(!_snapHint){ _snapHint=document.createElement('div'); _snapHint.style.cssText='position:fixed;z-index:595;pointer-events:none;border-radius:6px;border:2.5px dashed '+cfg.color+';background:'+cfg.color.replace(')',',0.15)').replace('rgb','rgba')+';'; document.body.appendChild(_snapHint); }
+      var isTop=side.startsWith('top'),isBot=side.startsWith('bot'),isSide=side==='left'||side==='right';
+      var w,h,l,t2;
+      if(isSide){ w=26; h=Math.round(br.height*0.7); t2=Math.round(br.top+(br.height-h)/2); l=side==='left'?Math.max(0,br.left-w-4):Math.min(window.innerWidth-w,br.right+4); }
+      else { h=26; w=side.endsWith('center')?Math.round(br.width*0.55):Math.round(br.width*0.33); t2=isTop?br.top-h-4:br.bottom+4; l=side.endsWith('left')?br.left:side.endsWith('right')?br.right-w:Math.round(br.left+(br.width-w)/2); }
+      _snapHint.style.cssText='position:fixed;z-index:595;pointer-events:none;border-radius:6px;border:2.5px dashed '+cfg.color+';background:rgba(0,0,0,0.08);'+'width:'+w+'px;height:'+h+'px;left:'+l+'px;top:'+t2+'px;';
+    }
 
-    // Dock button
-    var dockBtn=document.createElement('button');
-    dockBtn.textContent='⊟';
-    dockBtn.title='Dock back to panel';
-    dockBtn.style.cssText='font-family:monospace;font-size:9px;padding:2px 4px;border:1px solid #888;border-radius:3px;background:transparent;color:#888;cursor:pointer;flex-shrink:0;';
+    function _hideHint(){ if(_snapHint&&_snapHint.parentNode) _snapHint.parentNode.removeChild(_snapHint); _snapHint=null; }
 
-    // Resize handle — drag end to stretch/shrink slider
-    var resizeHandle=document.createElement('div');
-    resizeHandle.id='_pfl_resize';
-    resizeHandle.style.cssText='font-size:11px;color:#aaa;flex-shrink:0;padding:4px 6px;min-width:22px;min-height:28px;display:flex;align-items:center;justify-content:center;touch-action:none;background:rgba(0,0,0,0.04);border-radius:3px;'
-      +(isV?'cursor:row-resize;writing-mode:vertical-lr;':'cursor:col-resize;');
-    resizeHandle.textContent='↔';
-    var _rdrag=false,_rstart=0,_rslStart=0;
-    resizeHandle.addEventListener('touchstart',function(e){
-      e.preventDefault(); e.stopPropagation();
-      var t=e.touches[0]; _rdrag=true;
-      _rstart=isV?t.clientY:t.clientX;
-      _rslStart=isV?(parseInt(sl.style.height)||130):(parseInt(sl.style.width)||140);
-    },{passive:false});
-    document.addEventListener('touchmove',function(e){
-      if(!_rdrag) return;
-      var t=e.touches[0];
-      var delta=isV?(t.clientY-_rstart):(t.clientX-_rstart);
-      var newSize=Math.max(40,Math.min(320,_rslStart+delta));
-      if(isV){ sl.style.height=newSize+'px'; } else { sl.style.width=newSize+'px'; }
-    },{passive:true});
-    document.addEventListener('touchend',function(){ _rdrag=false; },{passive:true});
-    fw.appendChild(handle); fw.appendChild(sl); fw.appendChild(lb); fw.appendChild(rng); fw.appendChild(flipBtn); fw.appendChild(resizeHandle); fw.appendChild(dockBtn);
-    document.body.appendChild(fw);
-    _pitchFloat=fw;
+    function _trySnap(cx,cy){
+      var res=_getSide(cx,cy); if(!res)return;
+      var side=res.side, br=res.br; _hideHint(); _snapSide=null; _dockedSide=side;
+      var isTop=side.startsWith('top'),isBot=side.startsWith('bot'),isSide=side==='left'||side==='right';
+      _orient=isSide?'v':'h';
+      var slotId=isSide?(side==='left'?'_'+cfg.id+'LeftDock':'_'+cfg.id+'RightDock'):(isTop?'_'+cfg.id+'TopDock':'_'+cfg.id+'BottomDock');
+      var slot=document.getElementById(slotId);
+      if(!slot)return;
+      // Rebuild as docked widget (no chrome)
+      var savedVal=document.getElementById('_'+cfg.id+'_fl_sl');
+      if(savedVal) cfg.value=parseFloat(savedVal.value);
+      var savedWrap=document.getElementById('_'+cfg.id+'_fl_wrap');
+      if(savedWrap){ var _orientIsV=(_orient==="v"); cfg._savedSliderSize=_orientIsV?(parseInt(savedWrap.style.height)||130):(parseInt(savedWrap.style.width)||140); }
+      // Remove old floating widget from DOM before rebuilding
+      var _oldFloat=document.getElementById('_'+cfg.id+'FloatWidget');
+      if(_oldFloat&&_oldFloat.parentNode) _oldFloat.parentNode.removeChild(_oldFloat);
+      _float=null; _build(true);
+      // Resize wrapper + slider to fit slot
+      var br2=document.getElementById('bank').getBoundingClientRect();
+      var _wrap2=document.getElementById('_'+cfg.id+'_fl_wrap');
+      var sl2=document.getElementById('_'+cfg.id+'_fl_sl');
+      // Size wrapper to fill slot properly
+      setTimeout(function(){
+        var _wrap3=document.getElementById('_'+cfg.id+'_fl_wrap');
+        var _sl3=document.getElementById('_'+cfg.id+'_fl_sl');
+        var _slot=document.getElementById(slotId);
+        if(!_wrap3||!_slot) return;
+        if(isSide){
+          // Slot is a narrow column — wrapper fills vertically
+          var _slotH=Math.max(80,Math.round(_slot.offsetHeight*0.85));
+          var _slotW=Math.max(20,_slot.offsetWidth||28);
+          _wrap3.style.width=_slotW+'px';
+          _wrap3.style.height=_slotH+'px';
+          cfg._savedSliderSize=_slotH;
+        } else {
+          // Top/bottom slot — use bank width, not full slot width
+          // Use saved size if it exists, otherwise default 160px
+          var _slotW2=cfg._savedSliderSize||160;
+          _slotW2=Math.max(60,Math.min(_slotW2,300));
+          _wrap3.style.height='22px';
+          _wrap3.style.width=_slotW2+'px';
+          cfg._savedSliderSize=_slotW2;
+        }
+        if(_sl3) _sl3.dispatchEvent(new Event('input'));
+      },50);
+      slot.style.justifyContent=side.endsWith('left')?'flex-start':side.endsWith('right')?'flex-end':'center';
+      slot.style.display='flex'; slot.innerHTML=''; slot.appendChild(_float);
+      _float.style.position='relative';
+    }
 
-    // Slider events
-    sl.addEventListener('input',function(){
-      _pitchBend=parseFloat(sl.value)*_pitchRange;
-      lb.textContent=(_pitchBend>=0?'+':'')+_pitchBend.toFixed(1);
-      if(pitchLbl) pitchLbl.textContent=lb.textContent;
-      if(pitchSlider) pitchSlider.value=sl.value;
+    function _dockToPanel(){
+      if(_float&&_float.parentNode) _float.parentNode.removeChild(_float);
+      _float=null; _dockedSide=null; _docked=true; _hideHint(); _snapSide=null;
+      SLOTS.forEach(function(id){ var s=document.getElementById(id); if(s){s.innerHTML='';s.style.display='none';} });
+      var row=document.getElementById(cfg.panelRowId);
+      if(row) row.style.display='';
+    }
+
+    function undock(){
+      var row=document.getElementById(cfg.panelRowId);
+      var rr=row?row.getBoundingClientRect():{left:20,top:300,bottom:320};
+      if(row) row.style.display='none';
+      _docked=false; _orient='h'; _build(false);
+      setTimeout(function(){
+        if(!_float)return;
+        var fw=_float.getBoundingClientRect();
+        var left=Math.max(4,Math.min(window.innerWidth-(fw.width||150)-4,rr.left));
+        var top=Math.max(4,Math.min(window.innerHeight-(fw.height||50)-4,rr.top));
+        _float.style.left=left+'px'; _float.style.top=top+'px';
+      },10);
+    }
+
+    function syncVal(v){
+      var sl=_getSlider(); if(sl) sl.value=v;
+      var lb=_getLbl(); if(lb) lb.textContent=cfg.fmtLabel(v);
+    }
+
+    return { undock:undock, syncVal:syncVal, isLocked:function(){ return _locked; } };
+  }
+
+  // ── Pitch slider instance ──────────────────────────────────────────
+  var _pitchUndockBtn=document.getElementById('pitchUndockBtn');
+  var _pitchDockable=_makeDockableSlider({
+    id:'pitch',
+    label:'PITCH',
+    color:'#7c3aed',
+    min:-1, max:1, step:0.01,
+    value:0,
+    panelRowId:'pitchBendRow',
+    fmtLabel:function(v){ var s=v*_pitchRange; return (s>=0?'+':'')+s.toFixed(1); },
+    onChange:function(v){
+      _pitchBend=v*_pitchRange;
+      var lbl=document.getElementById('pitchBendLbl');
+      if(lbl) lbl.textContent=(_pitchBend>=0?'+':'')+_pitchBend.toFixed(1);
+      if(pitchSlider) pitchSlider.value=v;
       var _pr2=Math.pow(2,_pitchBend/12);
       window._currentPitchRatio=_pr2;
       if(window._activeOscs&&AC){
@@ -5227,244 +5778,64 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
           try{ if(o._baseFreq&&!o._isPlayback) o.frequency.setTargetAtTime(o._baseFreq*_pr2,AC.currentTime,0.02); }catch(e){}
         });
       }
-    });
-    sl.addEventListener('touchend',function(){ _springReturnPitch(); });
-    sl.addEventListener('mouseup',function(){ _springReturnPitch(); });
+    },
+    onRelease:function(){ _springReturnPitch(); }
+  });
+  if(_pitchUndockBtn) _pitchUndockBtn.addEventListener('click',function(){ _pitchDockable.undock(); });
 
-    rng.addEventListener('change',function(){
-      _pitchRange=parseInt(rng.value);
-      if(pitchRangeEl) pitchRangeEl.value=_pitchRange;
-    });
 
-    flipBtn.addEventListener('click',function(){
-      _pitchOrientation=(_pitchOrientation==='h')?'v':'h';
-      var r=fw.getBoundingClientRect();
-      _buildFloatWidget();
-      _pitchFloat.style.left=r.left+'px';
-      _pitchFloat.style.top=r.top+'px';
-    });
+  // ── Volume slider instance ──────────────────────────────────────────
+  var _volDockable=_makeDockableSlider({
+    id:'vol',
+    label:'VOL',
+    color:'#ef4444',
+    min:0.05, max:1, step:0.05,
+    value:1,
+    panelRowId:'volRow',
+    fmtLabel:function(v){ return Math.round(v*100)+'%'; },
+    onChange:function(v){
+      var lbl=document.getElementById('volLbl'); if(lbl) lbl.textContent=Math.round(v*100)+'%';
+      var sl=document.getElementById('tbVolSlider'); if(sl) sl.value=v;
+      // Update recVolume directly so tile taps use correct volume
+      recVolume=v;
+      var rvl=document.getElementById('_recVolLbl'); if(rvl) rvl.textContent=Math.round(v*100)+'%';
+    },
+    onRelease:null
+  });
+  var _volUndockBtn=document.getElementById('volUndockBtn');
+  if(_volUndockBtn) _volUndockBtn.addEventListener('click',function(){ _volDockable.undock(); });
+  var _volLockBtn=document.getElementById('volLockBtn');
+  if(_volLockBtn) _volLockBtn.addEventListener('click',function(){
+    var locked=_volDockable.isLocked();
+    _volLockBtn.textContent=locked?'🔓':'🔒';
+  });
+  // Add left/right/top dock slots for vol
+  var _vld=document.createElement('div'); _vld.id='_volLeftDock'; _vld.style.cssText='display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:#f5f0e8;';
+  var _vrd=document.createElement('div'); _vrd.id='_volRightDock'; _vrd.style.cssText='display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:#f5f0e8;';
+  var _vtd=document.createElement('div'); _vtd.id='_volTopDock'; _vtd.style.cssText='display:none;width:100%;background:#f5f0e8;padding:2px 4px;align-items:center;gap:4px;';
+  // Insert vol side docks into bank-row (after pitch docks)
+  var _pitchLeftEl=document.getElementById('_pitchLeftDock');
+  var _bankRowEl=_pitchLeftEl?_pitchLeftEl.parentNode:null;
+  if(_bankRowEl){ _bankRowEl.insertBefore(_vld,_pitchLeftEl); }
+  var _pitchRightEl=document.getElementById('_pitchRightDock');
+  if(_pitchRightEl&&_pitchRightEl.parentNode){ _pitchRightEl.parentNode.insertBefore(_vrd,_pitchRightEl.nextSibling); }
+  // Insert vol top dock before bank-row
+  var _pitchTopEl=document.getElementById('_pitchTopDock');
+  if(_pitchTopEl&&_pitchTopEl.parentNode){ _pitchTopEl.parentNode.insertBefore(_vtd,_pitchTopEl.nextSibling); }
 
-    dockBtn.addEventListener('click',function(){
-      if(_pitchDockedSide){
-        // Re-float: destroy current widget, hide slots, rebuild fresh as floating
-        _pitchDockedSide=null;
-        ['_pitchLeftDock','_pitchRightDock','_pitchTopDock'].forEach(function(id){
-          var s=document.getElementById(id);
-          if(s){ s.innerHTML=''; s.style.display='none'; }
-        });
-        _pitchFloat=null;
-        _pitchOrientation='h';
-        _buildFloatWidget();
-        // Center on screen
-        setTimeout(function(){
-          if(!_pitchFloat) return;
-          var fw=_pitchFloat.getBoundingClientRect();
-          _pitchFloat.style.left=Math.max(4,Math.round((window.innerWidth-(fw.width||200))/2))+'px';
-          _pitchFloat.style.top=Math.round(window.innerHeight*0.35)+'px';
-          _pitchFloat.style.right=''; _pitchFloat.style.bottom='';
-        },20);
-      } else {
-        _dockPitch();
-      }
-    });
-
-    // Drag — only from handle
-    var _fdx=0,_fdy=0,_fdrag=false,_fmoved=false;
-    handle.addEventListener('touchstart',function(e){
-      e.preventDefault();
-      var t=e.touches[0];
-      var r=fw.getBoundingClientRect();
-      _fdx=t.clientX-r.left; _fdy=t.clientY-r.top;
-      _fdrag=true; _fmoved=false;
-    },{passive:false});
-    document.addEventListener('touchmove',function(e){
-      if(!_fdrag) return;
-      e.preventDefault();
-      var t=e.touches[0];
-      var fw2=document.getElementById('_pitchFloatWidget'); if(!fw2) return;
-      var fw2r=fw2.getBoundingClientRect();
-      var fww=fw2r.width||120, fwh=fw2r.height||50;
-      var x=t.clientX-_fdx, y=t.clientY-_fdy;
-      // Keep at least 40px of widget visible on each edge
-      x=Math.max(-(fww-40),Math.min(window.innerWidth-40,x));
-      y=Math.max(4,Math.min(window.innerHeight-40,y));
-      fw2.style.left=x+'px'; fw2.style.right=''; fw2.style.top=y+'px'; fw2.style.bottom='';
-      _fmoved=true;
-      _checkPitchSnap(t.clientX,t.clientY);
-    },{passive:false});
-    document.addEventListener('touchend',function(e){
-      if(!_fdrag) return; _fdrag=false;
-      _hidePitchSnap(); _pSnapSide=null;
-      if(_fmoved){ var t=e.changedTouches[0]; _tryPitchSnap(t.clientX,t.clientY); }
-    },{passive:true});
-  }
-
-  var _pSnapHint=null;
-  var _pSnapSide=null;
-
-  function _getSide(cx,cy){
-    var bank=document.getElementById('bank'); if(!bank) return null;
-    var br=bank.getBoundingClientRect();
-    var zone=60;
-    // Left/right zones: within zone px of bank edge, vertically overlapping bank
-    if(cy>=br.top-20&&cy<=br.bottom+20){
-      if(cx>=br.left-zone&&cx<br.left+zone) return {side:'left',br:br};
-      if(cx>br.right-zone&&cx<=br.right+zone) return {side:'right',br:br};
-    }
-    // Top zone: above bank, horizontally within bank
-    if(cy>=br.top-zone&&cy<br.top+20&&cx>=br.left&&cx<=br.right){
-      var third=br.width/3;
-      if(cx<br.left+third) return {side:'top-left',br:br};
-      if(cx>br.right-third) return {side:'top-right',br:br};
-      return {side:'top-center',br:br};
-    }
-    return null;
-  }
-
-  function _checkPitchSnap(cx,cy){
-    var res=_getSide(cx,cy);
-    if(res){
-      if(res.side!==_pSnapSide){ _pSnapSide=res.side; _showPitchSnap(res.side,res.br); }
-    } else {
-      if(_pSnapSide){ _pSnapSide=null; _hidePitchSnap(); }
-    }
-  }
-
-  function _showPitchSnap(side,br){
-    if(!_pSnapHint){
-      _pSnapHint=document.createElement('div');
-      _pSnapHint.style.cssText='position:fixed;z-index:595;pointer-events:none;border-radius:6px;border:2.5px dashed #7c3aed;background:rgba(124,58,237,0.18);';
-      document.body.appendChild(_pSnapHint);
-    }
-    var isTop=side.startsWith('top'), w,h,l,t2;
-    if(isTop){
-      h=28; w=side==='top-center'?Math.round(br.width*0.55):Math.round(br.width*0.33);
-      t2=br.top-h-4;
-      if(side==='top-left') l=br.left;
-      else if(side==='top-right') l=br.right-w;
-      else l=Math.round(br.left+(br.width-w)/2);
-    } else {
-      w=26; h=Math.round(br.height*0.7);
-      t2=Math.round(br.top+(br.height-h)/2);
-      l=side==='left'?Math.max(0,br.left-w-4):Math.min(window.innerWidth-w,br.right+4);
-    }
-    _pSnapHint.style.cssText='position:fixed;z-index:595;pointer-events:none;border-radius:6px;border:2.5px dashed #7c3aed;background:rgba(124,58,237,0.18);'
-      +'width:'+w+'px;height:'+h+'px;left:'+l+'px;top:'+t2+'px;';
-  }
-
-  function _hidePitchSnap(){
-    if(_pSnapHint&&_pSnapHint.parentNode) _pSnapHint.parentNode.removeChild(_pSnapHint);
-    _pSnapHint=null;
-  }
-
-  function _tryPitchSnap(cx,cy){
-    var res=_getSide(cx,cy); if(!res) return;
-    var side=res.side, br=res.br;
-    _hidePitchSnap(); _pSnapSide=null;
-    _pitchDockedSide=side;
-    _pitchOrientation=side.startsWith('top')?'h':'v';
-    _buildFloatWidget();
-    var br2=document.getElementById('bank').getBoundingClientRect();
-    if(side.startsWith('top')){
-      // Move widget INTO the dedicated top dock slot (in the DOM, not floating)
-      var dockSlot=document.getElementById('_pitchTopDock');
-      if(dockSlot&&_pitchFloat){
-        // Strip float positioning, embed in slot
-        _pitchFloat.style.position='relative';
-        _pitchFloat.style.zIndex='';
-        _pitchFloat.style.boxShadow='none';
-        _pitchFloat.style.border='none';
-        _pitchFloat.style.background='transparent';
-        _pitchFloat.style.left=''; _pitchFloat.style.top=''; _pitchFloat.style.right=''; _pitchFloat.style.bottom='';
-        // Size slider to fill slot
-        var slotW=dockSlot.getBoundingClientRect().width||300;
-        var sw=side==='top-center'?Math.round(slotW*0.55):Math.round(slotW*0.4);
-        var inSl=document.getElementById('_pfl_sl'); if(inSl){ inSl.style.width=sw+'px'; }
-        // Justify based on side
-        dockSlot.style.justifyContent=side==='top-left'?'flex-start':side==='top-right'?'flex-end':'center';
-        dockSlot.style.display='flex';
-        dockSlot.appendChild(_pitchFloat);
-      }
-    } else {
-      // Embed into DOM slot — no floating, tiles shift automatically
-      var dockId=side==='left'?'_pitchLeftDock':'_pitchRightDock';
-      var dockSlot=document.getElementById(dockId);
-      if(dockSlot&&_pitchFloat){
-        // Extract just the slider and label — strip all float chrome
-        var inSl2=document.getElementById('_pfl_sl');
-        var inLb2=document.getElementById('_pfl_lb');
-        if(inSl2){
-          inSl2.style.height=Math.max(60,Math.round(br2.height*0.65))+'px';
-          inSl2.style.width='22px';
-          inSl2.style.cssText=inSl2.style.cssText+'touch-action:none;';
-        }
-        // Clear float, strip border/shadow/bg
-        _pitchFloat.style.position='relative';
-        _pitchFloat.style.zIndex='1';
-        _pitchFloat.style.boxShadow='none';
-        _pitchFloat.style.border='none';
-        _pitchFloat.style.background='transparent';
-        _pitchFloat.style.borderRadius='0';
-        _pitchFloat.style.padding='2px 0';
-        _pitchFloat.style.gap='2px';
-        _pitchFloat.style.flexDirection='column';
-        _pitchFloat.style.left=''; _pitchFloat.style.top='';
-        _pitchFloat.style.right=''; _pitchFloat.style.bottom='';
-        dockSlot.innerHTML='';
-        dockSlot.style.display='flex';
-        dockSlot.appendChild(_pitchFloat);
-      }
-    }
-    _pitchFloat.style.right=''; _pitchFloat.style.bottom='';
-  }
-
-  function _dockPitch(){
-    if(_pitchFloat&&_pitchFloat.parentNode) _pitchFloat.parentNode.removeChild(_pitchFloat);
-    _pitchFloat=null; _pitchDockedSide=null; _pitchDocked=true;
-    if(_pSnapHint&&_pSnapHint.parentNode) _pSnapHint.parentNode.removeChild(_pSnapHint);
-    _pSnapHint=null; _pSnapSide=null;
-    var topSlot=document.getElementById('_pitchTopDock');
-    if(topSlot) topSlot.style.display='none';
-    var leftSlot=document.getElementById('_pitchLeftDock');
-    if(leftSlot) leftSlot.style.display='none';
-    var rightSlot=document.getElementById('_pitchRightDock');
-    if(rightSlot) rightSlot.style.display='none';
-    var row=document.getElementById('pitchBendRow');
-    if(row) row.style.display='';
-  }
-
-  function _undockPitch(){
-    var row=document.getElementById('pitchBendRow');
-    // Get position BEFORE hiding
-    var rr=row?row.getBoundingClientRect():{left:20,top:300,bottom:320};
-    if(row) row.style.display='none';
-    _pitchDocked=false; _pitchOrientation='h';
-    _buildFloatWidget();
-    // Place float right where the row was
-    var fw=_pitchFloat.getBoundingClientRect();
-    var left=Math.max(4,Math.min(window.innerWidth-fw.width-4,rr.left));
-    var top=Math.max(4,Math.min(window.innerHeight-fw.height-4,rr.top));
-    _pitchFloat.style.left=left+'px';
-    _pitchFloat.style.top=top+'px';
-    _pitchFloat.style.right=''; _pitchFloat.style.bottom='';
-  }
-
-  var _pitchUndockBtn=document.getElementById('pitchUndockBtn');
-  if(_pitchUndockBtn){
-    _pitchUndockBtn.addEventListener('click',function(){ _undockPitch(); });
-  }
-
-  // Keep float in sync with spring return
-  var _origSpringReturn=_springReturnPitch;
+  // Keep panel slider in sync with float
+  var _origSpring2=_springReturnPitch;
   _springReturnPitch=function(){
-    _origSpringReturn();
-    if(!_pitchDocked){
+    _origSpring2();
+    if(typeof _pitchDockable!=='undefined'){
       var _sv=setInterval(function(){
-        _syncFloatSlider();
+        _pitchDockable.syncVal(_pitchRange>0?_pitchBend/_pitchRange:0);
         if(Math.abs(_pitchBend)<0.05) clearInterval(_sv);
       },30);
     }
   };
+
+  // Spring return syncs float via _pitchDockable.syncVal (handled in _origSpring2 wrapper above)
 
   var seqSndBtn=document.getElementById('seqSndBtn');
   var SOUND_STYLE_NAMES={A:'♪ Classic',B:'♪ 8-Bit',C:'♪ Sci-Fi',D:'♪ Nature',E:'♪ Industrial',F:'🎹 Piano',G:'🎻 Violin',H:'🪈 Flute',I:'🎸 Guitar',J:'🎸 Bass'};
@@ -6713,6 +7084,133 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   (function(){
     var sl=document.getElementById('_recVolSlider');
   var tbVolSl=document.getElementById('tbVolSlider');
+  // ── Custom mixer-style canvas sliders ───────────────────────
+  function _drawMixerSlider(canvasId, pct, color, isCenter){
+    var cv=document.getElementById(canvasId); if(!cv) return;
+    var wrap=cv.parentElement;
+    var W=wrap.offsetWidth||200, H=wrap.offsetHeight||22;
+    cv.width=W; cv.height=H;
+    var ctx=cv.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+
+    var PAD=2, R=3;
+    var trackH=Math.round(H*0.55);
+    var trackY=Math.round((H-trackH)/2);
+    var fillX=isCenter?Math.round(W/2):PAD;
+    var handleX=Math.round(PAD+(W-PAD*2)*pct);
+    var fillW=handleX-fillX;
+    if(isCenter&&pct<0.5){ fillX=handleX; fillW=Math.round(W/2)-handleX; }
+
+    // ── Track outline ──
+    ctx.beginPath();
+    ctx.moveTo(PAD+R, trackY);
+    ctx.lineTo(W-PAD-R, trackY);
+    ctx.arcTo(W-PAD, trackY, W-PAD, trackY+R, R);
+    ctx.lineTo(W-PAD, trackY+trackH-R);
+    ctx.arcTo(W-PAD, trackY+trackH, W-PAD-R, trackY+trackH, R);
+    ctx.lineTo(PAD+R, trackY+trackH);
+    ctx.arcTo(PAD, trackY+trackH, PAD, trackY+trackH-R, R);
+    ctx.lineTo(PAD, trackY+R);
+    ctx.arcTo(PAD, trackY, PAD+R, trackY, R);
+    ctx.closePath();
+    var _dc=_darkenHex(color,0.28);
+    var _bgc=_hexWithAlpha(color,0.18);
+    var _bgc2=_hexWithAlpha(color,0.07);
+    ctx.fillStyle=_bgc2;
+    ctx.fill();
+    ctx.strokeStyle=_dc;
+    ctx.lineWidth=1.5;
+    ctx.stroke();
+
+    // ── Hatched fill ──
+    if(fillW>0){
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(Math.max(PAD,fillX)+R, trackY+1);
+      ctx.lineTo(Math.min(W-PAD,fillX+fillW), trackY+1);
+      ctx.lineTo(Math.min(W-PAD,fillX+fillW), trackY+trackH-1);
+      ctx.lineTo(Math.max(PAD,fillX), trackY+trackH-1);
+      ctx.closePath();
+      ctx.clip();
+
+      // Solid base fill
+      ctx.globalAlpha=0.45;
+      ctx.fillStyle=color;
+      ctx.fillRect(fillX, trackY+1, fillW, trackH-2);
+      ctx.globalAlpha=1;
+
+      // Diagonal hatch lines
+      var step=6;
+      ctx.strokeStyle=color;
+      ctx.lineWidth=1.2;
+      ctx.globalAlpha=0.55;
+      for(var xi=fillX-trackH;xi<fillX+fillW+trackH;xi+=step){
+        ctx.beginPath();
+        ctx.moveTo(xi, trackY+1);
+        ctx.lineTo(xi+trackH, trackY+trackH-1);
+        ctx.stroke();
+      }
+      ctx.globalAlpha=1;
+      ctx.restore();
+    }
+
+    // ── Handle: black rect overhanging track, with grip lines ──
+    var hW=10, hH=H+4; // taller than track
+    var hX=Math.round(handleX-hW/2);
+    var hY=-2;
+    // Shadow
+    ctx.shadowColor='rgba(0,0,0,0.4)';
+    ctx.shadowBlur=3; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1;
+    // Black body
+    ctx.fillStyle='#1a1a1a'; ctx.beginPath();
+    ctx.moveTo(hX+2,hY); ctx.lineTo(hX+hW-2,hY);
+    ctx.arcTo(hX+hW,hY,hX+hW,hY+2,2);
+    ctx.lineTo(hX+hW,hY+hH-2);
+    ctx.arcTo(hX+hW,hY+hH,hX+hW-2,hY+hH,2);
+    ctx.lineTo(hX+2,hY+hH);
+    ctx.arcTo(hX,hY+hH,hX,hY+hH-2,2);
+    ctx.lineTo(hX,hY+2);
+    ctx.arcTo(hX,hY,hX+2,hY,2);
+    ctx.closePath(); ctx.fill();
+    ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0;
+    // Dark outline
+    ctx.strokeStyle='#000';
+    ctx.lineWidth=1;
+    ctx.stroke();
+    // Gray grip lines (3 horizontal lines centered on handle)
+    ctx.strokeStyle='#666';
+    ctx.lineWidth=1;
+    var cx2=hX+hW/2;
+    var cy=H/2;
+    [-3,0,3].forEach(function(dy){
+      ctx.beginPath();
+      ctx.moveTo(hX+2, cy+dy);
+      ctx.lineTo(hX+hW-2, cy+dy);
+      ctx.stroke();
+    });
+  }
+
+  window._syncPitchBar=function _syncPitchBar(v){
+    var pct=(v+1)/2;
+    _drawMixerSlider('pitchSliderCanvas', pct, '#7c3aed', true);
+  }
+  function _syncVolBar(v){
+    var pct=(v-0.05)/(1-0.05);
+    _drawMixerSlider('volSliderCanvas', pct, '#ef4444', false);
+  }
+
+  // Init
+  setTimeout(function(){ _syncPitchBar(0); _syncVolBar(1); }, 50);
+
+  // Wire pitch bar
+  var _pbSlider=document.getElementById('pitchBendSlider');
+  if(_pbSlider) _pbSlider.addEventListener('input',function(){ _syncPitchBar(parseFloat(this.value)); });
+  // Wire vol bar — also redraw on spring return
+  var _vbSlider=document.getElementById('tbVolSlider');
+  if(_vbSlider) _vbSlider.addEventListener('input',function(){ _syncVolBar(parseFloat(this.value)); });
+  // Redraw on resize
+  window.addEventListener('resize',function(){ _syncPitchBar(parseFloat(_pbSlider?_pbSlider.value:'0')); _syncVolBar(parseFloat(_vbSlider?_vbSlider.value:'1')); });
+
   if(tbVolSl){
     tbVolSl.addEventListener('input',function(){
       recVolume=parseFloat(this.value);
@@ -8414,7 +8912,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
 // ── SENSITIVITY TOGGLE + LONG-PRESS PANEL ───────────────────
 (function(){
-  var SENS_ON=true;
+  var SENS_ON=false;
   var _sensTimer=null;
   var _sensPanel=null;
 
