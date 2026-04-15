@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Sequation Deploy</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SEQ Deploy">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#00d9ff">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%230f0f0f'/%3E%3Ctext x='90' y='72' font-family='serif' font-size='28' font-weight='700' fill='%2300d9ff' text-anchor='middle'%3ESEQ%3C/text%3E%3Ctext x='90' y='120' font-family='monospace' font-size='18' font-weight='700' fill='%23888' text-anchor='middle'%3EDEPLOY%3C/text%3E%3C/svg%3E">
+<script>
+// Generate PWA manifest as blob URL (works single-file, no external JSON needed)
+(function(){
+  var m=JSON.stringify({
+    name:'Sequation Deploy',
+    short_name:'SEQ Deploy',
+    start_url:'./sequation-deploy.html',
+    display:'standalone',
+    background_color:'#0f0f0f',
+    theme_color:'#00d9ff',
+    icons:[{
+      src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230f0f0f'/%3E%3Ctext x='256' y='200' font-family='serif' font-size='90' font-weight='700' fill='%2300d9ff' text-anchor='middle'%3ESEQ%3C/text%3E%3Ctext x='256' y='340' font-family='monospace' font-size='55' font-weight='700' fill='%23666' text-anchor='middle'%3EDEPLOY%3C/text%3E%3C/svg%3E",
+      sizes:'512x512',
+      type:'image/svg+xml',
+      purpose:'any maskable'
+    }]
+  });
+  var b=new Blob([m],{type:'application/json'});
+  var link=document.createElement('link');
+  link.rel='manifest';
+  link.href=URL.createObjectURL(b);
+  document.head.appendChild(link);
+})();
+// Minimal service worker for PWA installability — requires separate sw.js on server
+// If sw.js exists, register it; if not, Add to Home Screen still works via manifest
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(function(){});
+}
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Abril+Fatface&display=swap');
+
+  :root {
+    --cyan: #00d9ff;
+    --magenta: #c400ff;
+    --green: #4ade80;
+    --red: #ff6b6b;
+    --yellow: #ffe250;
+    --bg: #0f0f0f;
+    --bg2: #1a1a1a;
+    --panel: rgba(15,15,15,0.92);
+    --border: rgba(0,217,255,0.12);
+    --border-bright: rgba(0,217,255,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: #d0d0d0;
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 40px;
+    overflow-x: hidden;
+  }
+
+  .logo {
+    font-family: 'Abril Fatface', serif;
+    font-size: clamp(24px, 8vw, 40px);
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+    position: relative;
+    z-index: 1;
+  }
+  .logo-white { color: #f0f0f0; }
+  .logo-cyan { color: var(--cyan); }
+  .subtitle {
+    font-size: 8px;
+    font-weight: 700;
+    color: rgba(0,217,255,0.45);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  label {
+    display: block;
+    font-size: 8px;
+    font-weight: 700;
+    color: rgba(0,217,255,0.4);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    margin-top: 10px;
+  }
+  label:first-of-type { margin-top: 0; }
+
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: var(--cyan);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    outline: none;
+  }
+  input:focus { border-color: rgba(0,217,255,0.4); box-shadow: 0 0 8px rgba(0,217,255,0.15); }
+
+  .token-row { display: flex; gap: 6px; }
+  .token-row input { flex: 1; }
+  .eye-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 12px;
+    cursor: pointer;
+    font-size: 16px;
+    color: rgba(0,217,255,0.5);
+  }
+
+  .drop-zone {
+    border: 2px dashed var(--border-bright);
+    border-radius: 10px;
+    padding: 24px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--cyan);
+    background: rgba(0,217,255,0.03);
+  }
+  .drop-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer;
+  }
+  .drop-icon { font-size: 28px; margin-bottom: 6px; opacity: 0.7; }
+  .drop-label { font-size: 10px; color: rgba(0,217,255,0.4); }
+  .drop-filename {
+    font-size: 11px; color: var(--green); margin-top: 8px;
+    word-break: break-all;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid var(--cyan);
+    border-radius: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--cyan);
+    box-shadow: 0 0 16px rgba(0,217,255,0.2);
+  }
+  .btn:hover:not(:disabled) {
+    background: rgba(0,217,255,0.1);
+    box-shadow: 0 0 24px rgba(0,217,255,0.4);
+  }
+  .btn:disabled {
+    border-color: rgba(0,217,255,0.15);
+    color: rgba(0,217,255,0.2);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: rgba(0,217,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 10px;
+    display: none;
+  }
+  .progress-bar.visible { display: block; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--magenta));
+    transition: width 0.3s ease;
+    border-radius: 2px;
+  }
+
+  .log {
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 9px;
+    line-height: 1.6;
+    display: none;
+  }
+  .log.visible { display: block; }
+  .log-line { padding: 1px 0; }
+  .log-ok   { color: var(--green); }
+  .log-err  { color: var(--red); }
+  .log-warn { color: var(--yellow); }
+  .log-info { color: var(--cyan); }
+  .log-dim  { color: rgba(0,217,255,0.25); }
+
+  .status-badge {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 20px;
+    margin-top: 10px;
+  }
+  .status-badge.visible { display: inline-flex; }
+  .status-badge.success { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--green); }
+  .status-badge.error   { background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); color: var(--red); }
+  .status-badge.working { background: rgba(0,217,255,0.06); border: 1px solid rgba(0,217,255,0.2); color: var(--cyan); }
+
+  .dot-pulse { animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .stats-row {
+    display: none;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .stats-row.visible { display: flex; }
+  .stat {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
+    text-align: center;
+  }
+  .stat-num { font-size: 16px; color: var(--cyan); font-weight: 700; }
+  .stat-label { font-size: 7px; color: rgba(0,217,255,0.35); letter-spacing: 1px; margin-top: 2px; }
+
+  .saved-token-hint {
+    font-size: 8px;
+    color: rgba(74,222,128,0.5);
+    margin-top: 6px;
+    display: none;
+  }
+
+  .repo-display {
+    font-size: 10px;
+    color: rgba(0,217,255,0.4);
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: var(--bg);
+    border-radius: 4px;
+    border-left: 2px solid rgba(0,217,255,0.2);
+    display: none;
+  }
+
+  .info-text {
+    font-size: 9px;
+    color: rgba(0,217,255,0.3);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="logo"><span class="logo-white">SEQ</span><span class="logo-cyan">UATION</span></div>
+<div class="subtitle">GitHub Deploy Tool</div>
+
+<div class="card">
+  <div class="card-title">&#9881; Configuration</div>
+
+  <label>GitHub Personal Access Token</label>
+  <div class="token-row">
+    <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+    <button class="eye-btn" id="eyeBtn" onclick="toggleToken()">&#128065;</button>
+  </div>
+  <div class="saved-token-hint" id="savedHint">&#10003; Token saved in browser</div>
+
+  <label>Repository</label>
+  <input type="text" id="repoInput" value="Spamboni/Sequation" placeholder="username/reponame">
+
+  <label>Branch</label>
+  <input type="text" id="branchInput" value="main" placeholder="main">
+  <div class="repo-display" id="repoDisplay"></div>
+</div>
+
+<div class="card">
+  <div class="card-title">&#128196; HTML File</div>
+  <div class="drop-zone" id="dropZone">
+    <input type="file" id="fileInput" accept=".html" onchange="onFileSelect(this)">
+    <div class="drop-icon">&#128196;</div>
+    <div class="drop-label">Tap to select Sequation-*.html</div>
+    <div class="drop-filename" id="fileName"></div>
+  </div>
+  <div class="info-text">File will be deployed as <strong style="color:var(--cyan)">Sequation.html</strong> regardless of version number in filename.</div>
+</div>
+
+<div class="card">
+  <button class="btn" id="deployBtn" onclick="deploy()" disabled>
+    &#128640; Deploy to GitHub
+  </button>
+  <div class="progress-bar" id="progressBar">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+  <div style="text-align:center">
+    <div class="status-badge" id="statusBadge"></div>
+  </div>
+  <div class="stats-row" id="statsRow">
+    <div class="stat"><div class="stat-num" id="statPushed">0</div><div class="stat-label">PUSHED</div></div>
+    <div class="stat"><div class="stat-num" id="statSkipped">0</div><div class="stat-label">UNCHANGED</div></div>
+  </div>
+</div>
+
+<div class="card" id="pagesCard" style="display:none">
+  <div class="card-title">&#127760; GitHub Pages Status</div>
+  <div id="pagesStatus" style="text-align:center;padding:10px 0">
+    <div class="status-badge visible working" id="pagesBadge">
+      <span class="dot-pulse">&#9679;</span> Waiting for GitHub Pages...
+    </div>
+  </div>
+  <div style="margin-top:10px">
+    <div style="display:flex;justify-content:space-between;font-size:8px;color:rgba(0,217,255,0.3);margin-bottom:4px">
+      <span>DEPLOY PROGRESS</span>
+      <span id="pagesElapsed">0s</span>
+    </div>
+    <div class="progress-bar visible" style="margin-top:0">
+      <div class="progress-fill" id="pagesProgress" style="width:0%;transition:width 1s linear"></div>
+    </div>
+  </div>
+  <div style="margin-top:12px;text-align:center">
+    <a id="siteLink" href="#" target="_blank" style="
+      display:none;
+      color:#0f0f0f;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;
+      letter-spacing:2px;text-decoration:none;padding:12px 24px;
+      background:var(--cyan);border-radius:10px;
+      box-shadow:0 0 20px rgba(0,217,255,0.4);
+    ">&#128640; PLAY SEQUATION</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">&#128203; Log</div>
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+var htmlFile = null;
+var deploying = false;
+
+window.onload = function() {
+  var saved = localStorage.getItem('seq_token');
+  if (saved) {
+    document.getElementById('tokenInput').value = saved;
+    document.getElementById('savedHint').style.display = 'block';
+  }
+  var savedRepo = localStorage.getItem('seq_repo');
+  if (savedRepo) document.getElementById('repoInput').value = savedRepo;
+  updateRepoDisplay();
+  checkReady();
+};
+
+function toggleToken() {
+  var inp = document.getElementById('tokenInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function updateRepoDisplay() {
+  var repo = document.getElementById('repoInput').value.trim();
+  var d = document.getElementById('repoDisplay');
+  if (repo) {
+    d.style.display = 'block';
+    d.textContent = '\u2192 https://github.com/' + repo;
+  }
+}
+
+document.getElementById('tokenInput').addEventListener('input', function() {
+  localStorage.setItem('seq_token', this.value.trim());
+  document.getElementById('savedHint').style.display = this.value ? 'block' : 'none';
+  checkReady();
+});
+document.getElementById('repoInput').addEventListener('input', function() {
+  localStorage.setItem('seq_repo', this.value.trim());
+  updateRepoDisplay();
+  checkReady();
+});
+
+function onFileSelect(input) {
+  if (input.files.length > 0) {
+    htmlFile = input.files[0];
+    document.getElementById('fileName').textContent = htmlFile.name + ' (' + Math.round(htmlFile.size/1024) + ' KB)';
+    checkReady();
+  }
+}
+
+function checkReady() {
+  var token = document.getElementById('tokenInput').value.trim();
+  var repo  = document.getElementById('repoInput').value.trim();
+  document.getElementById('deployBtn').disabled = !(token && repo && htmlFile && !deploying);
+}
+
+function log(msg, type) {
+  var el = document.getElementById('log');
+  el.classList.add('visible');
+  var line = document.createElement('div');
+  line.className = 'log-line log-' + (type||'info');
+  line.textContent = msg;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+function setStatus(text, type) {
+  var b = document.getElementById('statusBadge');
+  b.className = 'status-badge visible ' + type;
+  b.innerHTML = text;
+}
+
+function setProgress(pct) {
+  document.getElementById('progressBar').classList.add('visible');
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+async function getFileSHA(token, repo, branch, path) {
+  var r = await fetch('https://api.github.com/repos/' + repo + '/contents/' + path + '?ref=' + branch, {
+    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+  });
+  if (r.status === 404) return null;
+  if (!r.ok) return undefined;
+  var j = await r.json();
+  return j.sha || null;
+}
+
+async function computeGitBlobSHA(arrayBuffer) {
+  var bytes = new Uint8Array(arrayBuffer);
+  var header = 'blob ' + bytes.length + '\0';
+  var headerBytes = new TextEncoder().encode(header);
+  var combined = new Uint8Array(headerBytes.length + bytes.length);
+  combined.set(headerBytes, 0);
+  combined.set(bytes, headerBytes.length);
+  var hashBuffer = await crypto.subtle.digest('SHA-1', combined);
+  var hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+}
+
+async function pushFile(token, repo, branch, path, content, sha, commitMsg) {
+  var body = { message: commitMsg, content: content, branch: branch };
+  if (sha) body.sha = sha;
+  var r = await fetch('https://api.github.com/repos/' + repo + '/contents/' + path, {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'token ' + token,
+      'Content-Type': 'application/json',
+      'Accept': 'application/vnd.github.v3+json'
+    },
+    body: JSON.stringify(body)
+  });
+  return r.ok;
+}
+
+function arrayBufferToBase64(buffer) {
+  var bytes = new Uint8Array(buffer);
+  var b = '';
+  for (var i = 0; i < bytes.byteLength; i++) b += String.fromCharCode(bytes[i]);
+  return btoa(b);
+}
+
+async function deploy() {
+  if (deploying) return;
+  deploying = true;
+  checkReady();
+
+  var token  = document.getElementById('tokenInput').value.trim();
+  var repo   = document.getElementById('repoInput').value.trim();
+  var branch = document.getElementById('branchInput').value.trim() || 'main';
+
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('statsRow').classList.remove('visible');
+  document.getElementById('pagesCard').style.display = 'none';
+
+  // Extract version from filename for commit message
+  var version = '';
+  if (htmlFile && htmlFile.name) {
+    var m = htmlFile.name.match(/[\d]+[._][\d]+/);
+    if (m) version = 'v' + m[0].replace(/_/g, '.');
+  }
+
+  setStatus('<span class="dot-pulse">\u25cf</span> Reading file...', 'working');
+  setProgress(5);
+
+  var pushed = 0, skipped = 0;
+
+  try {
+    var buf = await htmlFile.arrayBuffer();
+    var b64 = arrayBufferToBase64(buf);
+    var repoPath = 'Sequation.html';
+
+    log('\ud83d\udcc4 File: ' + htmlFile.name + ' (' + Math.round(buf.byteLength/1024) + ' KB)', 'info');
+    log('\ud83c\udf3f Deploying as ' + repoPath + ' to ' + repo + ' @ ' + branch, 'info');
+    if (version) log('\ud83c\udff7 Version: ' + version, 'info');
+
+    setStatus('<span class="dot-pulse">\u25cf</span> Checking remote...', 'working');
+    setProgress(20);
+
+    // Get current SHA
+    var remoteSHA = await getFileSHA(token, repo, branch, repoPath);
+
+    // Compare hashes to skip if unchanged
+    if (remoteSHA) {
+      var localSHA = await computeGitBlobSHA(buf);
+      if (localSHA === remoteSHA) {
+        skipped = 1;
+        log('  = ' + repoPath + ' (unchanged — identical to remote)', 'dim');
+        setProgress(100);
+        setStatus('\u2705 Already up to date!', 'success');
+        document.getElementById('statPushed').textContent = '0';
+        document.getElementById('statSkipped').textContent = '1';
+        document.getElementById('statsRow').classList.add('visible');
+        deploying = false;
+        checkReady();
+        return;
+      }
+    }
+
+    setStatus('<span class="dot-pulse">\u25cf</span> Pushing...', 'working');
+    setProgress(50);
+
+    var commitMsg = 'Deploy Sequation ' + (version || '') + ' via Deploy Tool';
+    var ok = await pushFile(token, repo, branch, repoPath, b64, remoteSHA, commitMsg.trim());
+
+    if (ok) {
+      pushed = 1;
+      log('  \u2713 ' + repoPath + ' pushed successfully', 'ok');
+      setProgress(100);
+      setStatus('\u2705 Deployed! Waiting for Pages...', 'success');
+      document.getElementById('statPushed').textContent = '1';
+      document.getElementById('statSkipped').textContent = '0';
+      document.getElementById('statsRow').classList.add('visible');
+      log('', 'dim');
+      log('\ud83d\ude80 Push complete! Polling GitHub Pages...', 'ok');
+      pollPagesDeployment(token, repo, version);
+    } else {
+      setStatus('\u274c Push failed — check token permissions', 'error');
+      log('  \u2717 ' + repoPath + ' — push failed', 'err');
+    }
+
+  } catch(e) {
+    setStatus('\u274c Error: ' + e.message, 'error');
+    log('Fatal: ' + e.message, 'err');
+  }
+
+  deploying = false;
+  checkReady();
+}
+
+async function pollPagesDeployment(token, repo, version) {
+  var card    = document.getElementById('pagesCard');
+  var badge   = document.getElementById('pagesBadge');
+  var bar     = document.getElementById('pagesProgress');
+  var elapsed = document.getElementById('pagesElapsed');
+  var link    = document.getElementById('siteLink');
+  var siteUrl = 'https://' + repo.split('/')[0].toLowerCase() + '.github.io/' + repo.split('/')[1];
+
+  card.style.display = 'block';
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  link.href = siteUrl;
+
+  var pollStart = Date.now();
+  var maxWait   = 60000;
+  var pollInterval = 5000;
+  var finished  = false;
+
+  function tick() {
+    var ms = Date.now() - pollStart;
+    var sec = Math.floor(ms / 1000);
+    elapsed.textContent = sec + 's';
+    bar.style.width = Math.min(90, (ms / 55000) * 90) + '%';
+  }
+
+  var tickInterval = setInterval(tick, 500);
+  var fallbackTimer = setTimeout(function() {
+    if (!finished) done(true, true);
+  }, maxWait);
+
+  async function checkStatus() {
+    if (finished) return;
+    try {
+      var url1 = 'https://api.github.com/repos/' + repo + '/actions/runs?per_page=1';
+      var r1 = await fetch(url1, {
+        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (r1.ok) {
+        var runs = await r1.json();
+        if (runs.workflow_runs && runs.workflow_runs.length > 0) {
+          var run = runs.workflow_runs[0];
+          if (run.status === 'completed' && run.conclusion === 'success') { done(true, false); return; }
+          if (run.status === 'completed' && run.conclusion === 'failure') { done(false, false); return; }
+          badge.innerHTML = '<span class="dot-pulse">\u25cf</span> ' + run.status;
+        }
+      }
+    } catch(e) {
+      badge.innerHTML = '<span class="dot-pulse">\u25cf</span> Checking...';
+    }
+    if (!finished && Date.now() - pollStart < maxWait) setTimeout(checkStatus, pollInterval);
+  }
+
+  function done(success, timedOut) {
+    if (finished) return;
+    finished = true;
+    clearInterval(tickInterval);
+    clearTimeout(fallbackTimer);
+    bar.style.transition = 'width 0.5s ease';
+    bar.style.width = '100%';
+    var sec = Math.floor((Date.now() - pollStart) / 1000);
+    elapsed.textContent = sec + 's';
+
+    if (success) {
+      badge.className = 'status-badge visible success';
+      badge.innerHTML = timedOut ? '\u2705 Live! (~' + sec + 's)' : '\u2705 Live in ' + sec + 's!';
+      link.style.display = 'inline-block';
+      link.innerHTML = '\ud83d\ude80 PLAY SEQUATION' + (version ? ' ' + version : '');
+      log('\ud83c\udf10 Live at: ' + siteUrl, 'ok');
+    } else {
+      badge.className = 'status-badge visible error';
+      badge.innerHTML = '\u274c Deploy failed \u2014 check GitHub Actions';
+    }
+  }
+
+  log('\ud83d\udd0d Polling Pages status...', 'info');
+  setTimeout(checkStatus, 3000);
+}
+</script>
+</body>
+</html>
