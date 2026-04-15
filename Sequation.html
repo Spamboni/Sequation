@@ -316,12 +316,14 @@ input[type=range]::-moz-range-track { background:transparent; }
 /* Collapsed: slim labeled bar */
 .slim-panel{width:100%;max-width:520px;flex-shrink:0;position:relative;margin:0;padding:0;}
 .xl2-mode .slim-panel{max-width:100%;}
-.slim-panel-bar{display:flex;width:100%;height:18px;background:var(--bg-secondary);border-top:1px solid rgba(0,217,255,0.12);border-bottom:1px solid rgba(0,217,255,0.12);align-items:center;gap:6px;cursor:pointer;flex-shrink:0;padding:0 8px;}
+.slim-panel-bar{display:flex;width:100%;height:18px;background:var(--bg-secondary);border-top:1px solid rgba(0,217,255,0.12);border-bottom:none;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;padding:0 8px;}
 .slim-panel-bar-arrow{background:transparent;border:none;color:rgba(0,217,255,0.7);font-size:9px;cursor:pointer;padding:0;line-height:1;flex-shrink:0;transition:transform 0.25s;transform:rotate(180deg);}
 .slim-panel.collapsed .slim-panel-bar-arrow{transform:rotate(0deg);}
 .slim-panel-bar span{font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(0,217,255,0.55);flex:1;}
 .slim-panel-body{overflow:hidden;transition:max-height 0.3s ease,opacity 0.3s ease;}
-.slim-panel.collapsed .slim-panel-body{max-height:0!important;opacity:0;padding:0!important;margin:0!important;border:none!important;}
+.slim-panel+.slim-panel>.slim-panel-bar{margin-top:-1px;}
+#padPanelBar{border-bottom:1px solid rgba(0,217,255,0.12);}
+.slim-panel.collapsed .slim-panel-body{max-height:0!important;height:0!important;opacity:0;padding:0!important;margin:0!important;border:none!important;overflow:hidden!important;line-height:0!important;font-size:0!important;}
 </style>
 </head>
 <body>
@@ -4202,6 +4204,8 @@ function playBankE(idx,_bankVol){
 var PZ=null,SEL=null,HIST=[],SIZE='xl2',DIFF='hard';
 var TILE_SCALE=1.0;
 var TILE_GAP_MULT=1.0;
+var SNAP_TO_FILL=false;
+try{if(localStorage.getItem('snapToFill')==='1') SNAP_TO_FILL=true;}catch(e){}
 // Tile Spacing Menu padding state
 var BANK_PAD_L=0, BANK_PAD_R=0, BANK_PAD_T=0, BANK_PAD_B=0;
 var _tsMenuOpen=false;
@@ -4367,18 +4371,45 @@ function renderBank(){
   var baseFontSize=bankCount>25?13:bankCount>15?15:18;
   var tileSize=Math.round(baseSize*TILE_SCALE);
   var tileFontSize=Math.round(baseFontSize*TILE_SCALE);
-  var tilePad='0 '+Math.round(8*TILE_SCALE)+'px';
   var tileGap=Math.round(6*TILE_SCALE*TILE_GAP_MULT);
   document.getElementById('bank').style.gap=tileGap+'px';
   // Apply bank padding
-  document.getElementById('bank').style.paddingLeft=(6+BANK_PAD_L)+'px';
-  document.getElementById('bank').style.paddingRight=(8+BANK_PAD_R)+'px';
+  var padL=6+BANK_PAD_L, padR=8+BANK_PAD_R;
+  document.getElementById('bank').style.paddingLeft=padL+'px';
+  document.getElementById('bank').style.paddingRight=padR+'px';
   document.getElementById('bank').style.paddingTop=(6+BANK_PAD_T)+'px';
   document.getElementById('bank').style.paddingBottom=(6+BANK_PAD_B)+'px';
+
+  // ── Snap-to-fill & max-2-across logic ──
+  // Measure available width inside the btiles container
+  var bankEl=document.getElementById('bank');
+  var bankW=bankEl.getBoundingClientRect().width;
+  if(bankW<=0) bankW=bankEl.offsetWidth||300;
+  var availW=bankW-padL-padR;
+  var borderTotal=3; // 1.5px border each side in content-box
+  // Cap max tile size: 2 tiles across at zero gap
+  // Rendered width per tile = tileSize + borderTotal
+  var max2=Math.floor((availW-tileGap-borderTotal*2)/2);
+  if(tileSize>max2) tileSize=Math.max(10,max2);
+
+  if(SNAP_TO_FILL && availW>0){
+    // Each tile occupies (tileSize + borderTotal) in content-box mode
+    var cellSize=tileSize+borderTotal;
+    var perRow=Math.max(1,Math.floor((availW+tileGap)/(cellSize+tileGap)));
+    // Snap: recalculate so perRow tiles fill width exactly
+    tileSize=Math.max(10,Math.floor((availW-(perRow-1)*tileGap)/perRow-borderTotal));
+  }
+  // Recalculate font size proportionally
+  tileFontSize=Math.round(tileSize/baseSize*baseFontSize);
   for(var i=0;i<PZ.bank.length;i++){
     var item=PZ.bank[i];
     var tile=document.createElement('div');tile.className='bt';
-    tile.style.cssText='min-width:'+tileSize+'px;height:'+tileSize+'px;padding:'+tilePad+';font-size:'+tileFontSize+'px;';
+    var tileRadius=Math.max(2,Math.min(10,Math.round(tileSize*0.22)));
+    if(SNAP_TO_FILL){
+      tile.style.cssText='width:'+tileSize+'px;height:'+tileSize+'px;flex-grow:0;flex-shrink:0;padding:0;font-size:'+tileFontSize+'px;border-radius:'+tileRadius+'px;';
+    } else {
+      tile.style.cssText='min-width:'+tileSize+'px;height:'+tileSize+'px;padding:0;font-size:'+tileFontSize+'px;border-radius:'+tileRadius+'px;';
+    }
     if(item.used)tile.classList.add('used');else if(SEL)tile.classList.add('lit');
     tile.textContent=item.value;
     tile.dataset.sndIdx=i; tile.dataset.bankIdx=i;
@@ -7777,6 +7808,30 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     }
     _rebuildSize();
     menu.appendChild(sizeWrap);
+
+    // ── SNAP TO FILL toggle ──────────────────────────────────
+    var snapWrap=document.createElement('div');
+    snapWrap.style.cssText='display:flex;align-items:center;gap:6px;padding:1px 0;';
+    var snapBtn=document.createElement('button');
+    snapBtn.id='_snapFillBtn';
+    snapBtn.style.cssText='font-family:monospace;font-size:7px;font-weight:700;letter-spacing:.5px;padding:3px 7px;border:1.5px solid '+(SNAP_TO_FILL?'#00d9ff':'#555')+';border-radius:3px;background:'+(SNAP_TO_FILL?'rgba(0,217,255,0.15)':'transparent')+';color:'+(SNAP_TO_FILL?'#00d9ff':'#555')+';cursor:pointer;touch-action:manipulation;transition:all .15s;';
+    snapBtn.textContent='SNAP TO FILL';
+    var snapLbl=document.createElement('span');
+    snapLbl.style.cssText='font-family:monospace;font-size:7px;color:#555;';
+    snapLbl.textContent='Sizes snap to fill width';
+    snapBtn.addEventListener('click',function(){
+      SNAP_TO_FILL=!SNAP_TO_FILL;
+      snapBtn.style.borderColor=SNAP_TO_FILL?'#00d9ff':'#555';
+      snapBtn.style.background=SNAP_TO_FILL?'rgba(0,217,255,0.15)':'transparent';
+      snapBtn.style.color=SNAP_TO_FILL?'#00d9ff':'#555';
+      try{localStorage.setItem('snapToFill',SNAP_TO_FILL?'1':'0');}catch(e){}
+      if(PZ) renderBank();
+    });
+    // Restore saved state
+    try{if(localStorage.getItem('snapToFill')==='1'){SNAP_TO_FILL=true;snapBtn.style.borderColor='#00d9ff';snapBtn.style.background='rgba(0,217,255,0.15)';snapBtn.style.color='#00d9ff';}}catch(e){}
+    snapWrap.appendChild(snapBtn);
+    snapWrap.appendChild(snapLbl);
+    menu.appendChild(snapWrap);
 
     // ── GAP section ───────────────────────────────────────────
     var gapWrap=document.createElement('div');
