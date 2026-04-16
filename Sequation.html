@@ -376,7 +376,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(0,217,255,0.35);letter-spacing:2px;text-align:center;">v4.49</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(0,217,255,0.35);letter-spacing:2px;text-align:center;">v4.50</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -8424,9 +8424,19 @@ window._clampScrollDrift=function(){
   var maxScroll=document.documentElement.scrollHeight-window.innerHeight;
   if(maxScroll>0 && window.scrollY>maxScroll) window.scrollTo(0,maxScroll);
 };
-window._clampScrollTransition=function(){
-  // Do nothing — let scroll position stay fixed when panels collapse/expand.
-  // Content above the fold doesn't move; content below shrinks/grows naturally.
+window._clampScrollTransition=function(anchorEl){
+  // If an anchor element is provided, keep it at the same screen Y position
+  // by adjusting scroll as content above/below changes height.
+  if(!anchorEl) return;
+  var targetY=anchorEl.getBoundingClientRect().top;
+  var frames=0;
+  function step(){
+    var curY=anchorEl.getBoundingClientRect().top;
+    var drift=curY-targetY;
+    if(Math.abs(drift)>1) window.scrollBy(0,drift);
+    if(++frames<25) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
 };
 
   // Recording volume slider
@@ -12390,6 +12400,7 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
 
       if(c){
         // CLOSING: slide inner up, then hide
+        if(window._clampScrollTransition) window._clampScrollTransition(bar);
         if(inner) inner.style.transform='translateY(-100%)';
         body.style.transition='max-height 0.2s ease, opacity 0.2s ease';
         body.style.maxHeight=body.scrollHeight+'px'; // pin current height first
@@ -12400,10 +12411,10 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
         setTimeout(function(){
           panel.classList.add('collapsed');
           body.style.overflow='hidden';
-          if(window._clampScrollTransition) window._clampScrollTransition();
         }, 200);
       } else {
         // OPENING: show and slide inner down
+        if(window._clampScrollTransition) window._clampScrollTransition(bar);
         panel.classList.remove('collapsed');
         body.style.overflow='hidden';
         body.style.maxHeight='0px';
@@ -12420,7 +12431,6 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
               body.style.maxHeight='';
               body.style.transition='';
               body.style.overflow='';
-              if(window._clampScrollTransition) window._clampScrollTransition();
             }, 220);
           });
         });
@@ -12834,7 +12844,7 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
       collapsed=c;
       panel.classList.toggle('collapsed',c);
       try{ localStorage.setItem('slimEQ',c?'1':'0'); }catch(e){}
-      if(window._clampScrollTransition) window._clampScrollTransition();
+      if(window._clampScrollTransition) window._clampScrollTransition(bar);
     }
     setC(collapsed);
     bar.addEventListener('click',function(){ setC(!collapsed); });
