@@ -195,11 +195,12 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .cslider-wrap { position:relative; flex:1; cursor:ew-resize; touch-action:none; flex-shrink:0; }
 .cslider-canvas { display:block; width:100%; height:100%; }
 
-input[type=range] { -webkit-appearance:none; appearance:none; background:transparent; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:0; height:0; }
-input[type=range]::-webkit-slider-runnable-track { background:transparent; }
-input[type=range]::-moz-range-thumb { width:0; height:0; border:none; }
-input[type=range]::-moz-range-track { background:transparent; }
+/* Canvas-overlay sliders (invisible inputs layered on top of a drawn canvas) */
+.cslider-wrap input[type=range] { -webkit-appearance:none; appearance:none; background:transparent; }
+.cslider-wrap input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:0; height:0; }
+.cslider-wrap input[type=range]::-webkit-slider-runnable-track { background:transparent; }
+.cslider-wrap input[type=range]::-moz-range-thumb { width:0; height:0; border:none; }
+.cslider-wrap input[type=range]::-moz-range-track { background:transparent; }
 
 /* ── Neon glow overrides ─────────────────────────────────── */
 .seq-btn {
@@ -376,7 +377,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(0,217,255,0.35);letter-spacing:2px;text-align:center;">v4.50</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(0,217,255,0.35);letter-spacing:2px;text-align:center;">v4.79</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -443,7 +444,7 @@ window.onerror=function(msg,src,line,col,err){
   <div class="bank-outer">
     <!-- PAD TOOLS slim panel (SEQ mode only) -->
     <div class="slim-panel collapsed" id="padToolsSlimPanel" style="display:none;">
-      <div class="slim-panel-bar" id="padToolsBar"><button class="slim-panel-bar-arrow" id="padToolsArrow">▲</button><span>PAD TOOLS</span></div>
+      <div class="slim-panel-bar" id="padToolsBar"><button class="slim-panel-bar-arrow" id="padToolsArrow">▲</button><span>TOOLBAR</span></div>
       <div class="slim-panel-body" id="padToolsBody" style="max-height:3000px;border-bottom:1px solid rgba(0,217,255,0.18);">
         <div style="display:flex;flex-direction:row;align-items:center;gap:0;padding:4px 6px;">
           <!-- Left: Save + Load -->
@@ -458,10 +459,11 @@ window.onerror=function(msg,src,line,col,err){
             <button class="seq-btn seq-btn-sq" id="btnParticleToggle" title="Particles on/off" style="font-size:10px;flex-shrink:0;">&#x2728;</button>
             <button class="seq-btn seq-btn-sq" id="btnGlowToggle" title="Tap glow on/off" style="font-size:10px;padding:0;overflow:hidden;flex-shrink:0;"><canvas id="glowIconCanvas" width="26" height="26" style="display:block;width:26px;height:26px;"></canvas></button>
           </div>
-          <!-- Right: Color Pads + Sound Style -->
+          <!-- Right: Color Pads + Sound Style + Settings -->
           <div style="display:flex;gap:3px;flex-shrink:0;">
             <button class="seq-btn seq-btn-sq" id="colorTagBtnOld" title="Color tiles" style="flex-shrink:0;">🎨</button>
             <button class="seq-btn seq-btn-sq" id="seqSndBtn" title="Sound Style" style="flex-shrink:0;font-size:11px;">♪</button>
+            <button class="seq-btn seq-btn-sq" id="seqSettingsBtn" title="Settings" style="flex-shrink:0;font-size:12px;">⚙</button>
           </div>
         </div>
       </div>
@@ -2279,11 +2281,95 @@ function winCheck(pz){
 var AC=(function(){try{return new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}})();
 var _greetingPlayed=false;
 
-// ── Master EQ chain — all sounds connect here instead of AC.destination ──
+// ── Master audio chain — EQ → Saturation → Widener → Reverb Bus → Limiter → destination ──
 var masterEQ={};
 var masterEQInput=null;
+var _masterReverb={ wet:null, dry:null, conv:null, level:0.04 };
+var _masterSat={ node:null, amount:0.35, bypass:null, input:null };
+var _masterWide={ enabled:true, splitter:null, merger:null, delayR:null, widthMs:12, input:null };
+var _masterLim={ node:null, threshold:-2, ratio:20, release:0.08 };
 (function(){
   if(!AC) return;
+
+  // ── 1. Final limiter (protects from clipping) ──
+  var limiter=AC.createDynamicsCompressor();
+  limiter.threshold.value=-2;
+  limiter.knee.value=0;
+  limiter.ratio.value=20;
+  limiter.attack.value=0.001;
+  limiter.release.value=0.08;
+  limiter.connect(AC.destination);
+  _masterLim.node=limiter;
+
+  // ── 2. Reverb wet/dry bus ──
+  function mkIR(dur, decay){
+    var sr=AC.sampleRate, len=Math.ceil(sr*dur);
+    var ir=AC.createBuffer(2,len,sr);
+    for(var ch=0;ch<2;ch++){
+      var d=ir.getChannelData(ch);
+      for(var i=0;i<len;i++){
+        d[i]=(Math.random()*2-1)*Math.pow(1-i/len, decay);
+      }
+    }
+    return ir;
+  }
+  var conv=AC.createConvolver();
+  try{ conv.buffer=mkIR(1.6, 2.8); }catch(e){}
+  _masterReverb.conv=conv;
+
+  var wetGain=AC.createGain(); wetGain.gain.value=_masterReverb.level;
+  var dryGain=AC.createGain(); dryGain.gain.value=1.0;
+  _masterReverb.wet=wetGain;
+  _masterReverb.dry=dryGain;
+
+  conv.connect(wetGain); wetGain.connect(limiter);
+  dryGain.connect(limiter);
+
+  var reverbSplit=AC.createGain(); reverbSplit.gain.value=1.0;
+  reverbSplit.connect(conv);
+  reverbSplit.connect(dryGain);
+
+  // ── 3. Stereo widener (Haas effect) ──
+  // Input is forced to stereo (upmixed from mono), then L + delayed R are merged.
+  // A delayL=0 path keeps L tight; delayR adds ~12ms perceptible width.
+  var wideInput=AC.createGain(); wideInput.gain.value=1.0;
+  // Force 2-channel interpretation so mono signals upmix properly:
+  var forceStereo=AC.createChannelMerger(2);
+  // connect wideInput to BOTH merger inputs so mono→stereo with equal L/R
+  wideInput.connect(forceStereo, 0, 0);
+  wideInput.connect(forceStereo, 0, 1);
+
+  // Now split into L and R, delay R slightly, re-merge
+  var splitter=AC.createChannelSplitter(2);
+  forceStereo.connect(splitter);
+  var merger=AC.createChannelMerger(2);
+  var delayR=AC.createDelay(0.05); delayR.delayTime.value=0.012;
+  splitter.connect(merger, 0, 0);           // L straight through
+  splitter.connect(delayR, 1);              // R through delay
+  delayR.connect(merger, 0, 1);
+  merger.connect(reverbSplit);
+  _masterWide.splitter=splitter;
+  _masterWide.merger=merger;
+  _masterWide.delayR=delayR;
+  _masterWide.input=wideInput;
+
+  // ── 4. Saturation (gentle waveshaper) ──
+  function mkSatCurve(amount){
+    var n=2048, curve=new Float32Array(n), k=amount*0.8;
+    for(var i=0;i<n;i++){
+      var x=(i*2/n)-1;
+      curve[i]=Math.tanh(x*(1+k*2))/Math.tanh(1+k*2);
+    }
+    return curve;
+  }
+  var saturator=AC.createWaveShaper();
+  saturator.curve=mkSatCurve(0.35);
+  saturator.oversample='4x';
+  saturator.connect(wideInput);
+  _masterSat.node=saturator;
+  _masterSat.mkCurve=mkSatCurve;
+
+  // ── 5. EQ chain feeds into saturator ──
   var defs=[
     {id:'sub', type:'lowshelf', freq:60,   Q:0.7},
     {id:'bass',type:'peaking',  freq:200,  Q:1.0},
@@ -2291,7 +2377,7 @@ var masterEQInput=null;
     {id:'pres',type:'peaking',  freq:4000, Q:1.0},
     {id:'hi',  type:'highshelf',freq:8000, Q:0.7},
   ];
-  var prev=AC.destination;
+  var prev=saturator;
   for(var i=defs.length-1;i>=0;i--){
     var d=defs[i],f=AC.createBiquadFilter();
     f.type=d.type; f.frequency.value=d.freq; f.gain.value=0;
@@ -2301,6 +2387,33 @@ var masterEQInput=null;
   masterEQInput=prev;
 })();
 function getMasterDest(){ return masterEQInput||(AC?AC.destination:null); }
+
+// ── Master FX control API ──
+window._setMasterReverb=function(level){
+  if(!_masterReverb.wet) return;
+  _masterReverb.level=Math.max(0,Math.min(1,level));
+  try{ _masterReverb.wet.gain.setTargetAtTime(_masterReverb.level, AC.currentTime, 0.02); }catch(e){}
+};
+window._getMasterReverb=function(){ return _masterReverb.level; };
+window._setMasterSaturation=function(amount){
+  if(!_masterSat.node||!_masterSat.mkCurve) return;
+  _masterSat.amount=Math.max(0,Math.min(1,amount));
+  try{ _masterSat.node.curve=_masterSat.mkCurve(_masterSat.amount); }catch(e){}
+};
+window._getMasterSaturation=function(){ return _masterSat.amount; };
+window._setMasterWidth=function(ms){
+  if(!_masterWide.delayR) return;
+  _masterWide.widthMs=Math.max(0,Math.min(40,ms));
+  try{ _masterWide.delayR.delayTime.setTargetAtTime(_masterWide.widthMs/1000, AC.currentTime, 0.02); }catch(e){}
+};
+window._getMasterWidth=function(){ return _masterWide.widthMs; };
+window._setMasterLimiter=function(threshold, ratio, release){
+  if(!_masterLim.node) return;
+  if(typeof threshold==='number'){ _masterLim.threshold=threshold; try{_masterLim.node.threshold.setValueAtTime(threshold, AC.currentTime);}catch(e){} }
+  if(typeof ratio==='number'){ _masterLim.ratio=ratio; try{_masterLim.node.ratio.setValueAtTime(ratio, AC.currentTime);}catch(e){} }
+  if(typeof release==='number'){ _masterLim.release=release; try{_masterLim.node.release.setValueAtTime(release, AC.currentTime);}catch(e){} }
+};
+window._getMasterLimiter=function(){ return {threshold:_masterLim.threshold, ratio:_masterLim.ratio, release:_masterLim.release}; };
 
 function resumeAC(){if(AC&&AC.state==='suspended')AC.resume();}
 window._getPitchRatio=function(){ return 1.0; };
@@ -3089,6 +3202,54 @@ var userSamples = {};
 var sampleMeta = {};
 // Recording input volume multiplier (0-2, default 1)
 var recVolume = 1.0;
+
+// ── Default sample loading ────────────────────────────────
+// Fetch optional default sample files from a `samples/` folder next to the HTML
+// and load them into specific bank slots on startup. Each entry maps:
+//   slotIdx → { url, label }
+// If a file is missing or the fetch fails, the slot stays as the synth sound —
+// no errors, no broken behavior. This means you can drop in/swap out sample
+// files in the GitHub repo without ever touching the HTML.
+//
+// File naming convention: place .wav/.mp3/.ogg files in `samples/` next to the
+// index.html (or Sequation-X_XX.html), and reference them here by URL.
+window._defaultSamples=[
+  { slot:0, url:'samples/kick.wav',  label:'Kick'  },
+  { slot:1, url:'samples/snare.wav', label:'Snare' }
+  // Add more here as you add more files. e.g.:
+  // { slot:2, url:'samples/hihat-closed.wav', label:'HH' },
+  // { slot:3, url:'samples/hihat-open.wav',   label:'HHo' },
+];
+
+(function loadDefaultSamples(){
+  if(!AC) return;
+  if(!window._defaultSamples||!window._defaultSamples.length) return;
+  window._defaultSamples.forEach(function(entry){
+    fetch(entry.url, {cache:'force-cache'})
+      .then(function(r){
+        if(!r.ok) throw new Error('not found: '+entry.url);
+        return r.arrayBuffer();
+      })
+      .then(function(arr){
+        return new Promise(function(resolve, reject){
+          // decodeAudioData supports both promise and callback styles; use callback
+          // form for widest browser compat (older Safari needs it).
+          AC.decodeAudioData(arr, resolve, reject);
+        });
+      })
+      .then(function(buf){
+        userSamples[entry.slot]=buf;
+        // Mark as a default/stock sample so save/load and UI know its origin
+        if(!sampleMeta[entry.slot]) sampleMeta[entry.slot]={};
+        sampleMeta[entry.slot]._isDefault=true;
+        sampleMeta[entry.slot]._defaultLabel=entry.label;
+        if(window._updateSampleIcons) window._updateSampleIcons();
+      })
+      .catch(function(){
+        // Silent — file just isn't there yet. Slot keeps its synth sound.
+      });
+  });
+})();
 
 
 // Render a stock sound to AudioBuffer for editing
@@ -4326,10 +4487,18 @@ var _tsGapDockedInMenu=true;   // true = gap slider is inside menu (not toolbar)
 var SPIN_ON=true;
 var GLOW_ON=true;
 var PARTICLES_ON=true;
-var PRESSURE_BASE=0.8;
+var PRESSURE_BASE=3.1;
 var PRESSURE_RANGE=1.0;
-// Sensitivity vol limits (set by range slider)
-window._sensVolMin=0.75; window._sensVolMax=1.25; // 0=no gap, 1=default, 3=3x gap
+// Pressure jitter: ±_pressureJitter shift applied 50% of the time (25% each direction).
+// 0 = jitter off, 0.1 = original behavior, 0.3 = triple intensity.
+window._pressureJitter=0;
+// Pressure smoothing: 0 = no smoothing (each tap independent),
+// up to ~0.95 = heavy smoothing (each tap drifts only slightly from the previous).
+window._pressureSmoothing=0.475;
+window._lastTapPressure=null; // remembered between taps for smoothing math
+
+// Sensitivity volume limits (updated by Range slider; hard = higher volume)
+window._sensVolMin=0.01; window._sensVolMax=6.0; // maxed-out defaults (slider at 100%)
 
 function newPuzzle(){
   resumeAC();playNewGame();
@@ -4749,26 +4918,44 @@ function renderBank(){
       }
 
       function doSound(pressure){
+        // `pressure` comes in pre-normalized: 0..1 from raw radius (0.2..1.4).
+        // Can be slightly negative or above 1 for extreme touches.
         if(pressure===undefined) pressure=0.5;
-        // Apply range: blend pressure toward 0.5 (neutral) based on PRESSURE_RANGE
-        // PRESSURE_RANGE=0 → always 0.5 (no effect), 1=normal, 2=extreme
-        var _ep=0.5+(pressure-0.5)*PRESSURE_RANGE;
-        pressure=Math.max(0,_ep); // allow going above 1 for extreme range
-        window._tapPressure=pressure;
-        // Normalize so PRESSURE_BASE always = 100% of recVolume
-        // Map radius to 0-1 range: 0.1→0, 1.6→1
-        var _pNorm=Math.max(0,(pressure*1.2+0.2-0.1)/1.5); // pressure already=(r-0.1)/1.2 scaled
-        // Recalc from raw radius stored in _tapPressure (before PRESSURE_RANGE scaling)
-        var _rawR=(window._tapPressure||0.5)*1.2+0.2; // approximate back to radius
-        var _pNorm2=Math.max(0,(_rawR-0.1)/1.5); // 0=softest(0.1r), 1=hardest(1.6r)
-        var _pBase2=Math.max(0,(PRESSURE_BASE-0.1)/1.5); // base as 0-1
-        var _vMin=window._sensVolMin!==undefined?window._sensVolMin:0.75;
-        var _vMax=window._sensVolMax!==undefined?window._sensVolMax:1.25;
-        // Volume at this pressure: linear between vMin and vMax, normalized so base=1.0
-        var _volAtBase=_vMin+_pBase2*(_vMax-_vMin);
-        var _volAtPress=_vMin+_pNorm2*(_vMax-_vMin);
+
+        // Clamp the input to a sane 0..1 range first.
+        var _pRaw=Math.max(0, Math.min(1, pressure));
+
+        // Map PRESSURE_BASE (slider can go 0.1..3.1; natural taps saturate around 1.6)
+        // to the same 0..1 scale as _pRaw (which uses 0.1..1.6). Since PRESSURE_BASE
+        // can exceed 1.6, we clamp its mapping to 1.0 in the reference volume calc.
+        var _pBase=Math.max(0, Math.min(1, (PRESSURE_BASE-0.1)/1.5));
+
+        // Apply PRESSURE_RANGE: scale both raw and base around 0.5 (neutral).
+        //   RANGE=0 → no effect (always 0.5)
+        //   RANGE=1 → normal
+        //   RANGE=3 → extreme (soft taps pushed toward 0, hard toward 1)
+        // Clamp after scaling so we stay in 0..1.
+        function _scale(p){ return Math.max(0, Math.min(1, 0.5 + (p-0.5)*PRESSURE_RANGE)); }
+        var _pScaled=_scale(_pRaw);
+        var _pBaseScaled=_scale(_pBase);
+
+        // Store scaled value for other consumers (e.g. particle/glow code).
+        window._tapPressure=_pScaled;
+
+        // Sensitivity toggle: when off, use flat 1.0/1.0 so pressure has no effect.
+        var _sensActive=window._getSensOn?window._getSensOn():true;
+        var _vMin=_sensActive?(window._sensVolMin!==undefined?window._sensVolMin:0.75):1.0;
+        var _vMax=_sensActive?(window._sensVolMax!==undefined?window._sensVolMax:1.25):1.0;
+
+        // Volume curve: linear between vMin and vMax based on scaled pressure.
+        // Normalize so that tapping at PRESSURE_BASE gives factor=1.0 → recVolume unchanged.
+        var _volAtBase =_vMin+_pBaseScaled*(_vMax-_vMin);
+        var _volAtPress=_vMin+_pScaled    *(_vMax-_vMin);
         var _factor=_volAtBase>0?_volAtPress/_volAtBase:1.0;
+
         var vol=Math.max(0.01,recVolume*_factor);
+        // Remember this volume so any drag-over pads after this tap inherit the same level
+        window._lastTapVol=vol;
         if(window._beatEditToggleTile&&window._beatEditToggleTile(sndIdx)) return;
         playBankSound(sndIdx,vol);
         if(window._seqNoteOn) _seqNoteOn(sndIdx,idx);
@@ -4826,14 +5013,25 @@ function renderBank(){
         if(!SEL){
           var _t=e.changedTouches[0];
           var _r=(_t.radiusX||_t.webkitRadiusX||PRESSURE_BASE);
-          // Weighted jitter: 50% actual, 25% each for ±0.1
-          // Gives organic feel and smooths choppy jumps
-          var _jRoll=Math.random();
-          if(_jRoll<0.25)      _r=_r-0.1;
-          else if(_jRoll<0.50) _r=_r+0.1;
-          // else keep _r as-is (50% chance)
+          // Weighted jitter: 50% actual, 25% each for ±jitter amount
+          // Adds organic feel and smooths choppy jumps; amount is user-configurable.
+          var _jAmt=window._pressureJitter||0;
+          if(_jAmt>0){
+            var _jRoll=Math.random();
+            if(_jRoll<0.25)      _r=_r-_jAmt;
+            else if(_jRoll<0.50) _r=_r+_jAmt;
+            // else keep _r as-is (50% chance)
+          }
           _r=Math.max(0.1,_r); // floor at 0.1
-          var _p=Math.max(0,(_r-0.2)/1.2);
+          // Normalize raw radius to 0..1 using the natural touchscreen range 0.1..1.6
+          var _p=Math.max(0,(_r-0.1)/1.5);
+          // Smoothing: pull this tap's pressure toward the previous tap's pressure.
+          // At 0 smoothing → no effect. At ~0.95 → big change is heavily damped.
+          var _sm=window._pressureSmoothing||0;
+          if(_sm>0 && window._lastTapPressure!==null){
+            _p=_p*(1-_sm) + window._lastTapPressure*_sm;
+          }
+          window._lastTapPressure=_p;
           doSound(_p);
         }
       },{passive:true});
@@ -5225,15 +5423,22 @@ function render(){
       var s=Math.max(minScale,Math.min(maxScale,lastScale*(dist(e.touches)/startDist)));
       var mid=midpoint(e.touches);
       applyTransform(startTransX+(mid.x-startMid.x), startTransY+(mid.y-startMid.y), s);
-    } else if(e.touches.length===1&&!isPinching&&!pinchJustEnded&&scale>1.05){
+    } else if(e.touches.length===1&&!isPinching&&!pinchJustEnded){
       var dx=e.touches[0].clientX-panStartX;
       var dy=e.touches[0].clientY-panStartY;
-      if(!isPanning&&Math.sqrt(dx*dx+dy*dy)>PAN_THRESHOLD){
-        isPanning=true; panMoved=true;
+      // Flag any movement past threshold — prevents tap-to-deselect during drag-scroll
+      if(!panMoved && Math.sqrt(dx*dx+dy*dy)>PAN_THRESHOLD){
+        panMoved=true;
       }
-      if(isPanning){
-        e.preventDefault();
-        applyTransform(panStartTX+dx, panStartTY+dy, scale);
+      // Actual pan-transform only activates when zoomed in
+      if(scale>1.05){
+        if(!isPanning && Math.sqrt(dx*dx+dy*dy)>PAN_THRESHOLD){
+          isPanning=true;
+        }
+        if(isPanning){
+          e.preventDefault();
+          applyTransform(panStartTX+dx, panStartTY+dy, scale);
+        }
       }
     }
   },{passive:false});
@@ -5450,7 +5655,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       if(!isNaN(idx)&&!isNaN(sndIdx)&&!SEL&&PZ){
         if(window._beatEditToggleTile&&window._beatEditToggleTile(sndIdx)) return;
         if(PZ.bank[idx].used) return;
-        playBankSound(sndIdx, recVolume);
+        // Use the volume from the originating tap so the entire drag stroke
+        // plays at the same level the user picked with their first finger-press.
+        var _dragVol=(window._lastTapVol!==undefined)?window._lastTapVol:recVolume;
+        playBankSound(sndIdx, _dragVol);
         if(window._seqNoteOn) _seqNoteOn(sndIdx, idx);
         if(!SEL && window._pulseRandomEq) window._pulseRandomEq();
         // Full tap effect — color, glow, particles, spin
@@ -5490,6 +5698,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     for(var i=0;i<e.changedTouches.length;i++){
       delete fingerOver[e.changedTouches[i].identifier];
     }
+    // When the last finger lifts, forget the carried-over tap volume
+    // so a fresh, untapped drag later doesn't accidentally use a stale value.
+    if(e.touches.length===0) window._lastTapVol=undefined;
   },{passive:true});
 })();
 
@@ -6523,6 +6734,227 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   }
   if(seqSndBtn) seqSndBtn.addEventListener('click',showSndMenu);
 
+  // ── Settings modal ──────────────────────────────────────
+  function showSettingsModal(){
+    var existing=document.getElementById('_settingsModal');
+    if(existing){ existing.parentNode.removeChild(existing); return; }
+    var ov=document.createElement('div');
+    ov.id='_settingsModal';
+    ov.style.cssText='position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:20px;touch-action:none;';
+
+    var card=document.createElement('div');
+    card.style.cssText='background:#141414;border:1.5px solid rgba(0,217,255,0.5);border-radius:10px;padding:16px;max-width:380px;width:100%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.8),0 0 20px rgba(0,217,255,0.2);';
+    card.addEventListener('click',function(e){ e.stopPropagation(); });
+
+    // Header
+    var hdr=document.createElement('div');
+    hdr.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-shrink:0;';
+    var title=document.createElement('span');
+    title.textContent='⚙ SETTINGS';
+    title.style.cssText='font-family:monospace;font-size:12px;font-weight:700;letter-spacing:2px;color:var(--cyan);';
+    var closeBtn=document.createElement('button');
+    closeBtn.textContent='✕';
+    closeBtn.style.cssText='background:transparent;border:1px solid rgba(0,217,255,0.4);border-radius:4px;color:var(--cyan);font-family:monospace;font-size:12px;width:26px;height:26px;cursor:pointer;line-height:1;';
+    closeBtn.addEventListener('click',function(){ ov.parentNode&&ov.parentNode.removeChild(ov); });
+    hdr.appendChild(title); hdr.appendChild(closeBtn);
+    card.appendChild(hdr);
+
+    // ── Tab bar ──
+    var tabBar=document.createElement('div');
+    tabBar.style.cssText='display:flex;gap:0;border-bottom:1.5px solid rgba(0,217,255,0.3);margin-bottom:10px;flex-shrink:0;overflow-x:auto;';
+    // ── Body wrapper (scrollable) ──
+    var bodyWrap=document.createElement('div');
+    bodyWrap.style.cssText='flex:1;overflow-y:auto;min-height:100px;';
+
+    // Tab definitions — easy to add more later
+    var tabs=[
+      {id:'sounds', label:'SOUNDS', build:null},
+      {id:'haptic', label:'HAPTIC', build:null},
+      {id:'visual', label:'VISUAL', build:null}
+    ];
+
+    // Tab button element refs (so setActiveTab can style them)
+    var tabBtns={};
+    function setActiveTab(tabId){
+      tabs.forEach(function(t){
+        var btn=tabBtns[t.id];
+        var isActive=(t.id===tabId);
+        if(btn){
+          btn.style.background=isActive?'rgba(0,217,255,0.15)':'transparent';
+          btn.style.color=isActive?'var(--cyan)':'#888';
+          btn.style.borderBottomColor=isActive?'var(--cyan)':'transparent';
+          btn.style.boxShadow=isActive?'0 2px 8px rgba(0,217,255,0.2)':'none';
+        }
+      });
+      // Rebuild body for this tab
+      bodyWrap.innerHTML='';
+      var tab=tabs.find(function(t){return t.id===tabId;});
+      if(tab&&tab.build) tab.build(bodyWrap);
+      try{ localStorage.setItem('settingsLastTab', tabId); }catch(e){}
+    }
+
+    tabs.forEach(function(t){
+      var btn=document.createElement('button');
+      btn.textContent=t.label;
+      btn.style.cssText='flex:1;min-width:80px;font-family:monospace;font-size:10px;font-weight:700;letter-spacing:2px;padding:9px 6px;border:none;border-bottom:2.5px solid transparent;background:transparent;color:#888;cursor:pointer;touch-action:manipulation;transition:all 0.15s;';
+      btn.addEventListener('click',function(e){ e.stopPropagation(); setActiveTab(t.id); });
+      tabBtns[t.id]=btn;
+      tabBar.appendChild(btn);
+    });
+
+    card.appendChild(tabBar);
+    card.appendChild(bodyWrap);
+
+    // ── Shared row helpers (available to all tab builders) ──
+    function _toggleRow(label, getVal, setVal){
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:7px 4px;';
+      var lbl=document.createElement('span');
+      lbl.textContent=label;
+      lbl.style.cssText='font-family:monospace;font-size:10px;color:#ccc;letter-spacing:1px;';
+      var toggle=document.createElement('button');
+      function refresh(){
+        var on=getVal();
+        toggle.textContent=on?'ON':'OFF';
+        toggle.style.cssText='font-family:monospace;font-size:9px;font-weight:700;padding:5px 14px;border:1.5px solid '+(on?'#22c55e':'#555')+';border-radius:12px;background:'+(on?'rgba(34,197,94,0.15)':'rgba(0,0,0,0.3)')+';color:'+(on?'#22c55e':'#888')+';cursor:pointer;letter-spacing:1px;touch-action:manipulation;min-width:56px;'+(on?'box-shadow:0 0 6px rgba(34,197,94,0.4);':'');
+      }
+      refresh();
+      toggle.addEventListener('click',function(e){
+        e.stopPropagation();
+        setVal(!getVal());
+        refresh();
+      });
+      row.appendChild(lbl); row.appendChild(toggle);
+      return row;
+    }
+
+    function _sliderRow(labelText, getVal, setVal, fmtFn){
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:8px;padding:7px 4px;';
+      var lbl=document.createElement('span');
+      lbl.textContent=labelText;
+      lbl.style.cssText='font-family:monospace;font-size:10px;color:#ccc;letter-spacing:1px;min-width:100px;flex-shrink:0;';
+      var slWrap=document.createElement('div');
+      slWrap.style.cssText='position:relative;flex:1;height:22px;touch-action:none;cursor:ew-resize;overflow:visible;filter:drop-shadow(0px 4px 8px rgba(0,217,255,0.6)) drop-shadow(0px 2px 4px rgba(0,0,0,0.4));';
+      var cv=document.createElement('canvas');
+      cv.style.cssText='position:absolute;left:0;top:0;pointer-events:none;z-index:2;display:block;';
+      var sl=document.createElement('input');
+      sl.type='range'; sl.min=0; sl.max=100; sl.step=1;
+      sl.value=Math.round(getVal()*100);
+      sl.style.cssText='position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ew-resize;z-index:5;-webkit-appearance:none;appearance:none;background:transparent;';
+      slWrap.appendChild(cv); slWrap.appendChild(sl);
+      var vlbl=document.createElement('span');
+      vlbl.style.cssText='font-family:monospace;font-size:10px;color:#ccc;min-width:40px;text-align:right;flex-shrink:0;';
+      var fmt=fmtFn||function(v){return v+'%';};
+      vlbl.textContent=fmt(sl.value);
+      function redraw(){
+        if(window._drawFxSlider) window._drawFxSlider(cv, parseFloat(sl.value)/100, '#00d9ff');
+        vlbl.textContent=fmt(sl.value);
+      }
+      sl.addEventListener('input',function(){
+        setVal(parseFloat(sl.value)/100);
+        redraw();
+      });
+      if(typeof ResizeObserver!=='undefined'){
+        var _ro=new ResizeObserver(function(){ redraw(); });
+        _ro.observe(slWrap);
+      }
+      requestAnimationFrame(function(){ requestAnimationFrame(redraw); });
+      row.appendChild(lbl); row.appendChild(slWrap); row.appendChild(vlbl);
+      return row;
+    }
+
+    // ── Tab body builders ──
+    tabs[0].build=function(body){
+      // SOUNDS tab
+      body.appendChild(_sliderRow('SFX VOLUME',
+        function(){return window._sfxSettings.masterVol;},
+        function(v){
+          window._sfxSettings.masterVol=v;
+          if(window._applySfxVolume) window._applySfxVolume();
+          window._saveSfxSettings();
+        }));
+      body.appendChild(_toggleRow('Panel bars (open/close)',
+        function(){return window._sfxSettings.panelBars;},
+        function(v){window._sfxSettings.panelBars=v; window._saveSfxSettings();}));
+      body.appendChild(_toggleRow('Bypass button clicks',
+        function(){return window._sfxSettings.bypassClicks;},
+        function(v){window._sfxSettings.bypassClicks=v; window._saveSfxSettings();}));
+      body.appendChild(_toggleRow('Slider drag sounds',
+        function(){return window._sfxSettings.sliderDrag;},
+        function(v){window._sfxSettings.sliderDrag=v; window._saveSfxSettings();}));
+      body.appendChild(_toggleRow('Button FX (REC/PLAY/etc.)',
+        function(){return window._sfxSettings.buttonFx;},
+        function(v){window._sfxSettings.buttonFx=v; window._saveSfxSettings();}));
+    };
+
+    tabs[1].build=function(body){
+      // HAPTIC tab
+      if(!navigator.vibrate){
+        var warn=document.createElement('div');
+        warn.style.cssText='font-family:monospace;font-size:9px;color:#fbbf24;padding:10px 4px;line-height:1.5;letter-spacing:.5px;';
+        warn.textContent='⚠ This device/browser does not support haptic feedback. Toggles are still here for when it does.';
+        body.appendChild(warn);
+      }
+      body.appendChild(_toggleRow('Slider vibration',
+        function(){return window._sfxSettings.sliderHaptic;},
+        function(v){window._sfxSettings.sliderHaptic=v; window._saveSfxSettings();}));
+    };
+
+    tabs[2].build=function(body){
+      // VISUAL tab (placeholder for future settings)
+      var ph=document.createElement('div');
+      ph.style.cssText='font-family:monospace;font-size:9px;color:#666;padding:16px 4px;text-align:center;letter-spacing:1px;line-height:1.6;';
+      ph.innerHTML='Visual settings coming soon.<br><br>— Tap glow, spin, particles, etc. will move here —';
+      body.appendChild(ph);
+    };
+
+    ov.appendChild(card);
+    ov.addEventListener('click',function(){
+      ov.parentNode&&ov.parentNode.removeChild(ov);
+    });
+    document.body.appendChild(ov);
+
+    // Activate remembered tab (or sounds by default)
+    var lastTab='sounds';
+    try{ lastTab=localStorage.getItem('settingsLastTab')||'sounds'; }catch(e){}
+    if(!tabs.find(function(t){return t.id===lastTab;})) lastTab='sounds';
+    setActiveTab(lastTab);
+  }
+
+  var seqSettingsBtn=document.getElementById('seqSettingsBtn');
+  if(seqSettingsBtn) seqSettingsBtn.addEventListener('click', showSettingsModal);
+
+  // ── Toolbar button click sounds ───────────────────────────
+  // Attach a capture-phase listener to each TOOLBAR button that plays a sound
+  // before/alongside the button's own handler. Toggle buttons get an on/off
+  // chirp based on whether they currently have the 'active' class.
+  (function(){
+    // Simple tap: Save, Load, Color, Sound Style, Settings
+    var tapBtns=['seqSave','seqLoad','colorTagBtnOld','seqSndBtn','seqSettingsBtn'];
+    tapBtns.forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el) return;
+      el.addEventListener('click',function(){
+        if(window._btnFx) window._btnFx('tool');
+      });
+    });
+    // Toggle buttons: chirp up when turning on, down when turning off.
+    // We read the 'active' class AFTER the click lands, via a microtask.
+    var toggleBtns=['btnSpinToggle','btnParticleToggle','btnGlowToggle'];
+    toggleBtns.forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el) return;
+      el.addEventListener('click',function(){
+        // Defer so the toggle's own handler has a chance to update 'active' class
+        setTimeout(function(){
+          var on=el.classList.contains('active');
+          if(window._btnFx) window._btnFx(on?'tool_on':'tool_off');
+        },0);
+      });
+    });
+  })();
+
   // ── Scroll lock ──────────────────────────────────────────
   var _scrollLocked=false;
   var _floatLock=null; // floating button when undocked
@@ -6696,12 +7128,58 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   var btnPro   = document.getElementById('seqPro');
   var proPanel = document.getElementById('proPanel');
 
+  // ── Global Sound Effects Settings ───────────────────────
+  // Controls UI sound volumes and toggles. Persisted in localStorage.
+  window._sfxSettings=(function(){
+    var defaults={
+      masterVol: 1.0,       // master multiplier for all UI sfx (0..1)
+      panelBars: true,      // fwoosh sounds when opening/closing panel bars
+      bypassClicks: true,   // click sound on bypass buttons
+      sliderDrag: true,     // subtle noise while dragging sliders
+      sliderHaptic: true,   // vibration pulses while dragging sliders
+      padHaptic: true,      // vibration on pad taps (scales with pressure when sens on)
+      buttonFx: true        // REC/PLAY/STOP etc. button sounds
+    };
+    try{
+      var saved=JSON.parse(localStorage.getItem('sfxSettings')||'{}');
+      for(var k in saved){ if(k in defaults) defaults[k]=saved[k]; }
+    }catch(e){}
+    return defaults;
+  })();
+  window._saveSfxSettings=function(){
+    try{ localStorage.setItem('sfxSettings', JSON.stringify(window._sfxSettings)); }catch(e){}
+  };
+  // Master sfx gain node — all UI sounds route through this.
+  // Connected DIRECTLY to AC.destination, bypassing the master FX chain (EQ/sat/reverb/limiter),
+  // so UI sounds stay consistent regardless of how the user tweaks the master effects.
+  window._sfxGain=null;
+  (function(){
+    if(!AC) return;
+    var g=AC.createGain();
+    g.gain.value=window._sfxSettings.masterVol;
+    g.connect(AC.destination);
+    window._sfxGain=g;
+  })();
+  // Update gain live when settings change
+  window._applySfxVolume=function(){
+    if(!window._sfxGain||!AC) return;
+    try{ window._sfxGain.gain.setTargetAtTime(window._sfxSettings.masterVol, AC.currentTime, 0.02); }catch(e){}
+  };
+  // Helper: the destination for UI sound effects (always dry, never through master FX)
+  function _sfxDest(){ return window._sfxGain||(AC?AC.destination:null); }
+
   // ── Button sound FX ──────────────────────────────────────
   function btnFx(type){
     if(!AC) return; resumeAC();
+    // Respect button FX toggle (but always allow bypass_* through their own toggle)
+    if(type==='bypass_on'||type==='bypass_off'){
+      if(!window._sfxSettings.bypassClicks) return;
+    } else {
+      if(!window._sfxSettings.buttonFx) return;
+    }
     var t = AC.currentTime;
     try{
-      var g = AC.createGain(); g.connect(getMasterDest());
+      var g = AC.createGain(); g.connect(_sfxDest());
       var o = AC.createOscillator();
       if(type==='rec'){   o.type='sine'; o.frequency.value=880; g.gain.setValueAtTime(0.2,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.08); }
       else if(type==='play'){ o.type='triangle'; o.frequency.setValueAtTime(440,t); o.frequency.exponentialRampToValueAtTime(880,t+0.1); g.gain.setValueAtTime(0.18,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.12); }
@@ -6713,9 +7191,153 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         g.gain.setValueAtTime(0.2,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.2);
       }
       else if(type==='pro'){ o.type='triangle'; o.frequency.setValueAtTime(330,t); o.frequency.setValueAtTime(660,t+0.05); o.frequency.setValueAtTime(990,t+0.1); g.gain.setValueAtTime(0.15,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.18); }
+      else if(type==='bypass_on'){
+        // Short high click — "off"/"bypassed"
+        o.type='square'; o.frequency.setValueAtTime(1400,t); o.frequency.exponentialRampToValueAtTime(400,t+0.04);
+        g.gain.setValueAtTime(0.12,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.05);
+      }
+      else if(type==='bypass_off'){
+        // Slightly warmer click — "on"/"active"
+        o.type='triangle'; o.frequency.setValueAtTime(600,t); o.frequency.exponentialRampToValueAtTime(1200,t+0.04);
+        g.gain.setValueAtTime(0.14,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.06);
+      }
+      else if(type==='tool'){
+        // Generic light tool-button tap
+        o.type='triangle'; o.frequency.setValueAtTime(900,t); o.frequency.exponentialRampToValueAtTime(550,t+0.05);
+        g.gain.setValueAtTime(0.09,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.06);
+      }
+      else if(type==='tool_on'){
+        // Toggle on — upward chirp
+        o.type='triangle'; o.frequency.setValueAtTime(520,t); o.frequency.exponentialRampToValueAtTime(1040,t+0.05);
+        g.gain.setValueAtTime(0.11,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.07);
+      }
+      else if(type==='tool_off'){
+        // Toggle off — downward chirp
+        o.type='triangle'; o.frequency.setValueAtTime(1040,t); o.frequency.exponentialRampToValueAtTime(520,t+0.05);
+        g.gain.setValueAtTime(0.11,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.07);
+      }
       o.connect(g); o.start(t); o.stop(t+0.25);
     }catch(e){}
   }
+  window._btnFx=btnFx;
+
+  // ── Panel open/close sound effects ─────────────────────────
+  // "Fwoosh" up for opening, "fwoosh" down for closing, each capped with a small tick.
+  function _panelFx(opening){
+    if(!AC) return; resumeAC();
+    if(!window._sfxSettings.panelBars) return;
+    try{
+      var t=AC.currentTime;
+      var dest=_sfxDest()||AC.destination;
+      var dur=0.18;
+
+      // Short noise buffer (mono, ~0.2s) — reused each call
+      var sr=AC.sampleRate;
+      var nLen=Math.ceil(sr*dur);
+      var nBuf=AC.createBuffer(1, nLen, sr);
+      var nd=nBuf.getChannelData(0);
+      for(var i=0;i<nLen;i++) nd[i]=(Math.random()*2-1)*0.8;
+
+      // Noise source → bandpass filter (swept) → gain → dest
+      var src=AC.createBufferSource();
+      src.buffer=nBuf;
+      var bp=AC.createBiquadFilter();
+      bp.type='bandpass';
+      bp.Q.setValueAtTime(1.4, t);
+      var ng=AC.createGain();
+      ng.gain.setValueAtTime(0, t);
+      // Quick attack-release envelope
+      ng.gain.linearRampToValueAtTime(0.28, t+0.025);
+      ng.gain.exponentialRampToValueAtTime(0.001, t+dur);
+
+      if(opening){
+        // Rising sweep: low → high
+        bp.frequency.setValueAtTime(400, t);
+        bp.frequency.exponentialRampToValueAtTime(3200, t+dur);
+      } else {
+        // Descending sweep: high → low
+        bp.frequency.setValueAtTime(3200, t);
+        bp.frequency.exponentialRampToValueAtTime(400, t+dur);
+      }
+      src.connect(bp); bp.connect(ng); ng.connect(dest);
+      src.start(t); src.stop(t+dur+0.02);
+    }catch(e){}
+  }
+  window._panelFx=_panelFx;
+
+  // ── Slider drag sound effect ──────────────────────────────
+  // Called repeatedly while dragging a slider. Throttles itself to ~30ms min gap.
+  // Produces a very quiet, short ticky granule — pitch varies subtly with movement.
+  var _sliderFxLast=0;
+  function _sliderFx(){
+    if(!AC) return; resumeAC();
+    if(!window._sfxSettings||!window._sfxSettings.sliderDrag) return;
+    var now=AC.currentTime;
+    if(now-_sliderFxLast<0.028) return; // throttle ~35Hz max
+    _sliderFxLast=now;
+    try{
+      var t=now;
+      var dest=_sfxDest()||AC.destination;
+      // Tiny noise burst through high-ish bandpass — sounds like a soft 'tick' or 'scritch'
+      var sr=AC.sampleRate, dur=0.022, nLen=Math.ceil(sr*dur);
+      var buf=AC.createBuffer(1,nLen,sr); var d=buf.getChannelData(0);
+      for(var i=0;i<nLen;i++) d[i]=(Math.random()*2-1)*0.5;
+      var src=AC.createBufferSource(); src.buffer=buf;
+      var bp=AC.createBiquadFilter(); bp.type='bandpass';
+      // Randomize freq slightly so it doesn't sound mechanical
+      bp.frequency.setValueAtTime(2000+Math.random()*1500, t);
+      bp.Q.setValueAtTime(3, t);
+      var g=AC.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.035, t+0.003);
+      g.gain.exponentialRampToValueAtTime(0.001, t+dur);
+      src.connect(bp); bp.connect(g); g.connect(dest);
+      src.start(t); src.stop(t+dur+0.01);
+    }catch(e){}
+  }
+  window._sliderFx=_sliderFx;
+
+  // ── Slider haptic feedback ─────────────────────────────────
+  // Uses navigator.vibrate() for a short buzz on supported devices (mostly Android).
+  // Throttled the same way as the sound — no point pulsing faster than you can feel.
+  var _hapticLast=0;
+  function _sliderHaptic(){
+    if(!window._sfxSettings||!window._sfxSettings.sliderHaptic) return;
+    if(!navigator.vibrate) return;
+    var now=performance.now();
+    if(now-_hapticLast<30) return; // ~33Hz max
+    _hapticLast=now;
+    try{ navigator.vibrate(8); }catch(e){}
+  }
+  window._sliderHaptic=_sliderHaptic;
+
+  // ── Pad tap haptic feedback ─────────────────────────────────
+  // pressure: optional 0..1 normalized value. When sensitivity is on,
+  // higher pressure = longer buzz. When off or no pressure given, a fixed medium buzz.
+  function _padHaptic(pressure){
+    if(!window._sfxSettings||!window._sfxSettings.padHaptic) return;
+    if(!navigator.vibrate) return;
+    var ms;
+    var sensOn=window._getSensOn?window._getSensOn():false;
+    if(sensOn && typeof pressure==='number'){
+      // Clamp to 0..1 then map to ~6ms (soft) to ~22ms (hard)
+      var p=Math.max(0, Math.min(1, pressure));
+      ms=Math.round(6 + p*16);
+    } else {
+      ms=12; // fixed medium pulse
+    }
+    try{ navigator.vibrate(ms); }catch(e){}
+  }
+  window._padHaptic=_padHaptic;
+
+  // Global hook: any time a <input type="range"> fires input, play the slider fx
+  // and trigger a tiny vibration. Covers all sliders current and future.
+  document.addEventListener('input', function(e){
+    if(e.target && e.target.tagName==='INPUT' && e.target.type==='range'){
+      _sliderFx();
+      _sliderHaptic();
+    }
+  }, true);
 
   // ── Click track sounds ───────────────────────────────────
   // clickLevel: 0=normal, 1=mid-accent (beat 3), 2=full accent (beat 1)
@@ -7432,8 +8054,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // Swap toggle button to PUZ icon (returns to puzzle)
     var _iconSeq=document.getElementById('seqPuzIconSeq');
     var _iconPuz=document.getElementById('seqPuzIconPuz');
-    if(_iconSeq) _iconSeq.style.display='none';
-    if(_iconPuz) _iconPuz.style.display='block';
+    if(_iconSeq) _iconSeq.style.display='block';
+    if(_iconPuz) _iconPuz.style.display='none';
     var _puzBtn=document.getElementById('seqPuz');
     if(_puzBtn){ _puzBtn.title='Back to puzzle'; }
     // Show the two new collapsible panels (seqPuzBar is now zero-height anchor)
@@ -7448,6 +8070,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var _ppb=document.getElementById('padPanelBar'); if(_ppb) _ppb.style.display='';
     // Show the MASTER EQ panel
     var _eqp=document.getElementById('eqSlimPanel'); if(_eqp) _eqp.style.display='';
+    // Show the FX panels (reverb, saturation, stereo, limiter)
+    if(window._fxPanelIds){
+      window._fxPanelIds.forEach(function(id){
+        var el=document.getElementById(id);
+        if(el) el.style.display='';
+      });
+    }
     // Show the new bank panel
     var _bp=document.getElementById('seqBankPanel'); if(_bp) _bp.classList.add('active');
     // Keep old toolbar refs hidden - they're now in bank panel
@@ -7457,9 +8086,21 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var _tbr2=document.getElementById('tbRow2'); if(_tbr2) _tbr2.style.display='flex';
     if(btnPro){ btnPro.classList.add('active'); }
     var _scw=document.getElementById('sizeCanvasWrap'); if(_scw) _scw.style.display='none';
+    // Save puzzle-mode state so we can restore it when leaving sequencer
+    window._savedPuzzleGapMult=TILE_GAP_MULT;
+    window._savedPuzzleTileColors=JSON.parse(JSON.stringify(tileColors));
+    // Apply sequencer-mode defaults: 10 pads per row, 0% gap, Classic Instruments colors
+    TILE_GAP_MULT=0;
+    window._seqTargetRows=10;
+    var _classicPreset=colorPresets.find(function(p){return p.label==='Classic Instruments';});
+    if(_classicPreset&&_classicPreset.colors){
+      tileColors=JSON.parse(JSON.stringify(_classicPreset.colors));
+    }
     TILE_SCALE=1.5;
-    if(!window._seqTargetRows) window._seqTargetRows=4;
     if(window._showTbSizeGap) window._showTbSizeGap();
+    // Sync pad-adjustment sliders to the new defaults so UI matches state
+    if(window._syncPadAdjGap) window._syncPadAdjGap(0);
+    if(window._syncPadAdjSize) window._syncPadAdjSize();
     if(!proMode){ proMode=true; if(proPanel) { proPanel.style.display='flex'; var _pp=document.getElementById('seqCtrlSlimPanel'); if(_pp){ _pp.classList.remove('collapsed'); var _ab=document.getElementById('seqCtrlArrow'); if(_ab) _ab.textContent='▲'; } } buildBeatDots(); syncTracks(); updateSlotUI(); }
     else { buildBeatDots(); }
     if(PZ) renderBank();
@@ -7473,8 +8114,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // Swap toggle button back to SEQ icon (enters sequencer)
     var _iconSeq=document.getElementById('seqPuzIconSeq');
     var _iconPuz=document.getElementById('seqPuzIconPuz');
-    if(_iconSeq) _iconSeq.style.display='block';
-    if(_iconPuz) _iconPuz.style.display='none';
+    if(_iconSeq) _iconSeq.style.display='none';
+    if(_iconPuz) _iconPuz.style.display='block';
     var _puzBtn=document.getElementById('seqPuz');
     if(_puzBtn){ _puzBtn.title='Open Sequencer'; }
     // Hide the anchor and the two new collapsible panels
@@ -7491,6 +8132,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var _psp=document.getElementById('padSlimPanel'); if(_psp) _psp.classList.remove('collapsed');
     // Hide the MASTER EQ panel
     var _eqp=document.getElementById('eqSlimPanel'); if(_eqp) _eqp.style.display='none';
+    // Hide the FX panels
+    if(window._fxPanelIds){
+      window._fxPanelIds.forEach(function(id){
+        var el=document.getElementById(id);
+        if(el) el.style.display='none';
+      });
+    }
     // Hide the bank panel
     var _bp=document.getElementById('seqBankPanel'); if(_bp) _bp.classList.remove('active');
     ['seqSave','seqLoad','seqErase','seqSndBtn'].forEach(function(id){
@@ -7502,6 +8150,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(window._hideTbSizeGap) window._hideTbSizeGap();
     var sr=document.getElementById('sndRow'); if(sr) sr.style.display='none';
     if(btnPro){ btnPro.classList.remove('active'); btnPro.style.background=''; btnPro.style.color=''; }
+    // Restore puzzle-mode state (gap + colors) that we saved on showSeq
+    if(typeof window._savedPuzzleGapMult==='number'){
+      TILE_GAP_MULT=window._savedPuzzleGapMult;
+    }
+    if(window._savedPuzzleTileColors){
+      tileColors=JSON.parse(JSON.stringify(window._savedPuzzleTileColors));
+    }
     stopAll(); stopBeatClock();
     proMode=false; if(proPanel) proPanel.style.display='none';
     // If tile scale was pushed above 1.0 (vertical slider max), clamp back
@@ -7874,7 +8529,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     ctx.clearRect(0,0,W,H);
     var PAD=2, R=3;
     var trackH=Math.round(H*0.55), trackY=Math.round((H-trackH)/2);
-    var handleX=Math.round(PAD+(W-PAD*2)*pct);
+    var hW=10;
+    var handleX=Math.round(hW/2 + (W - hW) * pct);
     var fillX=PAD, fillW=handleX-fillX;
     // Track
     ctx.beginPath();
@@ -7906,7 +8562,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       ctx.globalAlpha=1; ctx.restore();
     }
     // Handle
-    var hW=10, hH=H+4, hX=Math.round(handleX-hW/2), hY=-2;
+    var hH=H+4, hX=Math.round(handleX-hW/2), hY=-2;
     ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=3; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1;
     ctx.fillStyle='#1a1a1a'; ctx.beginPath();
     ctx.moveTo(hX+2,hY); ctx.lineTo(hX+hW-2,hY);
@@ -8237,7 +8893,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     ctx.clearRect(0,0,W,H);
     var PAD=2, R=3;
     var trackH=Math.round(H*0.55), trackY=Math.round((H-trackH)/2);
-    var handleX=Math.round(PAD+(W-PAD*2)*pct);
+    var hW=10;
+    var handleX=Math.round(hW/2 + (W - hW) * pct);
     var fillX=PAD, fillW=handleX-fillX;
     // Track
     ctx.beginPath();
@@ -8265,7 +8922,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       ctx.globalAlpha=1; ctx.restore();
     }
     // Handle
-    var hW=10, hH=H+4, hX=Math.round(handleX-hW/2), hY=-2;
+    var hH=H+4, hX=Math.round(handleX-hW/2), hY=-2;
     ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=3; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1;
     ctx.fillStyle='#1a1a1a'; ctx.beginPath();
     ctx.moveTo(hX+2,hY); ctx.lineTo(hX+hW-2,hY);
@@ -8456,7 +9113,8 @@ window._clampScrollTransition=function(anchorEl){
     var trackH=Math.round(H*0.55);
     var trackY=Math.round((H-trackH)/2);
     var fillX=isCenter?Math.round(W/2):PAD;
-    var handleX=Math.round(PAD+(W-PAD*2)*pct);
+    var hW=10;
+    var handleX=Math.round(hW/2 + (W - hW) * pct);
     var fillW=handleX-fillX;
     if(isCenter&&pct<0.5){ fillX=handleX; fillW=Math.round(W/2)-handleX; }
 
@@ -8514,7 +9172,7 @@ window._clampScrollTransition=function(anchorEl){
     }
 
     // ── Handle: black rect overhanging track, with grip lines ──
-    var hW=10, hH=H+4; // taller than track
+    var hH=H+4; // taller than track
     var hX=Math.round(handleX-hW/2);
     var hY=-2;
     // Shadow
@@ -8987,9 +9645,8 @@ window._clampScrollTransition=function(anchorEl){
     fi.style.cssText='position:fixed;top:-200px;left:-200px;opacity:0.01;width:1px;height:1px;';
     document.body.appendChild(fi);
 
-    fi.onchange=function(){
-      var files=fi.files;
-      if(document.body.contains(fi)) document.body.removeChild(fi);
+    // Shared file reader — parses each .seq/.json file and calls finishLoad when done
+    function readFiles(files){
       if(!files||!files.length) return;
       var loaded=[],total=files.length,done=0;
       Array.prototype.forEach.call(files,function(file){
@@ -9005,6 +9662,12 @@ window._clampScrollTransition=function(anchorEl){
         reader.onerror=function(){ done++; if(done===total) finishLoad(loaded); };
         reader.readAsText(file);
       });
+    }
+
+    fi.onchange=function(){
+      var files=fi.files;
+      if(document.body.contains(fi)) document.body.removeChild(fi);
+      readFiles(files);
     };
 
     // Try folder picker first (Chrome local file context)
@@ -10849,7 +11512,7 @@ window._clampScrollTransition=function(anchorEl){
 
 // ── SENSITIVITY TOGGLE + LONG-PRESS PANEL ───────────────────
 (function(){
-  var SENS_ON=false;
+  var SENS_ON=true;
   var _sensTimer=null;
   var _sensPanel=null;
 
@@ -10904,10 +11567,10 @@ window._clampScrollTransition=function(anchorEl){
     // PRESSURE
     panel.appendChild(hdr('PRESSURE','#7c3aed'));
 
-    // Base slider: 0-100% maps to radius 0.1-1.6
-    // Default 0.8 radius = (0.8-0.1)/(1.6-0.1)*100 = 46.7%
-    function baseToRadius(pct){ return 0.1+(pct/100)*1.5; }
-    function radiusToBase(r){ return (r-0.1)/1.5*100; }
+    // Base slider: 0-100% maps to radius 0.1-3.1
+    // Default 1.6 radius sits at 50% (center), giving room to go softer or harder from there.
+    function baseToRadius(pct){ return 0.1+(pct/100)*3.0; }
+    function radiusToBase(r){ return (r-0.1)/3.0*100; }
     var _basePct=radiusToBase(PRESSURE_BASE);
     var baseRow=mkRow('Base (100% vol point)', '_spBase', 0, 100, 1, _basePct, '%→'+PRESSURE_BASE.toFixed(2)+'r', '#7c3aed');
     baseRow.sl.addEventListener('_sync',function(){
@@ -10918,17 +11581,29 @@ window._clampScrollTransition=function(anchorEl){
     panel.appendChild(baseRow.row);
 
     // Range slider: 0-100%
-    // Left(0%): spread ±25% → soft=75%, hard=125%  → _vMin=0.75, _vMax=1.25
-    // Right(100%): soft=5%, hard=300%              → _vMin=0.05, _vMax=3.0
-    // Linear interpolation: vMin = 0.75-(0.70*t), vMax = 1.25+(1.75*t)  where t=0-1
+    // At 0%:   vMin 0.75, vMax 1.25 (narrow)
+    // At 50%:  vMin 0.05, vMax 3.00 (the old maximum — now the default)
+    // At 100%: vMin 0.01, vMax 6.00 (extreme, for hunting even more dynamics)
+    // Piecewise-linear in each half.
     function rangeToLimits(pct){
       var t=pct/100;
-      return { vMin:0.75-0.70*t, vMax:1.25+1.75*t };
+      if(t<=0.5){
+        var u=t/0.5;
+        return { vMin:0.75-0.70*u, vMax:1.25+1.75*u };
+      } else {
+        var u2=(t-0.5)/0.5;
+        return { vMin:0.05-0.04*u2, vMax:3.0+3.0*u2 };
+      }
     }
     function limitsToRange(vMin,vMax){
-      // Use vMax to infer t: vMax=1.25+1.75*t → t=(vMax-1.25)/1.75
-      var t=Math.max(0,Math.min(1,(vMax-1.25)/1.75));
-      return t*100;
+      // Use vMax to infer position (monotonic in both halves).
+      if(vMax<=3.0){
+        var t=Math.max(0,Math.min(1,(vMax-1.25)/1.75));
+        return t*50;
+      } else {
+        var t2=Math.max(0,Math.min(1,(vMax-3.0)/3.0));
+        return 50+t2*50;
+      }
     }
     var _rangePct=limitsToRange(window._sensVolMin||0.75, window._sensVolMax||1.25);
     var _rLim=rangeToLimits(_rangePct);
@@ -10942,6 +11617,34 @@ window._clampScrollTransition=function(anchorEl){
     // Show initial labels
     rangeRow.vl.textContent=Math.round(_rLim.vMin*100)+'→'+Math.round(_rLim.vMax*100)+'%';
     panel.appendChild(rangeRow.row);
+
+    // Jitter slider: 0-100% maps to amount 0..0.3
+    // 0% = no jitter, 33% = 0.1 (original), 100% = 0.3 (triple)
+    function jitterToAmount(pct){ return (pct/100)*0.3; }
+    function amountToJitter(amt){ return Math.max(0,Math.min(100,(amt/0.3)*100)); }
+    var _jAmt=(window._pressureJitter!==undefined)?window._pressureJitter:0.1;
+    var _jPct=amountToJitter(_jAmt);
+    var jitterRow=mkRow('Jitter (random variation)', '_spJitter', 0, 100, 1, _jPct, _jAmt<0.005?'OFF':'±'+_jAmt.toFixed(2)+'r', '#f59e0b');
+    jitterRow.sl.addEventListener('_sync',function(){
+      var pct=parseFloat(jitterRow.sl.value);
+      window._pressureJitter=jitterToAmount(pct);
+      jitterRow.vl.textContent=window._pressureJitter<0.005?'OFF':'±'+window._pressureJitter.toFixed(2)+'r';
+    });
+    panel.appendChild(jitterRow.row);
+
+    // Smoothing slider: 0-100% maps to factor 0..0.95
+    // 0% = each tap fully independent, 100% = each tap heavily anchored to the previous
+    function smoothToFactor(pct){ return (pct/100)*0.95; }
+    function factorToSmooth(f){ return Math.max(0,Math.min(100,(f/0.95)*100)); }
+    var _smF=(window._pressureSmoothing!==undefined)?window._pressureSmoothing:0;
+    var _smPct=factorToSmooth(_smF);
+    var smoothRow=mkRow('Smoothing (tap-to-tap drift)', '_spSmooth', 0, 100, 1, _smPct, _smF<0.005?'OFF':Math.round(_smF*100)+'%', '#10b981');
+    smoothRow.sl.addEventListener('_sync',function(){
+      var pct=parseFloat(smoothRow.sl.value);
+      window._pressureSmoothing=smoothToFactor(pct);
+      smoothRow.vl.textContent=window._pressureSmoothing<0.005?'OFF':Math.round(window._pressureSmoothing*100)+'%';
+    });
+    panel.appendChild(smoothRow.row);
 
 
     // ANIMATION
@@ -10996,14 +11699,27 @@ window._clampScrollTransition=function(anchorEl){
     sensBtn.addEventListener('touchend',function(e){
       e.stopPropagation(); e.preventDefault();
       if(_sensTimer){ clearTimeout(_sensTimer); _sensTimer=null; }
-      if(!_sensLongFired){ SENS_ON=!SENS_ON; updateSensBtn(); }
+      if(!_sensLongFired){
+        SENS_ON=!SENS_ON; updateSensBtn();
+        if(window._btnFx) window._btnFx(SENS_ON?'tool_on':'tool_off');
+      }
       _sensLongFired=false; _sensTouch=false;
     },{passive:false});
     sensBtn.addEventListener('touchcancel',function(){ if(_sensTimer){clearTimeout(_sensTimer);_sensTimer=null;} _sensLongFired=false; _sensTouch=false; },{passive:true});
     sensBtn.addEventListener('touchmove',function(){ if(_sensTimer){clearTimeout(_sensTimer);_sensTimer=null;} },{passive:true});
-    sensBtn.addEventListener('click',function(e){ if(_sensTouch){e.stopPropagation();return;} SENS_ON=!SENS_ON; updateSensBtn(); });
+    sensBtn.addEventListener('click',function(e){
+      if(_sensTouch){e.stopPropagation();return;}
+      SENS_ON=!SENS_ON; updateSensBtn();
+      if(window._btnFx) window._btnFx(SENS_ON?'tool_on':'tool_off');
+    });
     sensBtn.addEventListener('mousedown',function(){ _sensTimer=setTimeout(function(){ _sensTimer=null; showSensPanel(sensBtn); },500); });
-    sensBtn.addEventListener('mouseup',function(){ if(_sensTimer){clearTimeout(_sensTimer);_sensTimer=null;SENS_ON=!SENS_ON;updateSensBtn();} });
+    sensBtn.addEventListener('mouseup',function(){
+      if(_sensTimer){
+        clearTimeout(_sensTimer);_sensTimer=null;
+        SENS_ON=!SENS_ON;updateSensBtn();
+        if(window._btnFx) window._btnFx(SENS_ON?'tool_on':'tool_off');
+      }
+    });
   }
   window._getSensOn=function(){ return SENS_ON; };
   updateSensBtn();
@@ -11177,42 +11893,143 @@ window._clampScrollTransition=function(anchorEl){
       ctx.stroke();
       mEQBands.forEach(function(b,bi){
         var x=fToX(b.freq),y=gToY(b.gain);
+        // Slightly larger, glowing dot if being dragged
+        var isDragging=(_dragBandIdx===bi);
+        ctx.save();
+        if(isDragging){
+          ctx.shadowColor=mEQBands[bi].color;
+          ctx.shadowBlur=8;
+        }
         ctx.fillStyle=mEQBands[bi].color; ctx.strokeStyle='#fff'; ctx.lineWidth=1.5;
-        ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.beginPath();ctx.arc(x,y,isDragging?7:5,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.restore();
       });
     }
+
+    // ── Draggable dots on the EQ graph ──
+    var _dragBandIdx=-1;
+    function _getPos(ev){
+      var rect=canvas.getBoundingClientRect();
+      var scaleX=W/rect.width, scaleY=H/rect.height;
+      var clientX, clientY;
+      if(ev.touches&&ev.touches.length){
+        clientX=ev.touches[0].clientX; clientY=ev.touches[0].clientY;
+      } else {
+        clientX=ev.clientX; clientY=ev.clientY;
+      }
+      return { x:(clientX-rect.left)*scaleX, y:(clientY-rect.top)*scaleY };
+    }
+    function _findNearestBand(px,py){
+      var best=-1, bestD=Infinity;
+      mEQBands.forEach(function(b,bi){
+        var bx=fToX(b.freq), by=gToY(b.gain);
+        var d=(bx-px)*(bx-px)+(by-py)*(by-py);
+        if(d<bestD){ bestD=d; best=bi; }
+      });
+      // Only pick if within 25px radius
+      return bestD<625?best:-1;
+    }
+    function _applyDrag(px,py){
+      if(_dragBandIdx<0) return;
+      var b=mEQBands[_dragBandIdx];
+      // x → freq (log scale), y → gain (linear -18..+18)
+      var f=Math.max(20,Math.min(20000, 20*Math.pow(10,(px/W)*Math.log10(20000/20))));
+      var g=Math.max(-18,Math.min(18, (H/2-py)/(H*0.4)*20));
+      // Round gain to 0.5 dB steps
+      g=Math.round(g*2)/2;
+      b.freq=Math.round(f);
+      b.gain=g;
+      drawM(); applyMasterParam();
+      // Sync slider
+      var ref=(window._mEQBandSliderRefs||[])[_dragBandIdx];
+      if(ref&&ref.sl){
+        ref.sl.value=g;
+        ref.redraw();
+      }
+    }
+    function _onDown(ev){
+      var p=_getPos(ev);
+      var idx=_findNearestBand(p.x,p.y);
+      if(idx>=0){
+        _dragBandIdx=idx;
+        ev.preventDefault();
+        _applyDrag(p.x,p.y);
+      }
+    }
+    function _onMove(ev){
+      if(_dragBandIdx<0) return;
+      var p=_getPos(ev);
+      ev.preventDefault();
+      _applyDrag(p.x,p.y);
+    }
+    function _onUp(){
+      if(_dragBandIdx>=0){
+        _dragBandIdx=-1;
+        drawM();
+      }
+    }
+    canvas.addEventListener('mousedown',_onDown);
+    canvas.addEventListener('touchstart',_onDown,{passive:false});
+    window.addEventListener('mousemove',_onMove);
+    canvas.addEventListener('touchmove',_onMove,{passive:false});
+    window.addEventListener('mouseup',_onUp);
+    canvas.addEventListener('touchend',_onUp);
+    canvas.addEventListener('touchcancel',_onUp);
 
     function applyMasterParam(){
       mEQBands.forEach(function(b,bi){
         // Map band index to masterEQ nodes: sub,bass,mid,pres,hi
         var keys=['sub','bass','mid','pres','hi'];
         var k=keys[bi];
-        if(masterEQ[k]) masterEQ[k].gain.setValueAtTime(b.gain, AC?AC.currentTime:0);
+        if(masterEQ[k]){
+          masterEQ[k].gain.setValueAtTime(b.gain, AC?AC.currentTime:0);
+          masterEQ[k].frequency.setValueAtTime(b.freq, AC?AC.currentTime:0);
+        }
       });
     }
 
-    // Band controls
+    // Band controls — use canvas sliders matching the FX panel style
     controls.innerHTML='';
+    var bandSliderRefs=[];
     mEQBands.forEach(function(b,bi){
       var col=mEQBands[bi].color;
-      var row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;gap:4px;';
-      var lbl=document.createElement('div');
-      lbl.style.cssText='font-size:8px;color:'+col+';min-width:36px;text-align:right;font-weight:700;font-family:monospace;';
-      lbl.textContent=b.label;
-      var gInp=document.createElement('input'); gInp.type='range'; gInp.min=-18; gInp.max=18; gInp.step=0.5; gInp.value=b.gain;
-      gInp.style.cssText='flex:1;accent-color:'+col+';';
-      var gLbl=document.createElement('div');
-      gLbl.style.cssText='font-size:8px;color:#ccc;min-width:36px;font-family:monospace;';
-      gLbl.textContent=(b.gain>0?'+':'')+b.gain+'dB';
-      gInp.addEventListener('input',function(){
-        b.gain=parseFloat(gInp.value);
-        gLbl.textContent=(b.gain>0?'+':'')+b.gain.toFixed(1)+'dB';
-        drawM(); applyMasterParam();
-      });
-      row.appendChild(lbl); row.appendChild(gInp); row.appendChild(gLbl);
-      controls.appendChild(row);
+      if(window._mkFxCanvasSlider){
+        var sliderRef=window._mkFxCanvasSlider({
+          label:b.label, color:col,
+          min:-18, max:18, step:0.5, value:b.gain,
+          labelMin:48, valMin:48,
+          fmt:function(v){return (v>0?'+':'')+v.toFixed(1)+'dB';},
+          onInput:function(v){
+            b.gain=v;
+            drawM(); applyMasterParam();
+          },
+          resetValue:0
+        });
+        controls.appendChild(sliderRef.row);
+        bandSliderRefs.push(sliderRef);
+      } else {
+        // Fallback (shouldn't happen, but safe)
+        var row=document.createElement('div');
+        row.style.cssText='display:flex;align-items:center;gap:4px;';
+        var lbl=document.createElement('div');
+        lbl.style.cssText='font-size:8px;color:'+col+';min-width:36px;text-align:right;font-weight:700;font-family:monospace;';
+        lbl.textContent=b.label;
+        var gInp=document.createElement('input'); gInp.type='range'; gInp.min=-18; gInp.max=18; gInp.step=0.5; gInp.value=b.gain;
+        gInp.style.cssText='flex:1;accent-color:'+col+';';
+        var gLbl=document.createElement('div');
+        gLbl.style.cssText='font-size:8px;color:#ccc;min-width:36px;font-family:monospace;';
+        gLbl.textContent=(b.gain>0?'+':'')+b.gain+'dB';
+        gInp.addEventListener('input',function(){
+          b.gain=parseFloat(gInp.value);
+          gLbl.textContent=(b.gain>0?'+':'')+b.gain.toFixed(1)+'dB';
+          drawM(); applyMasterParam();
+        });
+        row.appendChild(lbl); row.appendChild(gInp); row.appendChild(gLbl);
+        controls.appendChild(row);
+      }
     });
+    // Expose refs for drag-to-update
+    window._mEQBandSliderRefs=bandSliderRefs;
     drawM();
   }
 })();
@@ -12444,7 +13261,14 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
       panel.classList.remove('collapsed');
     }
 
-    bar.addEventListener('click',function(){ setCollapsed(!collapsed, true); });
+    bar.addEventListener('click',function(){
+      // Read actual state from DOM class, not the cached variable —
+      // the panel may have been opened/closed externally (e.g. force-open on load).
+      var actuallyCollapsed=panel.classList.contains('collapsed');
+      collapsed=actuallyCollapsed;
+      if(window._panelFx) window._panelFx(actuallyCollapsed); // true = about to open
+      setCollapsed(!actuallyCollapsed, true);
+    });
     // Expose for external callers
     panel._setCollapsed = setCollapsed;
   }
@@ -12491,7 +13315,9 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
       ctx.clearRect(0,0,W,H);
       var PAD=2, R=3;
       var trackH=Math.round(H*0.55), trackY=Math.round((H-trackH)/2);
-      var handleX=Math.round(PAD+(W-PAD*2)*pct);
+      var hW=10;
+      // Clamp handle travel so it stays fully inside the canvas at both ends
+      var handleX=Math.round(hW/2 + (W - hW) * pct);
       var fillX=PAD, fillW=handleX-fillX;
       ctx.beginPath();
       ctx.moveTo(PAD+R,trackY); ctx.lineTo(W-PAD-R,trackY);
@@ -12520,7 +13346,7 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
         }
         ctx.globalAlpha=1; ctx.restore();
       }
-      var hW=10, hH=H+4, hX=Math.round(handleX-hW/2), hY=-2;
+      var hH=H+4, hX=Math.round(handleX-hW/2), hY=-2;
       ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=3; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1;
       ctx.fillStyle='#1a1a1a'; ctx.beginPath();
       ctx.moveTo(hX+2,hY); ctx.lineTo(hX+hW-2,hY);
@@ -12811,8 +13637,17 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     arrow.textContent='▲';
     var label=document.createElement('span');
     label.textContent='MASTER EQ';
+    // Bypass pill on the right
+    var eqByp=document.createElement('button');
+    eqByp.className='fx-bypass-btn';
+    eqByp.style.cssText='margin-left:auto;margin-right:6px;font-family:monospace;font-size:7px;font-weight:700;letter-spacing:1px;padding:3px 9px 3px 20px;border:1.5px solid #555;border-radius:10px;background:rgba(0,0,0,0.3);color:#888;cursor:pointer;position:relative;touch-action:manipulation;transition:all 0.15s;flex-shrink:0;';
+    eqByp.textContent='BYPASS';
+    var eqLed=document.createElement('span');
+    eqLed.style.cssText='position:absolute;left:6px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:#333;box-shadow:inset 0 0 2px rgba(0,0,0,0.8);transition:all 0.15s;';
+    eqByp.appendChild(eqLed);
     bar.appendChild(arrow);
     bar.appendChild(label);
+    bar.appendChild(eqByp);
     // Create body wrapper
     var body=document.createElement('div');
     body.className='slim-panel-body';
@@ -12847,8 +13682,445 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
       if(window._clampScrollTransition) window._clampScrollTransition(bar);
     }
     setC(collapsed);
-    bar.addEventListener('click',function(){ setC(!collapsed); });
+    bar.addEventListener('click',function(){
+      var actuallyCollapsed=panel.classList.contains('collapsed');
+      collapsed=actuallyCollapsed;
+      if(window._panelFx) window._panelFx(actuallyCollapsed);
+      setC(!actuallyCollapsed);
+    });
+
+    // ── MASTER EQ bypass ──
+    // When bypassed, all 5 band gains snap to 0. When un-bypassed, restore user values.
+    var eqBands=['sub','bass','mid','pres','hi'];
+    var eqBypassed=false;
+    try{ eqBypassed=localStorage.getItem('slimEQ_byp')==='1'; }catch(e){}
+    var _savedEQGains={};
+    function setEqBypass(b){
+      eqBypassed=b;
+      try{ localStorage.setItem('slimEQ_byp',b?'1':'0'); }catch(e){}
+      if(b){
+        // Save current slider values, then zero filters
+        eqBands.forEach(function(id){
+          var sl=document.getElementById('eq_'+id);
+          _savedEQGains[id]=sl?parseFloat(sl.value):0;
+          if(masterEQ[id]) masterEQ[id].gain.setTargetAtTime(0, AC?AC.currentTime:0, 0.01);
+        });
+        eqByp.style.borderColor='#ef4444';
+        eqByp.style.color='#ef4444';
+        eqByp.style.background='rgba(239,68,68,0.08)';
+        eqByp.style.boxShadow='0 0 6px rgba(239,68,68,0.4)';
+        eqLed.style.background='#ef4444';
+        eqLed.style.boxShadow='0 0 6px #ef4444, 0 0 2px #ffffff inset';
+      } else {
+        // Restore
+        eqBands.forEach(function(id){
+          var db=typeof _savedEQGains[id]==='number'?_savedEQGains[id]:0;
+          // Also fall back to current slider value in case we didn't save
+          var sl=document.getElementById('eq_'+id);
+          if(sl) db=parseFloat(sl.value);
+          if(masterEQ[id]) masterEQ[id].gain.setTargetAtTime(db, AC?AC.currentTime:0, 0.01);
+        });
+        eqByp.style.borderColor='#555';
+        eqByp.style.color='#888';
+        eqByp.style.background='rgba(0,0,0,0.3)';
+        eqByp.style.boxShadow='';
+        eqLed.style.background='#333';
+        eqLed.style.boxShadow='inset 0 0 2px rgba(0,0,0,0.8)';
+      }
+    }
+    eqByp.addEventListener('click',function(e){
+      e.stopPropagation();
+      setEqBypass(!eqBypassed);
+      if(window._btnFx) window._btnFx(eqBypassed?'bypass_on':'bypass_off');
+    });
+    eqByp.addEventListener('touchstart',function(e){ e.stopPropagation(); },{passive:true});
+    setEqBypass(eqBypassed);
   })();
+
+  // ── FX PANELS: REVERB, SATURATION, STEREO, LIMITER ──
+  // Each is its own collapsible slim-panel bar with a bypass button.
+  // Audio chain order: MASTER EQ → SATURATION → STEREO WIDTH → REVERB → LIMITER
+
+  // Small color helpers (fallbacks if globals aren't exposed here)
+  function _fxHex(h,a){
+    var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);
+    return 'rgba('+r+','+g+','+b+','+a+')';
+  }
+  function _fxDark(h,a){
+    var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);
+    r=Math.round(r*(1-a));g=Math.round(g*(1-a));b=Math.round(b*(1-a));
+    return 'rgb('+r+','+g+','+b+')';
+  }
+
+  // Draw a canvas slider matching the PAD ADJUSTMENTS style
+  function _drawFxSlider(cv, pct, color){
+    if(!cv) return;
+    var wrap=cv.parentElement; if(!wrap) return;
+    var W=Math.max(10,wrap.offsetWidth||160), H=Math.max(10,wrap.offsetHeight||22);
+    cv.width=W; cv.height=H;
+    cv.style.width=W+'px'; cv.style.height=H+'px';
+    var ctx=cv.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+    var PAD=2, R=3;
+    var trackH=Math.round(H*0.55), trackY=Math.round((H-trackH)/2);
+    var hW=10;
+    // Clamp handle travel so it stays fully inside the canvas at both ends
+    var handleX=Math.round(hW/2 + (W - hW) * pct);
+    var fillX=PAD, fillW=handleX-fillX;
+    ctx.beginPath();
+    ctx.moveTo(PAD+R,trackY); ctx.lineTo(W-PAD-R,trackY);
+    ctx.arcTo(W-PAD,trackY,W-PAD,trackY+R,R);
+    ctx.lineTo(W-PAD,trackY+trackH-R);
+    ctx.arcTo(W-PAD,trackY+trackH,W-PAD-R,trackY+trackH,R);
+    ctx.lineTo(PAD+R,trackY+trackH);
+    ctx.arcTo(PAD,trackY+trackH,PAD,trackY+trackH-R,R);
+    ctx.lineTo(PAD,trackY+R);
+    ctx.arcTo(PAD,trackY,PAD+R,trackY,R);
+    ctx.closePath();
+    ctx.fillStyle=_fxHex(color,0.07); ctx.fill();
+    ctx.strokeStyle=_fxDark(color,0.28); ctx.lineWidth=1.5; ctx.stroke();
+    if(fillW>0){
+      ctx.save(); ctx.beginPath();
+      ctx.moveTo(Math.max(PAD,fillX)+R,trackY+1);
+      ctx.lineTo(Math.min(W-PAD,fillX+fillW),trackY+1);
+      ctx.lineTo(Math.min(W-PAD,fillX+fillW),trackY+trackH-1);
+      ctx.lineTo(Math.max(PAD,fillX),trackY+trackH-1);
+      ctx.closePath(); ctx.clip();
+      ctx.globalAlpha=0.45; ctx.fillStyle=color;
+      ctx.fillRect(fillX,trackY+1,fillW,trackH-2);
+      ctx.globalAlpha=0.55; ctx.strokeStyle=color; ctx.lineWidth=1.2;
+      for(var xi=fillX-trackH;xi<fillX+fillW+trackH;xi+=6){
+        ctx.beginPath(); ctx.moveTo(xi,trackY+1); ctx.lineTo(xi+trackH,trackY+trackH-1); ctx.stroke();
+      }
+      ctx.globalAlpha=1; ctx.restore();
+    }
+    var hH=H+4, hX=Math.round(handleX-hW/2), hY=-2;
+    ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=3; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1;
+    ctx.fillStyle='#1a1a1a'; ctx.beginPath();
+    ctx.moveTo(hX+2,hY); ctx.lineTo(hX+hW-2,hY);
+    ctx.arcTo(hX+hW,hY,hX+hW,hY+2,2); ctx.lineTo(hX+hW,hY+hH-2);
+    ctx.arcTo(hX+hW,hY+hH,hX+hW-2,hY+hH,2); ctx.lineTo(hX+2,hY+hH);
+    ctx.arcTo(hX,hY+hH,hX,hY+hH-2,2); ctx.lineTo(hX,hY+2);
+    ctx.arcTo(hX,hY,hX+2,hY,2); ctx.closePath(); ctx.fill();
+    ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0;
+    ctx.strokeStyle='#000'; ctx.lineWidth=1; ctx.stroke();
+    ctx.strokeStyle='#666'; ctx.lineWidth=1;
+    var cx2=hX+hW/2, cy=H/2;
+    [-3,0,3].forEach(function(dy){
+      ctx.beginPath(); ctx.moveTo(hX+2,cy+dy); ctx.lineTo(hX+hW-2,cy+dy); ctx.stroke();
+    });
+  }
+
+  // Build a canvas-style slider row matching the pad-adjustments look.
+  // Everything lives on one horizontal line: [prefix?] [label] [slider] [suffix?] [value] [reset?]
+  function _mkFxCanvasSlider(cfg){
+    // cfg: {label, min, max, step, value, color, fmt, onInput, prefix, suffix, labelMin, valMin, onReset, resetValue}
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:4px;padding:3px 0;width:100%;';
+    var labelMin=cfg.labelMin||56;
+    var valMin=cfg.valMin||44;
+    // Optional left prefix (e.g. "DRY")
+    if(cfg.prefix){
+      var pfx=document.createElement('span');
+      pfx.style.cssText='font-family:monospace;font-size:7px;letter-spacing:1px;color:'+cfg.color+';flex-shrink:0;opacity:0.75;';
+      pfx.textContent=cfg.prefix;
+      row.appendChild(pfx);
+    }
+    var lbl=document.createElement('span');
+    lbl.style.cssText='font-family:monospace;font-size:8px;font-weight:700;letter-spacing:1px;color:'+cfg.color+';min-width:'+labelMin+'px;flex-shrink:0;';
+    lbl.textContent=cfg.label;
+    var slWrap=document.createElement('div');
+    slWrap.style.cssText='position:relative;flex:1;min-width:40px;height:22px;touch-action:none;cursor:ew-resize;overflow:visible;filter:drop-shadow(0px 4px 8px '+_fxHex(cfg.color,0.7)+') drop-shadow(0px 2px 4px rgba(0,0,0,0.4));';
+    var cv=document.createElement('canvas');
+    cv.style.cssText='position:absolute;left:0;top:0;pointer-events:none;z-index:2;display:block;';
+    var sl=document.createElement('input');
+    sl.type='range';
+    sl.min=cfg.min; sl.max=cfg.max; sl.step=cfg.step; sl.value=cfg.value;
+    sl.style.cssText='position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ew-resize;z-index:5;-webkit-appearance:none;appearance:none;background:transparent;';
+    sl.addEventListener('touchstart',function(e){e.stopPropagation();},{passive:true});
+    slWrap.appendChild(cv); slWrap.appendChild(sl);
+    row.appendChild(lbl);
+    row.appendChild(slWrap);
+    // Optional right suffix (e.g. "WET")
+    if(cfg.suffix){
+      var sfx=document.createElement('span');
+      sfx.style.cssText='font-family:monospace;font-size:7px;letter-spacing:1px;color:'+cfg.color+';flex-shrink:0;opacity:0.75;';
+      sfx.textContent=cfg.suffix;
+      row.appendChild(sfx);
+    }
+    var vlbl=document.createElement('span');
+    vlbl.style.cssText='font-family:monospace;font-size:8px;color:#ccc;min-width:'+valMin+'px;text-align:right;flex-shrink:0;';
+    var fmt=cfg.fmt||function(v){return v;};
+    function redraw(){
+      var pct=(parseFloat(sl.value)-cfg.min)/(cfg.max-cfg.min);
+      _drawFxSlider(cv,pct,cfg.color);
+      vlbl.textContent=fmt(parseFloat(sl.value));
+    }
+    sl.addEventListener('input',function(){
+      redraw();
+      if(cfg.onInput) cfg.onInput(parseFloat(sl.value));
+    });
+    if(typeof ResizeObserver!=='undefined'){
+      var _ro=new ResizeObserver(function(){ redraw(); });
+      _ro.observe(slWrap);
+    }
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ redraw(); }); });
+    row.appendChild(vlbl);
+    // Optional inline reset button on the far right
+    if(cfg.onReset || typeof cfg.resetValue!=='undefined'){
+      var rb=document.createElement('button');
+      rb.textContent='RESET';
+      rb.style.cssText='font-family:monospace;font-size:7px;padding:3px 7px;border:1px solid rgba(0,217,255,0.4);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;letter-spacing:1px;flex-shrink:0;';
+      rb.addEventListener('click',function(e){
+        e.stopPropagation();
+        if(typeof cfg.resetValue!=='undefined'){
+          sl.value=cfg.resetValue;
+          sl.dispatchEvent(new Event('input'));
+        }
+        if(cfg.onReset) cfg.onReset();
+      });
+      row.appendChild(rb);
+    }
+    return {row:row, sl:sl, redraw:redraw, vlbl:vlbl};
+  }
+  // Expose for other code (parametric EQ sliders, etc.)
+  window._mkFxCanvasSlider=_mkFxCanvasSlider;
+  window._drawFxSlider=_drawFxSlider;
+
+  // Build an FX panel with a bypass pill in the bar
+  function _makeFxPanel(cfg){
+    // cfg: {id, label, color, storageKey, buildBody(body), applyBypass(isBypassed)}
+    var panel=document.createElement('div');
+    panel.className='slim-panel';
+    panel.id=cfg.id;
+    panel.style.display='none';
+    var bar=document.createElement('div');
+    bar.className='slim-panel-bar';
+    bar.id=cfg.id+'Bar';
+    var arrow=document.createElement('button');
+    arrow.className='slim-panel-bar-arrow';
+    arrow.textContent='▲';
+    var label=document.createElement('span');
+    label.textContent=cfg.label;
+    if(cfg.color) label.style.color=cfg.color;
+    // Bypass pill button on the right
+    var byp=document.createElement('button');
+    byp.className='fx-bypass-btn';
+    byp.style.cssText='margin-left:auto;margin-right:6px;font-family:monospace;font-size:7px;font-weight:700;letter-spacing:1px;padding:3px 9px 3px 20px;border:1.5px solid #555;border-radius:10px;background:rgba(0,0,0,0.3);color:#888;cursor:pointer;position:relative;touch-action:manipulation;transition:all 0.15s;flex-shrink:0;';
+    byp.textContent='BYPASS';
+    // LED dot (absolutely positioned inside the pill)
+    var led=document.createElement('span');
+    led.style.cssText='position:absolute;left:6px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:#333;box-shadow:inset 0 0 2px rgba(0,0,0,0.8);transition:all 0.15s;';
+    byp.appendChild(led);
+    bar.appendChild(arrow);
+    bar.appendChild(label);
+    bar.appendChild(byp);
+    var body=document.createElement('div');
+    body.className='slim-panel-body';
+    body.style.maxHeight='3000px';
+    var inner=document.createElement('div');
+    inner.className='slim-panel-body-inner';
+    inner.style.padding='8px 10px';
+    cfg.buildBody(inner);
+    body.appendChild(inner);
+    panel.appendChild(bar);
+    panel.appendChild(body);
+    // Bypass state + handler
+    var bypassed=false;
+    try{ bypassed=localStorage.getItem(cfg.storageKey+'_byp')==='1'; }catch(e){}
+    function setBypass(b){
+      bypassed=b;
+      try{ localStorage.setItem(cfg.storageKey+'_byp',b?'1':'0'); }catch(e){}
+      if(b){
+        byp.style.borderColor='#ef4444';
+        byp.style.color='#ef4444';
+        byp.style.background='rgba(239,68,68,0.08)';
+        byp.style.boxShadow='0 0 6px rgba(239,68,68,0.4)';
+        led.style.background='#ef4444';
+        led.style.boxShadow='0 0 6px #ef4444, 0 0 2px #ffffff inset';
+      } else {
+        byp.style.borderColor='#555';
+        byp.style.color='#888';
+        byp.style.background='rgba(0,0,0,0.3)';
+        byp.style.boxShadow='';
+        led.style.background='#333';
+        led.style.boxShadow='inset 0 0 2px rgba(0,0,0,0.8)';
+      }
+      if(cfg.applyBypass) cfg.applyBypass(b);
+    }
+    byp.addEventListener('click',function(e){
+      e.stopPropagation();
+      setBypass(!bypassed);
+      if(window._btnFx) window._btnFx(bypassed?'bypass_on':'bypass_off');
+    });
+    byp.addEventListener('touchstart',function(e){
+      e.stopPropagation();
+    },{passive:true});
+    // Apply initial bypass state
+    setBypass(bypassed);
+    return {panel:panel, bar:bar, body:body, setBypass:setBypass, isBypassed:function(){return bypassed;}};
+  }
+
+  function _mkFxResetBtn(onReset){
+    var wrap=document.createElement('div');
+    wrap.style.cssText='display:flex;justify-content:flex-end;margin-top:6px;';
+    var b=document.createElement('button');
+    b.textContent='RESET';
+    b.style.cssText='font-family:monospace;font-size:7px;padding:3px 8px;border:1px solid rgba(0,217,255,0.4);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;letter-spacing:1px;';
+    b.addEventListener('click',onReset);
+    wrap.appendChild(b);
+    return wrap;
+  }
+
+  function _initFxCollapse(obj, storageKey){
+    var collapsed=true;
+    try{ collapsed=localStorage.getItem(storageKey)!=='0'; }catch(e){}
+    function setC(c){
+      collapsed=c;
+      obj.panel.classList.toggle('collapsed',c);
+      try{ localStorage.setItem(storageKey,c?'1':'0'); }catch(e){}
+      if(window._clampScrollTransition) window._clampScrollTransition(obj.bar);
+    }
+    setC(collapsed);
+    obj.bar.addEventListener('click',function(){
+      var actuallyCollapsed=obj.panel.classList.contains('collapsed');
+      collapsed=actuallyCollapsed;
+      if(window._panelFx) window._panelFx(actuallyCollapsed);
+      setC(!actuallyCollapsed);
+    });
+  }
+
+  function _insertAfter(newPanel, refPanel){
+    if(refPanel&&refPanel.parentNode){
+      refPanel.parentNode.insertBefore(newPanel, refPanel.nextSibling);
+    }
+  }
+
+  // ── SATURATION PANEL ──
+  var _satRow;
+  var satObj=_makeFxPanel({
+    id:'satSlimPanel', label:'SATURATION', color:'#f59e0b', storageKey:'slimSat',
+    buildBody:function(body){
+      _satRow=_mkFxCanvasSlider({
+        label:'AMOUNT', min:0, max:100, step:1, value:35, color:'#f59e0b',
+        fmt:function(v){return Math.round(v)+'%';},
+        onInput:function(v){ if(!satObj||!satObj.isBypassed||!satObj.isBypassed()){ if(window._setMasterSaturation) window._setMasterSaturation(v/100); } _satRow._userVal=v/100; },
+        resetValue:35
+      });
+      _satRow._userVal=0.35;
+      body.appendChild(_satRow.row);
+    },
+    applyBypass:function(b){
+      if(!window._setMasterSaturation) return;
+      if(b) window._setMasterSaturation(0);
+      else if(_satRow) window._setMasterSaturation(_satRow._userVal||0.35);
+    }
+  });
+
+  // ── STEREO WIDTH PANEL ──
+  var _widRow;
+  var widObj=_makeFxPanel({
+    id:'widSlimPanel', label:'STEREO WIDTH', color:'#22c55e', storageKey:'slimWid',
+    buildBody:function(body){
+      _widRow=_mkFxCanvasSlider({
+        label:'WIDTH', min:0, max:40, step:1, value:12, color:'#22c55e',
+        fmt:function(v){return Math.round(v)+' ms';},
+        onInput:function(v){ if(!widObj||!widObj.isBypassed||!widObj.isBypassed()){ if(window._setMasterWidth) window._setMasterWidth(v); } _widRow._userVal=v; },
+        resetValue:12
+      });
+      _widRow._userVal=12;
+      body.appendChild(_widRow.row);
+    },
+    applyBypass:function(b){
+      if(!window._setMasterWidth) return;
+      if(b) window._setMasterWidth(0);
+      else if(_widRow) window._setMasterWidth(_widRow._userVal||12);
+    }
+  });
+
+  // ── REVERB PANEL ──
+  var _revRow;
+  var revObj=_makeFxPanel({
+    id:'revSlimPanel', label:'REVERB', color:'#c400ff', storageKey:'slimRev',
+    buildBody:function(body){
+      _revRow=_mkFxCanvasSlider({
+        label:'MIX', prefix:'DRY', suffix:'WET',
+        min:0, max:100, step:1, value:4, color:'#c400ff',
+        fmt:function(v){return Math.round(v)+'%';},
+        onInput:function(v){ if(!revObj||!revObj.isBypassed||!revObj.isBypassed()){ if(window._setMasterReverb) window._setMasterReverb(v/100); } _revRow._userVal=v/100; },
+        resetValue:4
+      });
+      _revRow._userVal=0.04;
+      body.appendChild(_revRow.row);
+    },
+    applyBypass:function(b){
+      if(!window._setMasterReverb) return;
+      if(b) window._setMasterReverb(0);
+      else if(_revRow) window._setMasterReverb(_revRow._userVal||0.04);
+    }
+  });
+
+  // ── LIMITER PANEL ──
+  var _limThreshRow, _limRatioRow, _limRelRow;
+  var limObj=_makeFxPanel({
+    id:'limSlimPanel', label:'LIMITER', color:'#ef4444', storageKey:'slimLim',
+    buildBody:function(body){
+      _limThreshRow=_mkFxCanvasSlider({
+        label:'THRESH', min:-30, max:0, step:1, value:-2, color:'#ef4444',
+        fmt:function(v){return v.toFixed(0)+' dB';},
+        onInput:function(v){ if(!limObj||!limObj.isBypassed||!limObj.isBypassed()){ if(window._setMasterLimiter) window._setMasterLimiter(v,null,null); } _limThreshRow._userVal=v; },
+        resetValue:-2
+      });
+      _limThreshRow._userVal=-2;
+      _limRatioRow=_mkFxCanvasSlider({
+        label:'RATIO', min:1, max:20, step:1, value:20, color:'#ef4444',
+        fmt:function(v){return Math.round(v)+':1';},
+        onInput:function(v){ if(!limObj||!limObj.isBypassed||!limObj.isBypassed()){ if(window._setMasterLimiter) window._setMasterLimiter(null,v,null); } _limRatioRow._userVal=v; },
+        resetValue:20
+      });
+      _limRatioRow._userVal=20;
+      _limRelRow=_mkFxCanvasSlider({
+        label:'RELEASE', min:10, max:500, step:10, value:80, color:'#ef4444',
+        fmt:function(v){return Math.round(v)+' ms';},
+        onInput:function(v){ if(!limObj||!limObj.isBypassed||!limObj.isBypassed()){ if(window._setMasterLimiter) window._setMasterLimiter(null,null,v/1000); } _limRelRow._userVal=v; },
+        resetValue:80
+      });
+      _limRelRow._userVal=80;
+      body.appendChild(_limThreshRow.row);
+      body.appendChild(_limRatioRow.row);
+      body.appendChild(_limRelRow.row);
+    },
+    applyBypass:function(b){
+      if(!window._setMasterLimiter) return;
+      if(b){
+        window._setMasterLimiter(0, 1, null);
+      } else {
+        window._setMasterLimiter(
+          _limThreshRow?_limThreshRow._userVal:-2,
+          _limRatioRow?_limRatioRow._userVal:20,
+          _limRelRow?(_limRelRow._userVal/1000):0.08
+        );
+      }
+    }
+  });
+
+  // Insert panels in order after the MASTER EQ panel, matching audio chain:
+  // MASTER EQ → SATURATION → STEREO WIDTH → REVERB → LIMITER
+  var _eqPanel=document.getElementById('eqSlimPanel');
+  if(_eqPanel){
+    _insertAfter(limObj.panel, _eqPanel);
+    _insertAfter(revObj.panel, _eqPanel);
+    _insertAfter(widObj.panel, _eqPanel);
+    _insertAfter(satObj.panel, _eqPanel);
+  }
+
+  _initFxCollapse(satObj, 'slimSat');
+  _initFxCollapse(widObj, 'slimWid');
+  _initFxCollapse(revObj, 'slimRev');
+  _initFxCollapse(limObj, 'slimLim');
+
+  // Expose so showSeq/hideSeq can toggle visibility
+  window._fxPanelIds=['satSlimPanel','widSlimPanel','revSlimPanel','limSlimPanel'];
 })();
 (function(){
   document.querySelectorAll('.seq-panel-header').forEach(function(header){
