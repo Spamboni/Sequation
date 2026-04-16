@@ -156,11 +156,31 @@ if('serviceWorker' in navigator){
     border-color: var(--cyan);
     background: rgba(0,217,255,0.03);
   }
+  .drop-zone.tapped {
+    border-color: var(--cyan);
+    background: rgba(0,217,255,0.08);
+    box-shadow: 0 0 20px rgba(0,217,255,0.15);
+  }
   .drop-zone input[type="file"] {
     position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    /* Ensure file input is fully interactive on mobile */
+    z-index: 10;
+    font-size: 0;
+    -webkit-tap-highlight-color: transparent;
   }
-  .drop-icon { font-size: 28px; margin-bottom: 6px; opacity: 0.7; }
-  .drop-label { font-size: 10px; color: rgba(0,217,255,0.4); }
+  .drop-icon { font-size: 28px; margin-bottom: 6px; opacity: 0.7; transition: transform 0.15s ease; }
+  .drop-zone.tapped .drop-icon { transform: scale(1.15); }
+  .drop-label { font-size: 10px; color: rgba(0,217,255,0.4); transition: color 0.15s ease; }
+  .drop-zone.tapped .drop-label { color: var(--cyan); }
+  .drop-status {
+    font-size: 9px;
+    color: var(--cyan);
+    margin-top: 6px;
+    min-height: 14px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .drop-status.visible { opacity: 1; }
   .drop-filename {
     font-size: 11px; color: var(--green); margin-top: 8px;
     word-break: break-all;
@@ -311,9 +331,10 @@ if('serviceWorker' in navigator){
 <div class="card">
   <div class="card-title">&#128196; HTML File</div>
   <div class="drop-zone" id="dropZone">
-    <input type="file" id="fileInput" accept=".html" onchange="onFileSelect(this)">
+    <input type="file" id="fileInput" accept=".html">
     <div class="drop-icon">&#128196;</div>
     <div class="drop-label">Tap to select Sequation-*.html</div>
+    <div class="drop-status" id="dropStatus"></div>
     <div class="drop-filename" id="fileName"></div>
   </div>
   <div class="info-text">File will be deployed as <strong style="color:var(--cyan)">Sequation.html</strong> regardless of version number in filename.</div>
@@ -409,12 +430,73 @@ document.getElementById('repoInput').addEventListener('input', function() {
 });
 
 function onFileSelect(input) {
+  var status = document.getElementById('dropStatus');
   if (input.files.length > 0) {
     htmlFile = input.files[0];
     document.getElementById('fileName').textContent = htmlFile.name + ' (' + Math.round(htmlFile.size/1024) + ' KB)';
+    status.textContent = '\u2713 File loaded';
+    status.classList.add('visible');
+    status.style.color = 'var(--green)';
     checkReady();
+  } else {
+    status.textContent = '';
+    status.classList.remove('visible');
   }
 }
+
+// Wire up file input change
+document.getElementById('fileInput').addEventListener('change', function() {
+  onFileSelect(this);
+});
+
+// Tap feedback on the drop zone
+(function() {
+  var zone = document.getElementById('dropZone');
+  var fileInput = document.getElementById('fileInput');
+  var status = document.getElementById('dropStatus');
+  var tapTimer = null;
+
+  // Show visual + text feedback on any pointer interaction with the zone
+  function showTapFeedback() {
+    zone.classList.add('tapped');
+    status.textContent = 'Opening file picker\u2026';
+    status.style.color = 'var(--cyan)';
+    status.classList.add('visible');
+
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(function() {
+      zone.classList.remove('tapped');
+      // Only clear status text if no file was selected
+      if (!htmlFile) {
+        status.textContent = '';
+        status.classList.remove('visible');
+      }
+    }, 2000);
+  }
+
+  // Listen for click on the zone itself (file input click bubbles up)
+  zone.addEventListener('click', showTapFeedback);
+  zone.addEventListener('touchstart', function() {
+    showTapFeedback();
+  }, { passive: true });
+
+  // Drag-and-drop handling
+  zone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    zone.classList.add('dragover');
+  });
+  zone.addEventListener('dragleave', function() {
+    zone.classList.remove('dragover');
+  });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    if (e.dataTransfer.files.length > 0) {
+      fileInput.files = e.dataTransfer.files;
+      onFileSelect(fileInput);
+    }
+  });
+})();
 
 function checkReady() {
   var token = document.getElementById('tokenInput').value.trim();
