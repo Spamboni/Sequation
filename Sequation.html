@@ -1,4 +1,4 @@
-<!-- Sequation v4.88 | Built: 2026-04-16 06:10 CT | github.com/Spamboni/Sequation -->
+<!-- Sequation v4.89 | Built: 2026-04-16 06:27 CT | github.com/Spamboni/Sequation -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -378,7 +378,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v4.88</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v4.89</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -10053,7 +10053,7 @@ window._clampScrollTransition=function(anchorEl){
       data.name=name; data.savedAt=new Date().toISOString();
       var json=JSON.stringify(data,null,2);
       var fname=name.replace(/[^a-z0-9_-]/gi,'_')+'.seq';
-      var blob=new Blob([json],{type:'application/json'});
+      var blob=new Blob([json],{type:'application/octet-stream'});
       // Try native file picker on desktop only (unreliable on mobile — often saves to unexpected locations)
       var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if(!isMobile && window.showSaveFilePicker){
@@ -10073,7 +10073,7 @@ window._clampScrollTransition=function(anchorEl){
     function fallbackDownload(blob,fname){
       // On mobile, try Web Share API first — gives proper filename and save-to-files flow
       if(navigator.share && navigator.canShare){
-        var file=new File([blob], fname, {type:'application/json'});
+        var file=new File([blob], fname, {type:'application/octet-stream'});
         if(navigator.canShare({files:[file]})){
           navigator.share({files:[file], title:fname}).then(function(){
             btnSave.style.background='#16a34a'; btnSave.style.color='#fff';
