@@ -377,7 +377,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(0,217,255,0.35);letter-spacing:2px;text-align:center;">v4.79</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(0,217,255,0.35);letter-spacing:2px;text-align:center;">v4.80</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -3216,7 +3216,6 @@ var recVolume = 1.0;
 window._defaultSamples=[
   { slot:0, url:'samples/kick.wav',  label:'Kick'  },
   { slot:1, url:'samples/snare.wav', label:'Snare' }
-  { slot:1, url:'samples/snare2.wav', label:'Taco' }
   // Add more here as you add more files. e.g.:
   // { slot:2, url:'samples/hihat-closed.wav', label:'HH' },
   // { slot:3, url:'samples/hihat-open.wav',   label:'HHo' },
@@ -10006,11 +10005,72 @@ window._clampScrollTransition=function(anchorEl){
     var timerEl=mk('div','font-size:36px;font-weight:700;letter-spacing:2px;','0.0');
     var statusEl=mk('div','font-size:10px;color:#aaa;','Tap REC to start · or use quick presets');
 
-    // ── REC / STOP ──
-    var recRow=mk('div','display:flex;gap:10px;align-items:center;');
+    // ── REC / STOP / LOAD ──
+    var recRow=mk('div','display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;');
     var recBtn=mkBtn('⏺  REC','font-size:14px;font-weight:700;padding:11px 28px;border:2px solid #ef4444;border-radius:6px;background:#ef4444;color:#fff;letter-spacing:2px;');
     var stopBtn=mkBtn('⏹  STOP','font-size:14px;font-weight:700;padding:11px 28px;border:2px solid #fff;border-radius:6px;background:transparent;color:#fff;letter-spacing:2px;display:none;');
-    recRow.appendChild(recBtn); recRow.appendChild(stopBtn);
+    var loadBtn=mkBtn('📁  LOAD','font-size:13px;font-weight:700;padding:11px 22px;border:2px solid #00d9ff;border-radius:6px;background:transparent;color:#00d9ff;letter-spacing:2px;');
+    loadBtn.title='Load .wav / .mp3 / .ogg into this pad';
+    recRow.appendChild(recBtn); recRow.appendChild(stopBtn); recRow.appendChild(loadBtn);
+
+    // Hidden file input — clicked programmatically by loadBtn
+    var loadFileIn=document.createElement('input');
+    loadFileIn.type='file';
+    loadFileIn.accept='audio/*,.wav,.mp3,.ogg,.m4a,.flac';
+    loadFileIn.style.cssText='position:fixed;top:-200px;left:-200px;opacity:0.01;width:1px;height:1px;';
+    document.body.appendChild(loadFileIn);
+
+    loadBtn.onclick=function(){
+      if(recording){ statusEl.textContent='Stop recording first'; statusEl.style.color='#f87171'; return; }
+      loadFileIn.value=''; // allow re-selecting same file
+      loadFileIn.click();
+    };
+
+    loadFileIn.onchange=function(){
+      var file=loadFileIn.files&&loadFileIn.files[0];
+      if(!file) return;
+      statusEl.textContent='Loading '+file.name+'...'; statusEl.style.color='#aaa';
+      var reader=new FileReader();
+      reader.onload=function(ev){
+        AC.decodeAudioData(ev.target.result, function(buffer){
+          // De-click: apply 5ms fade in/out to raw buffer edges (same as recording path)
+          try{
+            var sr2=buffer.sampleRate, fadeS=Math.min(Math.floor(sr2*0.005),buffer.length/4);
+            var ch2=buffer.numberOfChannels;
+            for(var c=0;c<ch2;c++){
+              var d2=buffer.getChannelData(c);
+              for(var fi=0;fi<fadeS;fi++){
+                var g2=fi/fadeS;
+                d2[fi]*=g2;
+                d2[buffer.length-1-fi]*=g2;
+              }
+            }
+          }catch(e2){}
+          rawBuffer=buffer;
+          meta._isStock=false;
+          meta._loadedFromFile=file.name;
+          testBtn.style.display='';
+          drawWaveform();
+          pushHistory();
+          applyEnvelope();
+          statusEl.textContent='Loaded "'+file.name+'" · TEST to preview, save to keep';
+          statusEl.style.color='#4ade80';
+        }, function(){
+          statusEl.textContent='Could not decode "'+file.name+'" (unsupported format?)';
+          statusEl.style.color='#f87171';
+        });
+      };
+      reader.onerror=function(){
+        statusEl.textContent='Error reading file'; statusEl.style.color='#f87171';
+      };
+      reader.readAsArrayBuffer(file);
+    };
+
+    // Clean up the file input when overlay closes
+    var _origRemove=ov.remove||function(){this.parentNode&&this.parentNode.removeChild(this);};
+    ov.addEventListener('_cleanup', function(){
+      if(loadFileIn.parentNode) loadFileIn.parentNode.removeChild(loadFileIn);
+    });
 
     // ── Presets ──
     var presetLbl=mk('div','font-size:9px;letter-spacing:1px;color:#888;','QUICK RECORD');
