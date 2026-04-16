@@ -1,4 +1,4 @@
-<!-- Sequation v4.84 | Built: 2026-04-16 05:21 CT | github.com/Spamboni/Sequation -->
+<!-- Sequation v4.86 | Built: 2026-04-16 05:50 CT | github.com/Spamboni/Sequation -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -378,7 +378,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v4.84</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v4.86</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -3269,28 +3269,19 @@ window._savedKits=window._savedKits||(function(){
 window._saveKitsStorage=function(){ try{ localStorage.setItem('savedKits', JSON.stringify(window._savedKits)); }catch(e){} };
 
 // Save the current pad state as a named kit
-window._saveCurrentKit=function(){
-  if(!AC){ alert('Audio not ready'); return; }
-  var name=prompt('Name this sound style:','My Style '+(window._savedKits.length+1));
-  if(name===null) return;
-  name=(name||'').trim().slice(0,48)||'Untitled';
-
+// Helper: build the kit data object from current pad state
+window._buildKitData=function(name){
   var kit={ id:Date.now()+'_'+Math.random().toString(36).slice(2,6), name:name, pads:{}, overrides:{} };
-
-  // Snapshot tile style overrides
   if(window._tileStyleOverride){
     Object.keys(window._tileStyleOverride).forEach(function(k){
       var ov=window._tileStyleOverride[k];
       if(ov) kit.overrides[k]={style:ov.style, idx:ov.idx};
     });
   }
-
-  // Snapshot userSamples + sampleMeta for pads that have custom content
   Object.keys(userSamples).forEach(function(k){
     var buf=userSamples[k];
     if(!buf) return;
     var m=sampleMeta[k]||{};
-    // Encode AudioBuffer to base64
     var nch=buf.numberOfChannels, len=buf.length, sr=buf.sampleRate;
     var interleaved=new Float32Array(len*nch);
     for(var c=0;c<nch;c++){
@@ -3310,33 +3301,128 @@ window._saveCurrentKit=function(){
             _isStock:!!m._isStock}
     };
   });
+  return kit;
+};
 
-  window._savedKits.push(kit);
-  window._saveKitsStorage();
+// Show the SAVE sound style modal
+window._showSaveKitModal=function(){
+  if(!AC){ alert('Audio not ready'); return; }
+  var existing=document.getElementById('_kitSaveOv');
+  if(existing){ existing.parentNode.removeChild(existing); }
 
-  // Update style name display
-  var sn=document.getElementById('padsBarStyleName');
-  if(sn) sn.textContent=name;
-  window._currentKitName=name;
-  alert('Saved sound style: "'+name+'"');
+  var ov=document.createElement('div');
+  ov.id='_kitSaveOv';
+  ov.style.cssText='position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:20px;touch-action:none;';
+
+  var card=document.createElement('div');
+  card.style.cssText='background:#141414;border:1.5px solid rgba(251,191,36,0.5);border-radius:10px;padding:16px;max-width:360px;width:100%;max-height:70vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.8);';
+  card.addEventListener('click',function(e){ e.stopPropagation(); });
+
+  // Header
+  var hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;';
+  var ttl=document.createElement('span');
+  ttl.textContent='SAVE SOUND STYLE';
+  ttl.style.cssText='font-family:monospace;font-size:11px;font-weight:700;letter-spacing:2px;color:#fbbf24;';
+  var closeBtn=document.createElement('button');
+  closeBtn.textContent='✕';
+  closeBtn.style.cssText='background:transparent;border:1px solid rgba(251,191,36,0.4);border-radius:4px;color:#fbbf24;font-family:monospace;font-size:12px;width:26px;height:26px;cursor:pointer;line-height:1;';
+  closeBtn.addEventListener('click',function(){ ov.parentNode&&ov.parentNode.removeChild(ov); });
+  hdr.appendChild(ttl); hdr.appendChild(closeBtn);
+  card.appendChild(hdr);
+
+  // Name input
+  var nameLabel=document.createElement('div');
+  nameLabel.textContent='NAME';
+  nameLabel.style.cssText='font-family:monospace;font-size:8px;font-weight:700;letter-spacing:2px;color:#888;margin-bottom:4px;';
+  card.appendChild(nameLabel);
+  var nameInput=document.createElement('input');
+  nameInput.type='text';
+  nameInput.value=window._currentKitName||'My Style';
+  nameInput.maxLength=48;
+  nameInput.style.cssText='width:100%;box-sizing:border-box;font-family:monospace;font-size:13px;padding:8px;border:1.5px solid #fbbf24;border-radius:4px;background:#1a1a1a;color:#f0f0f0;margin-bottom:12px;';
+  card.appendChild(nameInput);
+
+  // Status message area
+  var statusMsg=document.createElement('div');
+  statusMsg.style.cssText='font-family:monospace;font-size:9px;color:#888;margin-bottom:10px;min-height:14px;';
+  card.appendChild(statusMsg);
+
+  // Existing saves list (for reference / overwrite target)
+  var saved=window._savedKits||[];
+  if(saved.length>0){
+    var existLabel=document.createElement('div');
+    existLabel.textContent='EXISTING SAVES';
+    existLabel.style.cssText='font-family:monospace;font-size:8px;font-weight:700;letter-spacing:2px;color:#555;margin-bottom:4px;';
+    card.appendChild(existLabel);
+    var listWrap=document.createElement('div');
+    listWrap.style.cssText='max-height:120px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid #222;border-radius:4px;margin-bottom:12px;';
+    saved.forEach(function(kit){
+      var row=document.createElement('div');
+      row.style.cssText='padding:6px 8px;border-bottom:1px solid #1a1a1a;cursor:pointer;touch-action:manipulation;font-family:monospace;font-size:10px;color:#ccc;';
+      row.textContent=kit.name;
+      row.addEventListener('click',function(){
+        nameInput.value=kit.name;
+        nameInput.focus();
+      });
+      listWrap.appendChild(row);
+    });
+    card.appendChild(listWrap);
+  }
+
+  // Buttons
+  var btnRow=document.createElement('div');
+  btnRow.style.cssText='display:flex;gap:8px;justify-content:flex-end;';
+  var cancelBtn=document.createElement('button');
+  cancelBtn.textContent='CANCEL';
+  cancelBtn.style.cssText='font-family:monospace;font-size:10px;font-weight:700;padding:8px 16px;border:1.5px solid #555;border-radius:4px;background:transparent;color:#888;cursor:pointer;letter-spacing:1px;';
+  cancelBtn.addEventListener('click',function(){ ov.parentNode&&ov.parentNode.removeChild(ov); });
+  var saveBtn=document.createElement('button');
+  saveBtn.textContent='SAVE';
+  saveBtn.style.cssText='font-family:monospace;font-size:10px;font-weight:700;padding:8px 20px;border:1.5px solid #fbbf24;border-radius:4px;background:rgba(251,191,36,0.15);color:#fbbf24;cursor:pointer;letter-spacing:1px;';
+  saveBtn.addEventListener('click',function(){
+    var name=(nameInput.value||'').trim().slice(0,48);
+    if(!name){ statusMsg.textContent='Please enter a name'; statusMsg.style.color='#f87171'; return; }
+    // Check for existing kit with same name
+    var existingIdx=-1;
+    for(var i=0;i<window._savedKits.length;i++){
+      if(window._savedKits[i].name===name){ existingIdx=i; break; }
+    }
+    if(existingIdx>=0){
+      if(!confirm('A style named "'+name+'" already exists. Overwrite it?')) return;
+      // Overwrite: replace the existing kit data but keep its position
+      var newKit=window._buildKitData(name);
+      newKit.id=window._savedKits[existingIdx].id; // preserve original ID
+      window._savedKits[existingIdx]=newKit;
+    } else {
+      window._savedKits.push(window._buildKitData(name));
+    }
+    window._saveKitsStorage();
+    window._currentKitName=name;
+    var sn=document.getElementById('padsBarStyleName');
+    if(sn) sn.textContent=name;
+    ov.parentNode&&ov.parentNode.removeChild(ov);
+  });
+  btnRow.appendChild(cancelBtn); btnRow.appendChild(saveBtn);
+  card.appendChild(btnRow);
+
+  ov.appendChild(card);
+  ov.addEventListener('click',function(){ ov.parentNode&&ov.parentNode.removeChild(ov); });
+  document.body.appendChild(ov);
+  setTimeout(function(){ nameInput.focus(); nameInput.select(); },80);
 };
 
 // Load a saved kit onto all pads
 window._loadKit=function(kit){
   if(!AC) return;
-  // Clear existing custom samples
   Object.keys(userSamples).forEach(function(k){ delete userSamples[k]; });
   Object.keys(sampleMeta).forEach(function(k){ delete sampleMeta[k]; });
   if(window._tileStyleOverride) Object.keys(window._tileStyleOverride).forEach(function(k){ delete window._tileStyleOverride[k]; });
-
-  // Restore overrides
   if(kit.overrides){
     Object.keys(kit.overrides).forEach(function(k){
       window._tileStyleOverride[k]=kit.overrides[k];
     });
   }
-
-  // Restore samples
   if(kit.pads){
     Object.keys(kit.pads).forEach(function(k){
       var p=kit.pads[k];
@@ -3355,15 +3441,17 @@ window._loadKit=function(kit){
       }catch(e){}
     });
   }
-
   if(window._updateSampleIcons) window._updateSampleIcons();
+  if(PZ) renderBank();
   var sn=document.getElementById('padsBarStyleName');
   if(sn) sn.textContent=kit.name;
   window._currentKitName=kit.name;
 };
 
-// Show kit load picker
+// Show the LOAD sound style modal — tabbed: BUILT-IN / MY STYLES
 window._showKitPicker=function(){
+  var existing=document.getElementById('_kitPickerOv');
+  if(existing){ existing.parentNode.removeChild(existing); }
   var builtIn=['A','B','C','D','E','F','G','H','I','J'];
   var _SNAMES={A:'Classic',B:'8-Bit',C:'Sci-Fi',D:'Nature',E:'Industrial',F:'Piano',G:'Violin',H:'Flute',I:'Guitar',J:'Bass'};
   var saved=window._savedKits||[];
@@ -3376,8 +3464,9 @@ window._showKitPicker=function(){
   card.style.cssText='background:#141414;border:1.5px solid rgba(0,217,255,0.5);border-radius:10px;padding:14px;max-width:360px;width:100%;max-height:70vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.8);';
   card.addEventListener('click',function(e){ e.stopPropagation(); });
 
+  // Header
   var hdr=document.createElement('div');
-  hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;';
+  hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;';
   var ttl=document.createElement('span');
   ttl.textContent='LOAD SOUND STYLE';
   ttl.style.cssText='font-family:monospace;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--cyan);';
@@ -3388,48 +3477,76 @@ window._showKitPicker=function(){
   hdr.appendChild(ttl); hdr.appendChild(closeBtn);
   card.appendChild(hdr);
 
-  var body=document.createElement('div');
-  body.style.cssText='overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;';
+  // Tab bar
+  var tabBar=document.createElement('div');
+  tabBar.style.cssText='display:flex;border-bottom:1.5px solid rgba(0,217,255,0.25);margin-bottom:8px;';
+  var tabBody=document.createElement('div');
+  tabBody.style.cssText='overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;';
 
-  // Built-in styles
-  var biHdr=document.createElement('div');
-  biHdr.textContent='BUILT-IN';
-  biHdr.style.cssText='font-family:monospace;font-size:8px;font-weight:700;letter-spacing:2px;color:#a78bfa;padding:4px 4px 2px;';
-  body.appendChild(biHdr);
+  function mkTab(label,color){
+    var btn=document.createElement('button');
+    btn.textContent=label;
+    btn.style.cssText='flex:1;font-family:monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:8px 4px;border:none;border-bottom:2.5px solid transparent;background:transparent;color:#666;cursor:pointer;touch-action:manipulation;transition:all 0.15s;';
+    btn._color=color;
+    return btn;
+  }
+  var tabBuiltIn=mkTab('BUILT-IN','#a78bfa');
+  var tabCustom=mkTab('MY STYLES','#fbbf24');
+  tabBar.appendChild(tabBuiltIn); tabBar.appendChild(tabCustom);
 
-  builtIn.forEach(function(k){
-    var row=document.createElement('div');
-    row.style.cssText='display:flex;align-items:center;padding:8px 6px;border-bottom:1px solid #1a1a1a;cursor:pointer;touch-action:manipulation;';
-    row.innerHTML='<span style="font-family:monospace;font-size:10px;color:#ccc;flex:1;">'+_SNAMES[k]+'</span>';
-    row.addEventListener('click',function(){
-      // Switch global sound style
-      if(window._setSoundStyle) window._setSoundStyle(k);
-      else { SOUND_STYLE=k; }
-      // Clear custom samples
-      Object.keys(userSamples).forEach(function(ki){ delete userSamples[ki]; });
-      Object.keys(sampleMeta).forEach(function(ki){ delete sampleMeta[ki]; });
-      if(window._tileStyleOverride) Object.keys(window._tileStyleOverride).forEach(function(ki){ delete window._tileStyleOverride[ki]; });
-      if(window._updateSampleIcons) window._updateSampleIcons();
-      var sn=document.getElementById('padsBarStyleName');
-      if(sn) sn.textContent=_SNAMES[k];
-      window._currentKitName=_SNAMES[k];
-      ov.parentNode&&ov.parentNode.removeChild(ov);
-    });
-    body.appendChild(row);
-  });
+  function activateTab(active,inactive){
+    active.style.color=active._color; active.style.borderBottomColor=active._color; active.style.background='rgba(0,217,255,0.05)';
+    inactive.style.color='#666'; inactive.style.borderBottomColor='transparent'; inactive.style.background='transparent';
+  }
 
-  // Saved kits
-  if(saved.length>0){
-    var svHdr=document.createElement('div');
-    svHdr.textContent='MY STYLES';
-    svHdr.style.cssText='font-family:monospace;font-size:8px;font-weight:700;letter-spacing:2px;color:#fbbf24;padding:8px 4px 2px;border-top:1px solid #333;';
-    body.appendChild(svHdr);
-    saved.forEach(function(kit,idx){
+  function buildBuiltIn(){
+    tabBody.innerHTML='';
+    builtIn.forEach(function(k){
+      var isCurrent=(window._currentKitName===_SNAMES[k]);
       var row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;gap:4px;padding:8px 6px;border-bottom:1px solid #1a1a1a;cursor:pointer;touch-action:manipulation;';
+      row.style.cssText='display:flex;align-items:center;padding:9px 8px;border-bottom:1px solid #1a1a1a;cursor:pointer;touch-action:manipulation;'+(isCurrent?'background:rgba(167,139,250,0.08);':'');
+      var dot=document.createElement('div');
+      dot.style.cssText='width:8px;height:8px;border-radius:50%;margin-right:8px;flex-shrink:0;border:1.5px solid '+(isCurrent?'#a78bfa':'#444')+';box-sizing:border-box;'+(isCurrent?'background:#a78bfa;':'');
+      var nameEl=document.createElement('span');
+      nameEl.textContent=_SNAMES[k];
+      nameEl.style.cssText='font-family:monospace;font-size:10px;color:'+(isCurrent?'#a78bfa':'#ccc')+';flex:1;';
+      row.appendChild(dot); row.appendChild(nameEl);
+      row.addEventListener('click',function(){
+        if(window._setSoundStyle) window._setSoundStyle(k);
+        else { SOUND_STYLE=k; }
+        Object.keys(userSamples).forEach(function(ki){ delete userSamples[ki]; });
+        Object.keys(sampleMeta).forEach(function(ki){ delete sampleMeta[ki]; });
+        if(window._tileStyleOverride) Object.keys(window._tileStyleOverride).forEach(function(ki){ delete window._tileStyleOverride[ki]; });
+        if(window._updateSampleIcons) window._updateSampleIcons();
+        if(PZ) renderBank();
+        window._currentKitName=_SNAMES[k];
+        var sn=document.getElementById('padsBarStyleName');
+        if(sn) sn.textContent=_SNAMES[k];
+        ov.parentNode&&ov.parentNode.removeChild(ov);
+      });
+      tabBody.appendChild(row);
+    });
+  }
+
+  function buildCustom(){
+    tabBody.innerHTML='';
+    var saved2=window._savedKits||[];
+    if(saved2.length===0){
+      var empty=document.createElement('div');
+      empty.style.cssText='font-family:monospace;font-size:9px;color:#555;padding:20px 8px;text-align:center;line-height:1.6;';
+      empty.innerHTML='No saved styles yet.<br><br>Use SAVE on the PADS bar to create one.';
+      tabBody.appendChild(empty);
+      return;
+    }
+    saved2.forEach(function(kit,idx){
+      var isCurrent=(window._currentKitName===kit.name);
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:4px;padding:9px 8px;border-bottom:1px solid #1a1a1a;cursor:pointer;touch-action:manipulation;'+(isCurrent?'background:rgba(251,191,36,0.06);':'');
+      var dot=document.createElement('div');
+      dot.style.cssText='width:8px;height:8px;border-radius:50%;margin-right:6px;flex-shrink:0;border:1.5px solid '+(isCurrent?'#fbbf24':'#444')+';box-sizing:border-box;'+(isCurrent?'background:#fbbf24;':'');
       var nameEl=document.createElement('span');
       nameEl.textContent=kit.name;
-      nameEl.style.cssText='font-family:monospace;font-size:10px;color:#e5e5e5;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+      nameEl.style.cssText='font-family:monospace;font-size:10px;color:'+(isCurrent?'#fbbf24':'#e5e5e5')+';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
       var delBtn=document.createElement('button');
       delBtn.textContent='✕';
       delBtn.style.cssText='font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #555;border-radius:3px;background:transparent;color:#f87171;cursor:pointer;flex-shrink:0;touch-action:manipulation;';
@@ -3438,22 +3555,32 @@ window._showKitPicker=function(){
         if(!confirm('Delete "'+kit.name+'"?')) return;
         window._savedKits.splice(idx,1);
         window._saveKitsStorage();
-        ov.parentNode&&ov.parentNode.removeChild(ov);
-        window._showKitPicker();
+        buildCustom(); // rebuild the list
       });
       row.addEventListener('click',function(){
         window._loadKit(kit);
         ov.parentNode&&ov.parentNode.removeChild(ov);
       });
-      row.appendChild(nameEl); row.appendChild(delBtn);
-      body.appendChild(row);
+      row.appendChild(dot); row.appendChild(nameEl); row.appendChild(delBtn);
+      tabBody.appendChild(row);
     });
   }
 
-  card.appendChild(body);
+  tabBuiltIn.addEventListener('click',function(){ activateTab(tabBuiltIn,tabCustom); buildBuiltIn(); });
+  tabCustom.addEventListener('click',function(){ activateTab(tabCustom,tabBuiltIn); buildCustom(); });
+
+  card.appendChild(tabBar);
+  card.appendChild(tabBody);
   ov.appendChild(card);
   ov.addEventListener('click',function(){ ov.parentNode&&ov.parentNode.removeChild(ov); });
   document.body.appendChild(ov);
+
+  // Default to BUILT-IN tab, or MY STYLES if there are saves
+  if(saved.length>0){
+    activateTab(tabCustom,tabBuiltIn); buildCustom();
+  } else {
+    activateTab(tabBuiltIn,tabCustom); buildBuiltIn();
+  }
 };
 
 // Track last-tapped pad
@@ -8360,6 +8487,24 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var _sbsp=document.getElementById('seqBankSlimPanel'); if(_sbsp){ _sbsp.style.display=''; _syncPanelState(_sbsp,'slimSeqBank'); }
     // Show the PADS slim bar header (hidden in puzzle-only mode)
     var _ppb=document.getElementById('padPanelBar'); if(_ppb) _ppb.style.display='';
+    // Restore the PADS panel to whatever state it was in before puzzle mode
+    var _psp2=document.getElementById('padSlimPanel');
+    if(_psp2){
+      var _wasCollapsed=window._savedPadsPanelCollapsed||false;
+      _psp2.classList.toggle('collapsed', _wasCollapsed);
+      var _pBody2=_psp2.querySelector('.slim-panel-body');
+      if(_pBody2){
+        if(_wasCollapsed){
+          _pBody2.style.maxHeight='0px'; _pBody2.style.opacity='0'; _pBody2.style.overflow='hidden'; _pBody2.style.transition='';
+          var _pInner2=_pBody2.querySelector('.slim-panel-body-inner');
+          if(_pInner2){ _pInner2.style.transform='translateY(-100%)'; _pInner2.style.transition=''; }
+        } else {
+          _pBody2.style.maxHeight=''; _pBody2.style.opacity=''; _pBody2.style.overflow=''; _pBody2.style.transition='';
+          var _pInner2=_pBody2.querySelector('.slim-panel-body-inner');
+          if(_pInner2){ _pInner2.style.transform='translateY(0)'; _pInner2.style.transition=''; }
+        }
+      }
+    }
     // Show the MASTER EQ panel
     var _eqp=document.getElementById('eqSlimPanel'); if(_eqp) _eqp.style.display='';
     // Show the FX panels (reverb, saturation, stereo, limiter)
@@ -8393,8 +8538,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // Sync pad-adjustment sliders to the new defaults so UI matches state
     if(window._syncPadAdjGap) window._syncPadAdjGap(0);
     if(window._syncPadAdjSize) window._syncPadAdjSize();
-    if(!proMode){ proMode=true; if(proPanel) { proPanel.style.display='flex'; var _pp=document.getElementById('seqCtrlSlimPanel'); if(_pp){ _pp.classList.remove('collapsed'); var _ab=document.getElementById('seqCtrlArrow'); if(_ab) _ab.textContent='▲'; } } buildBeatDots(); syncTracks(); updateSlotUI(); }
-    else { buildBeatDots(); }
+    if(!proMode){ proMode=true; if(proPanel) { proPanel.style.display='flex'; if(!window._seqEverEntered){ window._seqEverEntered=true; var _pp=document.getElementById('seqCtrlSlimPanel'); if(_pp){ _pp.classList.remove('collapsed'); var _ppBody=_pp.querySelector('.slim-panel-body'); if(_ppBody){ _ppBody.style.maxHeight=''; _ppBody.style.opacity=''; _ppBody.style.overflow=''; _ppBody.style.transition=''; var _ppIn=_ppBody.querySelector('.slim-panel-body-inner'); if(_ppIn){ _ppIn.style.transform='translateY(0)'; _ppIn.style.transition=''; } } try{localStorage.setItem('slimSeqCtrl','0');}catch(e){} } } } buildBeatDots(); syncTracks(); updateSlotUI(); }
+    else { if(proPanel) proPanel.style.display='flex'; buildBeatDots(); }
     if(PZ) renderBank();
     if(window._syncToolbarBeat) window._syncToolbarBeat();
     updateUI();
@@ -8420,11 +8565,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var _sbsp=document.getElementById('seqBankSlimPanel'); if(_sbsp) _sbsp.style.display='none';
     // Hide the PADS slim bar header
     var _ppb=document.getElementById('padPanelBar'); if(_ppb) _ppb.style.display='none';
-    // Make sure PADS body is fully expanded for puzzle mode
+    // Save the PADS panel's sequencer-mode collapse state so we can restore it on return
     var _psp=document.getElementById('padSlimPanel');
     if(_psp){
+      window._savedPadsPanelCollapsed=_psp.classList.contains('collapsed');
+      // Force-open for puzzle mode so tiles are always visible
       _psp.classList.remove('collapsed');
-      // Also reset the body styles that the collapse animation sets
       var _pBody=_psp.querySelector('.slim-panel-body');
       if(_pBody){
         _pBody.style.maxHeight='';
@@ -8434,8 +8580,6 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         var _pInner=_pBody.querySelector('.slim-panel-body-inner');
         if(_pInner){ _pInner.style.transform='translateY(0)'; _pInner.style.transition=''; }
       }
-      // Sync the closure variable via _setCollapsed if available (no animation)
-      if(_psp._setCollapsed) _psp._setCollapsed(false, false);
     }
     // Hide the MASTER EQ panel
     var _eqp=document.getElementById('eqSlimPanel'); if(_eqp) _eqp.style.display='none';
@@ -13821,7 +13965,7 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     if(saveBtn){
       saveBtn.addEventListener('click',function(e){
         e.stopPropagation();
-        if(window._saveCurrentKit) window._saveCurrentKit();
+        if(window._showSaveKitModal) window._showSaveKitModal();
       });
     }
     if(loadBtn){
