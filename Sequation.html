@@ -1,4 +1,4 @@
-<!-- Sequation v4.86 | Built: 2026-04-16 05:50 CT | github.com/Spamboni/Sequation -->
+<!-- Sequation v4.87 | Built: 2026-04-16 06:00 CT | github.com/Spamboni/Sequation -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -378,7 +378,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v4.86</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v4.87</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -10029,7 +10029,7 @@ window._clampScrollTransition=function(anchorEl){
 
     var note=document.createElement('div');
     note.style.cssText='font-size:9px;color:#888;margin-bottom:10px;line-height:1.4;';
-    note.textContent="File will download to your Downloads folder.";
+    note.textContent="Saves as a .seq file to your Downloads folder. Use the LOAD button (📂) to open it later.";
 
     var inp=document.createElement('input');
     inp.type='text'; inp.value=def;
@@ -10044,7 +10044,7 @@ window._clampScrollTransition=function(anchorEl){
     cancelBtn.onclick=function(){ ov.style.display='none'; };
 
     var okBtn=document.createElement('button');
-    okBtn.textContent='DOWNLOAD';
+    okBtn.textContent='SAVE';
     okBtn.style.cssText='font-family:monospace;font-size:11px;padding:6px 14px;border:1.5px solid #00d9ff;border-radius:3px;background:rgba(0,217,255,0.15);color:#00d9ff;cursor:pointer;';
     okBtn.onclick=function(){
       var name=(inp.value||def).trim()||def;
@@ -10054,8 +10054,9 @@ window._clampScrollTransition=function(anchorEl){
       var json=JSON.stringify(data,null,2);
       var fname=name.replace(/[^a-z0-9_-]/gi,'_')+'.seq';
       var blob=new Blob([json],{type:'application/json'});
-      // Try folder picker first (works in Chrome as local file, not in iframes)
-      if(window.showSaveFilePicker){
+      // Try native file picker on desktop only (unreliable on mobile — often saves to unexpected locations)
+      var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if(!isMobile && window.showSaveFilePicker){
         window.showSaveFilePicker({suggestedName:fname,types:[{description:'Sequation File',accept:{'application/json':['.seq']}}]})
           .then(function(fh){ return fh.createWritable(); })
           .then(function(w){ return w.write(blob).then(function(){ return w.close(); }); })
@@ -10063,7 +10064,7 @@ window._clampScrollTransition=function(anchorEl){
             btnSave.style.background='#16a34a'; btnSave.style.color='#fff';
             setTimeout(function(){ btnSave.style.background=''; btnSave.style.color=''; },600);
           }).catch(function(e){
-            if(e.name!=='AbortError') fallbackDownload(blob,fname); // only fallback on non-cancel
+            if(e.name!=='AbortError') fallbackDownload(blob,fname);
           });
         return;
       }
@@ -10090,9 +10091,10 @@ window._clampScrollTransition=function(anchorEl){
   // ── LOAD ────────────────────────────────────────────────
   if(btnLoad) btnLoad.addEventListener('click', function(){
     if(!window._seq){ alert('Not ready'); return; }
+    var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
     var fi=document.createElement('input');
-    fi.type='file'; fi.accept='.seq,.json'; fi.multiple=true;
+    fi.type='file'; fi.accept='.seq,.json,application/json'; fi.multiple=true;
     fi.style.cssText='position:fixed;top:-200px;left:-200px;opacity:0.01;width:1px;height:1px;';
     document.body.appendChild(fi);
 
@@ -10122,7 +10124,7 @@ window._clampScrollTransition=function(anchorEl){
     };
 
     // Try folder picker first (Chrome local file context)
-    if(window.showOpenFilePicker){
+    if(!isMobile && window.showOpenFilePicker){
       if(document.body.contains(fi)) document.body.removeChild(fi);
       window.showOpenFilePicker({multiple:true,types:[{description:'Sequation Files',accept:{'application/json':['.seq','.json']}}]})
         .then(function(handles){ return Promise.all(handles.map(function(h){ return h.getFile(); })); })
