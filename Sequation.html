@@ -377,7 +377,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(0,217,255,0.35);letter-spacing:2px;text-align:center;">v4.80</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(0,217,255,0.35);letter-spacing:2px;text-align:center;">v4.81</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -459,10 +459,11 @@ window.onerror=function(msg,src,line,col,err){
             <button class="seq-btn seq-btn-sq" id="btnParticleToggle" title="Particles on/off" style="font-size:10px;flex-shrink:0;">&#x2728;</button>
             <button class="seq-btn seq-btn-sq" id="btnGlowToggle" title="Tap glow on/off" style="font-size:10px;padding:0;overflow:hidden;flex-shrink:0;"><canvas id="glowIconCanvas" width="26" height="26" style="display:block;width:26px;height:26px;"></canvas></button>
           </div>
-          <!-- Right: Color Pads + Sound Style + Settings -->
+          <!-- Right: Color Pads + Sound Style + Labels + Settings -->
           <div style="display:flex;gap:3px;flex-shrink:0;">
             <button class="seq-btn seq-btn-sq" id="colorTagBtnOld" title="Color tiles" style="flex-shrink:0;">🎨</button>
             <button class="seq-btn seq-btn-sq" id="seqSndBtn" title="Sound Style" style="flex-shrink:0;font-size:11px;">♪</button>
+            <button class="seq-btn seq-btn-sq" id="padLabelsBtn" title="Show sample names on pads" style="flex-shrink:0;font-size:9px;font-weight:700;letter-spacing:0.5px;">ABC</button>
             <button class="seq-btn seq-btn-sq" id="seqSettingsBtn" title="Settings" style="flex-shrink:0;font-size:12px;">⚙</button>
           </div>
         </div>
@@ -5095,11 +5096,15 @@ function renderBank(){
     be.appendChild(tile);
   }
   document.getElementById('undo').disabled=HIST.length===0;
+  // Apply pad name labels (and refresh mic icons) now that tiles are fresh
+  if(window._updateSampleIcons) window._updateSampleIcons();
 }
 
 // Re-render bank tile mic icons after sample load
+window._padLabelsOn=false; // toggled by ABC button in toolbar
 window._updateSampleIcons=function(){
   var tiles=document.querySelectorAll('.bt');
+  var showLabels=!!window._padLabelsOn;
   tiles.forEach(function(t){
     var idx=parseInt(t.dataset.bankIdx);
     var existing=t.querySelector('.bt-mic');
@@ -5117,6 +5122,38 @@ window._updateSampleIcons=function(){
       t.removeChild(existing);
     }
     applyTileColor(t, idx);
+
+    // ── Pad name label ──
+    var existingLbl=t.querySelector('.bt-name');
+    var name=(sampleMeta[idx]&&sampleMeta[idx].displayName)||'';
+    var tileW=t.offsetWidth||parseInt(t.style.minWidth)||0;
+    // Only show labels when toggle is on, the pad has a name, and the tile is big enough
+    var shouldShow = showLabels && name && tileW>=40;
+    if(shouldShow){
+      if(!existingLbl){
+        existingLbl=document.createElement('span');
+        existingLbl.className='bt-name';
+        existingLbl.style.cssText='position:absolute;left:2px;right:2px;bottom:1px;font-family:monospace;text-align:center;color:rgba(255,255,255,0.85);text-shadow:0 1px 2px rgba(0,0,0,0.8);pointer-events:none;white-space:nowrap;overflow:hidden;line-height:1;';
+        t.style.position='relative';
+        t.appendChild(existingLbl);
+      }
+      existingLbl.textContent=name;
+      // Scale font size to fit the tile width.
+      // Start large, measure, shrink until it fits (cap at ~7px min).
+      // Available width = tileW - 4px (the 2px L/R inset).
+      var avail=Math.max(20, tileW-4);
+      // Heuristic starting size: 1/3 of tile height, capped 8-14px
+      var start=Math.max(8,Math.min(14,Math.floor((t.offsetHeight||tileW)*0.18)));
+      existingLbl.style.fontSize=start+'px';
+      // Use scrollWidth to detect overflow and step down until it fits
+      var fs=start;
+      while(fs>7 && existingLbl.scrollWidth>avail){
+        fs--;
+        existingLbl.style.fontSize=fs+'px';
+      }
+    } else if(existingLbl){
+      t.removeChild(existingLbl);
+    }
   });
 };
 
@@ -6924,6 +6961,30 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   var seqSettingsBtn=document.getElementById('seqSettingsBtn');
   if(seqSettingsBtn) seqSettingsBtn.addEventListener('click', showSettingsModal);
+
+  // ── Pad name labels toggle (ABC) ──
+  // Reads/writes window._padLabelsOn; persisted in localStorage.
+  // Forces a re-render of pad icons so labels appear/disappear immediately.
+  (function(){
+    var btn=document.getElementById('padLabelsBtn');
+    if(!btn) return;
+    try{
+      var saved=localStorage.getItem('padLabelsOn');
+      window._padLabelsOn=(saved==='1');
+    }catch(e){}
+    function refresh(){
+      btn.classList.toggle('active', window._padLabelsOn);
+      btn.style.opacity=window._padLabelsOn?'1':'0.55';
+      if(window._updateSampleIcons) window._updateSampleIcons();
+    }
+    btn.addEventListener('click',function(){
+      window._padLabelsOn=!window._padLabelsOn;
+      try{ localStorage.setItem('padLabelsOn', window._padLabelsOn?'1':'0'); }catch(e){}
+      refresh();
+      if(window._btnFx) window._btnFx(window._padLabelsOn?'tool_on':'tool_off');
+    });
+    refresh();
+  })();
 
   // ── Toolbar button click sounds ───────────────────────────
   // Attach a capture-phase listener to each TOOLBAR button that plays a sound
@@ -9487,7 +9548,7 @@ window._clampScrollTransition=function(anchorEl){
           var m={};
           Object.keys(sampleMeta).forEach(function(k){
             var s=sampleMeta[k];
-            m[k]={attack:s.attack,release:s.release,atkCurve:s.atkCurve,relCurve:s.relCurve,volume:s.volume,bass:s.bass||0,treble:s.treble||0,trimStart:s.trimStart||0,trimEnd:s.trimEnd!==undefined?s.trimEnd:1,eqBands:s.eqBands||null,_aliasIdx:s._aliasIdx};
+            m[k]={attack:s.attack,release:s.release,atkCurve:s.atkCurve,relCurve:s.relCurve,volume:s.volume,bass:s.bass||0,treble:s.treble||0,trimStart:s.trimStart||0,trimEnd:s.trimEnd!==undefined?s.trimEnd:1,eqBands:s.eqBands||null,_aliasIdx:s._aliasIdx,displayName:s.displayName||null};
           });
           return m;
         })(),
@@ -10011,7 +10072,23 @@ window._clampScrollTransition=function(anchorEl){
     var stopBtn=mkBtn('⏹  STOP','font-size:14px;font-weight:700;padding:11px 28px;border:2px solid #fff;border-radius:6px;background:transparent;color:#fff;letter-spacing:2px;display:none;');
     var loadBtn=mkBtn('📁  LOAD','font-size:13px;font-weight:700;padding:11px 22px;border:2px solid #00d9ff;border-radius:6px;background:transparent;color:#00d9ff;letter-spacing:2px;');
     loadBtn.title='Load .wav / .mp3 / .ogg into this pad';
-    recRow.appendChild(recBtn); recRow.appendChild(stopBtn); recRow.appendChild(loadBtn);
+    var renameBtn=mkBtn('✏️  NAME','font-size:13px;font-weight:700;padding:11px 18px;border:2px solid #fbbf24;border-radius:6px;background:transparent;color:#fbbf24;letter-spacing:2px;');
+    renameBtn.title='Set or change the display name for this sample';
+    recRow.appendChild(recBtn); recRow.appendChild(stopBtn); recRow.appendChild(loadBtn); recRow.appendChild(renameBtn);
+
+    renameBtn.onclick=function(){
+      var current=meta.displayName||'';
+      var name=prompt('Sample name (shown on pad if labels enabled):', current);
+      if(name===null) return; // cancel
+      name=name.trim().slice(0,32);
+      meta.displayName=name||null;
+      if(window._updateSampleIcons) window._updateSampleIcons();
+      if(name){
+        statusEl.textContent='Named: "'+name+'"'; statusEl.style.color='#fbbf24';
+      } else {
+        statusEl.textContent='Name cleared'; statusEl.style.color='#aaa';
+      }
+    };
 
     // Hidden file input — clicked programmatically by loadBtn
     var loadFileIn=document.createElement('input');
@@ -10049,14 +10126,30 @@ window._clampScrollTransition=function(anchorEl){
           rawBuffer=buffer;
           meta._isStock=false;
           meta._loadedFromFile=file.name;
+          // Pre-fill display name from filename (minus extension), let user adjust
+          var defaultName=file.name.replace(/\.[^.]+$/,'').slice(0,32);
+          var name=prompt('Name this sample:', defaultName);
+          if(name===null) name=defaultName; // cancel = keep filename-based default
+          name=(name||'').trim().slice(0,32);
+          if(name) meta.displayName=name;
           testBtn.style.display='';
           drawWaveform();
           pushHistory();
           applyEnvelope();
-          statusEl.textContent='Loaded "'+file.name+'" · TEST to preview, save to keep';
+          if(window._updateSampleIcons) window._updateSampleIcons();
+          statusEl.textContent='Loaded "'+(meta.displayName||file.name)+'" · TEST to preview, save to keep';
           statusEl.style.color='#4ade80';
         }, function(){
-          statusEl.textContent='Could not decode "'+file.name+'" (unsupported format?)';
+          var ext=(file.name.split('.').pop()||'').toLowerCase();
+          var hint='';
+          if(ext==='aiff'||ext==='aif'||ext==='aifc'){
+            hint=' — AIFF works on Safari but not Chrome/Firefox. Convert to WAV.';
+          } else if(ext==='wma'||ext==='ra'||ext==='au'){
+            hint=' — Format not browser-supported. Convert to WAV or MP3.';
+          } else {
+            hint=' — Browser audio supports WAV, MP3, OGG, FLAC, M4A.';
+          }
+          statusEl.textContent='Could not decode "'+file.name+'"'+hint;
           statusEl.style.color='#f87171';
         });
       };
