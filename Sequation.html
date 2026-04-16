@@ -75,7 +75,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .mast-title span{color:var(--cyan);}
 .mast-back{background:none;border:1.5px solid var(--br);border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);padding:5px 9px;cursor:pointer;}
 .mast-info{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);}
-.gscroll{width:100%;max-width:520px;padding:10px 14px;display:flex;justify-content:center;flex-shrink:0;overflow:hidden;touch-action:pan-y;}
+.gscroll{width:100%;max-width:520px;padding:10px 14px;display:flex;justify-content:center;flex-shrink:0;overflow:hidden;touch-action:pan-y;position:relative;}
 .xl2-mode .gscroll,.xl2-mode .mast,.xl2-mode .bank-outer,.xl2-mode .bot,.xl2-mode .bsound-row,.xl2-mode .info-bar{max-width:100%;}
 .grid{display:inline-grid;border:2px solid var(--cyan);background:var(--bg);flex-shrink:0;box-shadow:0 0 12px rgba(0,217,255,0.2);}
 .grid-clip{overflow:hidden;flex-shrink:0;}
@@ -85,7 +85,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 @keyframes givenpop{0%{transform:scale(1);background:rgba(0,217,255,0.05)}50%{transform:scale(1.15);background:rgba(0,217,255,0.3);color:#00ffff}100%{transform:scale(1);background:rgba(0,217,255,0.2);color:#00d9ff}}
 .bank{flex:1;min-width:0;background:var(--bg-secondary);touch-action:pan-y;}
 .blbl{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);}
-.btiles{display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px 6px 8px;flex:1;touch-action:pan-y;justify-content:center;}
+.btiles{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0;flex:1;touch-action:pan-y;justify-content:center;}
 .info-bar{width:100%;max-width:520px;padding:4px 14px 2px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
 .info-bar .blbl{color:var(--text-muted);font-size:7px;}
 .bsize-wrap{display:flex;flex-direction:column;align-items:stretch;flex-shrink:0;gap:4px;padding-bottom:4px;border-right:2px solid var(--cyan);}
@@ -144,9 +144,9 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 
 .sizebar-fill{position:absolute;bottom:0;left:0;right:0;background:rgba(0,217,255,0.5);transition:height .05s;}
 .sizebar-handle{position:absolute;left:-2px;right:-2px;height:8px;background:var(--bg);border:1px solid var(--cyan);border-radius:2px;pointer-events:none;transition:bottom .05s;z-index:3;}
-.sizebar-arrows{position:absolute;left:50%;transform:translate(-50%,50%);width:16px;height:16px;border:1.5px solid var(--cyan);border-radius:3px;background:var(--bg-secondary);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:6px;line-height:1;color:var(--cyan);pointer-events:none;transition:bottom .05s;z-index:4;}
+.sizebar-arrows{position:absolute;left:50%;transform:translate(-50%,50%);width:5px;height:16px;border:1.5px solid var(--cyan);border-radius:3px;background:var(--bg-secondary);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:6px;line-height:1;color:var(--cyan);pointer-events:none;transition:bottom .05s;z-index:4;}
 .sizebar-lbl{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);text-align:center;line-height:1.6;pointer-events:none;user-select:none;}
-.bt{min-width:44px;height:44px;padding:0 8px;border:1.5px solid rgba(0,217,255,0.35);background:var(--bg-secondary);color:var(--text-primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:none;transition:transform 0.04s,box-shadow 0.15s,background 0.1s;touch-action:pan-y;}
+.bt{min-width:44px;height:44px;padding:0 8px;border:1.5px solid rgba(0,217,255,0.35);background:var(--bg-secondary);color:var(--text-primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:none;transition:transform 0.04s,box-shadow 0.15s,background 0.1s;touch-action:pan-y;aspect-ratio:1;}
 .bt:hover{border-color:rgba(0,217,255,0.35);box-shadow:none;}
 /* On touch devices, suppress hover state entirely so tapped tiles don't stay lit */
 @media(hover:none){
@@ -271,7 +271,6 @@ input[type=range]::-moz-range-track { background:transparent; }
 .seq-abc-col{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;padding:6px 4px 6px 6px;border-right:1px solid rgba(0,217,255,0.2);flex-shrink:0;}
 .seq-abc-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--cyan);background:transparent;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;}
 .seq-abc-btn.active{background:rgba(0,217,255,0.2);color:var(--cyan);border-color:var(--cyan-bright);box-shadow:0 0 10px rgba(0,217,255,0.6);}
-.seq-abc-color-btn{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(0,217,255,0.4);background:transparent;color:var(--text-muted);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:2px;}
 
 /* Center: 3x5 slot grid */
 .seq-slot-area{display:flex;flex-direction:column;flex:1;min-width:0;padding:6px 4px;}
@@ -289,19 +288,27 @@ input[type=range]::-moz-range-track { background:transparent; }
 .seq-bank-beat-row{padding:4px 0 2px;display:flex;justify-content:center;}
 
 /* Bottom row: color + del */
-.seq-bank-bottom{display:flex;gap:4px;align-items:center;padding:3px 0 0;}
+.seq-bank-bottom{display:flex;gap:5px;align-items:center;padding:4px 0 0;}
+.seq-del-btn{height:28px;padding:0 10px;border-radius:5px;border:2px solid var(--cyan);background:rgba(0,217,255,0.07);color:var(--cyan);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:1.5px;flex-shrink:0;transition:all 0.12s;}
+.seq-del-btn:hover{background:rgba(0,217,255,0.18);box-shadow:0 0 8px rgba(0,217,255,0.5);}
+.seq-color-btn{height:28px;padding:0 8px;border-radius:5px;border:1.5px solid rgba(0,217,255,0.4);background:transparent;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:1px;flex-shrink:0;transition:all 0.12s;}
+.seq-color-btn:hover{border-color:var(--cyan);color:var(--cyan);}
 
 /* Right: Transport panel */
-.seq-transport-col{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:6px 6px 6px 4px;border-left:1px solid rgba(0,217,255,0.2);flex-shrink:0;min-width:80px;}
-.seq-bpm-row{display:flex;flex-direction:column;align-items:center;gap:2px;}
-.seq-bpm-input{width:46px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;border:1.5px solid var(--cyan);border-radius:4px;padding:2px 3px;background:var(--bg);color:var(--text-primary);text-align:center;}
-.seq-tap-btn{width:38px;height:20px;border-radius:10px;border:1.5px solid var(--magenta);background:transparent;color:var(--magenta);font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:700;cursor:pointer;letter-spacing:1px;}
-.seq-play-btn{width:62px;height:62px;border-radius:50%;border:2px solid var(--cyan);background:transparent;color:var(--cyan);font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;box-shadow:0 0 12px rgba(0,217,255,0.4);flex-shrink:0;}
-.seq-play-btn.playing{background:rgba(0,217,255,0.15);box-shadow:0 0 24px rgba(0,217,255,0.8);border-color:var(--cyan-bright);}
-.seq-rec-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--magenta);background:transparent;color:var(--magenta);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;box-shadow:0 0 8px rgba(196,0,255,0.3);flex-shrink:0;}
-.seq-rec-btn.active{background:rgba(196,0,255,0.2);box-shadow:0 0 16px rgba(196,0,255,0.9);border-color:var(--magenta-bright);}
-.seq-transport-btns-row{display:flex;gap:5px;align-items:center;}
+.seq-transport-col{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:6px 8px 6px 6px;border-left:1px solid rgba(0,217,255,0.2);flex-shrink:0;min-width:100px;}
+.seq-bpm-row{display:flex;flex-direction:row;align-items:center;gap:4px;width:100%;}
+.seq-bpm-label{font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;color:var(--text-muted);letter-spacing:1px;flex-shrink:0;}
+.seq-bpm-input{width:42px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;border:1.5px solid var(--cyan);border-radius:4px;padding:2px 3px;background:var(--bg);color:var(--text-primary);text-align:center;flex-shrink:0;}
+.seq-tap-btn{height:24px;padding:0 10px;border-radius:12px;border:1.5px solid var(--magenta);background:transparent;color:var(--magenta);font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;cursor:pointer;letter-spacing:1px;flex-shrink:0;transition:all 0.12s;}
+.seq-tap-btn:hover{background:rgba(196,0,255,0.15);box-shadow:0 0 8px rgba(196,0,255,0.4);}
+.seq-play-btn{width:68px;height:68px;border-radius:50%;border:2.5px solid var(--cyan);background:transparent;color:var(--cyan);font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;box-shadow:0 0 14px rgba(0,217,255,0.4);flex-shrink:0;}
+.seq-play-btn.playing{background:rgba(0,217,255,0.15);box-shadow:0 0 28px rgba(0,217,255,0.8);border-color:var(--cyan-bright);}
+.seq-rec-btn{width:40px;height:40px;border-radius:50%;border:2px solid var(--magenta);background:transparent;color:var(--magenta);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;box-shadow:0 0 8px rgba(196,0,255,0.3);flex-shrink:0;}
+.seq-rec-btn.active{background:rgba(196,0,255,0.2);box-shadow:0 0 20px rgba(196,0,255,0.9);border-color:var(--magenta-bright);}
+.seq-transport-btns-row{display:flex;gap:6px;align-items:center;}
 .seq-transport-micro-row{display:flex;gap:3px;align-items:center;}
+.seq-scroll-lock-wrap{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.seq-scroll-lock-lbl{font-family:'IBM Plex Mono',monospace;font-size:6px;font-weight:700;color:var(--text-muted);letter-spacing:0.5px;text-transform:uppercase;line-height:1;}
 .seq-panel{width:100%;max-width:520px;background:var(--bg-secondary);border:1px solid rgba(0,217,255,0.12);border-radius:6px;overflow:hidden;transition:all 0.3s ease;flex-shrink:0;}
 .xl2-mode .seq-panel{max-width:100%;}
 .seq-panel-header{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg-tertiary);border-bottom:1px solid rgba(0,217,255,0.3);cursor:pointer;user-select:none;}
@@ -316,14 +323,19 @@ input[type=range]::-moz-range-track { background:transparent; }
 /* Collapsed: slim labeled bar */
 .slim-panel{width:100%;max-width:520px;flex-shrink:0;position:relative;margin:0;padding:0;}
 .xl2-mode .slim-panel{max-width:100%;}
-.slim-panel-bar{display:flex;width:100%;height:18px;background:var(--bg-secondary);border-top:1px solid rgba(0,217,255,0.12);border-bottom:none;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;padding:0 8px;}
-.slim-panel-bar-arrow{background:transparent;border:none;color:rgba(0,217,255,0.7);font-size:9px;cursor:pointer;padding:0;line-height:1;flex-shrink:0;transition:transform 0.25s;transform:rotate(180deg);}
-.slim-panel.collapsed .slim-panel-bar-arrow{transform:rotate(0deg);}
+.slim-panel-bar{display:flex;width:100%;height:18px;background:var(--bg-secondary);border-top:1px solid rgba(0,217,255,0.12);border-bottom:1px solid rgba(0,217,255,0.12);align-items:center;gap:6px;cursor:pointer;flex-shrink:0;padding:0 8px;}
+.slim-panel-bar-arrow{background:transparent;border:none;color:rgba(0,217,255,0.7);font-size:16px;cursor:pointer;padding:0;line-height:1;flex-shrink:0;transition:transform 0.25s;transform:scaleX(0.4) rotate(180deg);transform-origin:center center;display:inline-flex;align-items:center;justify-content:center;position:relative;}
+.slim-panel-bar-arrow::after{content:none;}
+.slim-panel.collapsed .slim-panel-bar-arrow{transform:scaleX(0.4) rotate(0deg);left:0;}
+.slim-panel:not(.collapsed) .slim-panel-bar-arrow{left:8px;}
 .slim-panel-bar span{font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(0,217,255,0.55);flex:1;}
-.slim-panel-body{overflow:hidden;transition:max-height 0.3s ease,opacity 0.3s ease;}
+.slim-panel-body{overflow:hidden;}
+.slim-panel-body>.slim-panel-body-inner{transform:translateY(0);transition:transform 0.2s ease;}
+.slim-panel.collapsed .slim-panel-body{max-height:0;overflow:hidden;opacity:0;}
+.slim-panel.collapsed .slim-panel-body>.slim-panel-body-inner{transform:translateY(-100%);}
 .slim-panel+.slim-panel>.slim-panel-bar{margin-top:-1px;}
 #padPanelBar{border-bottom:1px solid rgba(0,217,255,0.12);}
-.slim-panel.collapsed .slim-panel-body{max-height:0!important;height:0!important;opacity:0;padding:0!important;margin:0!important;border:none!important;overflow:hidden!important;line-height:0!important;font-size:0!important;}
+.slim-panel.collapsed .slim-panel-body{max-height:0!important;height:0!important;opacity:0;padding:0!important;margin:0!important;border:none!important;overflow:hidden!important;}
 </style>
 </head>
 <body>
@@ -364,7 +376,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(0,217,255,0.35);letter-spacing:2px;text-align:center;">v4.02</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(0,217,255,0.35);letter-spacing:2px;text-align:center;">v4.46</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -379,9 +391,108 @@ window.onerror=function(msg,src,line,col,err){
     <div class="mast-info" id="mastInfo">HARD · XL2</div>
   </div>
   <div class="info-bar"><span class="blbl">Tap a square · then a number · tap placed to return · pinch to zoom · double-tap resets zoom</span></div>
-  <div class="gscroll"><div class="grid-clip" id="gridClip"><div class="grid" id="grid"></div></div></div>
+  <div class="gscroll"><div class="grid-clip" id="gridClip"><div class="grid" id="grid"></div></div>
+    <!-- Unified SEQ/PUZ toggle button — always in bottom-left of gscroll -->
+    <button class="seq-btn seq-btn-sq" id="seqPuz" title="Toggle Sequencer"
+      style="position:absolute;bottom:6px;left:6px;z-index:200;padding:0;width:32px;height:32px;overflow:hidden;border-radius:4px;box-shadow:0 0 10px rgba(0,217,255,0.4);">
+      <!-- PUZ icon: puzzle grid (shown in puzzle mode — click enters sequencer) -->
+      <svg id="seqPuzIconSeq" width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none;margin:auto;">
+        <!-- Row 1: teal+/ | dark empty | purple+= -->
+        <rect x="1"  y="1"  width="8" height="8" rx="1.8" fill="rgba(0,100,105,0.9)"/>
+        <text x="5"  y="7.8" font-family="monospace" font-size="7.5" font-weight="700" fill="rgba(0,217,255,0.95)" text-anchor="middle">/</text>
+        <rect x="11" y="1"  width="8" height="8" rx="1.8" fill="rgba(0,0,0,0)" stroke="rgba(110,110,110,0.55)" stroke-width="1.1"/>
+        <rect x="21" y="1"  width="8" height="8" rx="1.8" fill="rgba(75,0,115,0.85)"/>
+        <text x="25" y="7.5" font-family="monospace" font-size="5.5" font-weight="700" fill="rgba(190,130,255,0.95)" text-anchor="middle">=</text>
+        <!-- Row 2: nothing | teal+× | nothing -->
+        <rect x="11" y="11" width="8" height="8" rx="1.8" fill="rgba(0,100,105,0.9)"/>
+        <text x="15" y="17.8" font-family="monospace" font-size="7" font-weight="700" fill="rgba(0,217,255,0.95)" text-anchor="middle">×</text>
+        <!-- Row 3: teal+× | dark empty | teal+/ -->
+        <rect x="1"  y="21" width="8" height="8" rx="1.8" fill="rgba(0,100,105,0.9)"/>
+        <text x="5"  y="27.8" font-family="monospace" font-size="7" font-weight="700" fill="rgba(0,217,255,0.95)" text-anchor="middle">×</text>
+        <rect x="11" y="21" width="8" height="8" rx="1.8" fill="rgba(0,0,0,0)" stroke="rgba(110,110,110,0.55)" stroke-width="1.1"/>
+        <rect x="21" y="21" width="8" height="8" rx="1.8" fill="rgba(0,100,105,0.9)"/>
+        <text x="25" y="27.8" font-family="monospace" font-size="7.5" font-weight="700" fill="rgba(0,217,255,0.95)" text-anchor="middle">/</text>
+      </svg>
+      <!-- SEQ icon: numbered pad tiles (shown in sequencer mode — click returns to puzzle) -->
+      <svg id="seqPuzIconPuz" width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:auto;">
+        <!-- row 1 -->
+        <rect x="1"  y="1"  width="8" height="8" rx="1.8" fill="#0d1a1a" stroke="rgba(0,180,200,0.7)"  stroke-width="1.1"/>
+        <rect x="11" y="1"  width="8" height="8" rx="1.8" fill="#0d1a1a" stroke="rgba(0,180,200,0.55)" stroke-width="1.1"/>
+        <rect x="21" y="1"  width="8" height="8" rx="1.8" fill="#0d1a1a" stroke="rgba(0,180,200,0.55)" stroke-width="1.1"/>
+        <text x="5"  y="8"  font-family="monospace" font-size="6" font-weight="700" fill="rgba(255,255,255,0.85)" text-anchor="middle">2</text>
+        <text x="15" y="8"  font-family="monospace" font-size="6" font-weight="700" fill="rgba(255,255,255,0.85)" text-anchor="middle">2</text>
+        <text x="25" y="8"  font-family="monospace" font-size="6" font-weight="700" fill="rgba(255,255,255,0.85)" text-anchor="middle">2</text>
+        <!-- row 2 -->
+        <rect x="1"  y="11" width="8" height="8" rx="1.8" fill="#0d1a1a" stroke="rgba(0,180,200,0.55)" stroke-width="1.1"/>
+        <rect x="11" y="11" width="8" height="8" rx="1.8" fill="#0d1a1a" stroke="rgba(0,180,200,0.7)"  stroke-width="1.1"/>
+        <rect x="21" y="11" width="8" height="8" rx="1.8" fill="#0d1a1a" stroke="rgba(0,180,200,0.55)" stroke-width="1.1"/>
+        <text x="5"  y="18" font-family="monospace" font-size="6" font-weight="700" fill="rgba(255,255,255,0.85)" text-anchor="middle">2</text>
+        <text x="15" y="18" font-family="monospace" font-size="6" font-weight="700" fill="rgba(255,255,255,0.85)" text-anchor="middle">3</text>
+        <text x="25" y="18" font-family="monospace" font-size="6" font-weight="700" fill="rgba(255,255,255,0.85)" text-anchor="middle">3</text>
+        <!-- row 3 -->
+        <rect x="1"  y="21" width="8" height="8" rx="1.8" fill="#0d1a1a" stroke="rgba(0,180,200,0.55)" stroke-width="1.1"/>
+        <rect x="11" y="21" width="8" height="8" rx="1.8" fill="#0d1a1a" stroke="rgba(0,180,200,0.55)" stroke-width="1.1"/>
+        <rect x="21" y="21" width="8" height="8" rx="1.8" fill="#0d1a1a" stroke="rgba(0,180,200,0.55)" stroke-width="1.1"/>
+        <text x="5"  y="28" font-family="monospace" font-size="6" font-weight="700" fill="rgba(255,255,255,0.85)" text-anchor="middle">3</text>
+        <text x="15" y="28" font-family="monospace" font-size="6" font-weight="700" fill="rgba(255,255,255,0.85)" text-anchor="middle">4</text>
+        <text x="25" y="28" font-family="monospace" font-size="6" font-weight="700" fill="rgba(255,255,255,0.85)" text-anchor="middle">4</text>
+      </svg>
+    </button>
+  </div>
   
-  <div class="bank-outer"><div class="seq-toolbar" id="seqToolbar"><div class="seq-toolbar-row"><button class="seq-btn seq-btn-sq" id="seqPuz" style="font-size:8px;font-weight:700;flex-shrink:0;">PUZ</button><div id="tbSizeSlider" style="display:none;flex:1;max-width:100px;min-width:50px;"></div><div id="tbGapSlider" style="display:none;flex:1;max-width:80px;min-width:40px;"></div><button class="seq-btn seq-btn-sq" id="seqRecOld" style="display:none;flex-shrink:0;">⏺</button><button class="seq-btn seq-btn-lg" id="seqPlayOld" style="display:none;flex-shrink:0;height:36px;width:36px;font-size:18px;">▶</button><button class="seq-btn seq-btn-sq" id="tileSpacingBtn" title="Tile Spacing" style="flex-shrink:0;font-size:10px;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block"><rect x="0" y="0" width="3.5" height="3.5" rx="0.6" fill="currentColor"/><rect x="5.25" y="0" width="3.5" height="3.5" rx="0.6" fill="currentColor"/><rect x="10.5" y="0" width="3.5" height="3.5" rx="0.6" fill="currentColor"/><rect x="0" y="5.25" width="3.5" height="3.5" rx="0.6" fill="currentColor"/><rect x="5.25" y="5.25" width="3.5" height="3.5" rx="0.6" fill="currentColor"/><rect x="10.5" y="5.25" width="3.5" height="3.5" rx="0.6" fill="currentColor"/><rect x="0" y="10.5" width="3.5" height="3.5" rx="0.6" fill="currentColor"/><rect x="5.25" y="10.5" width="3.5" height="3.5" rx="0.6" fill="currentColor"/><rect x="10.5" y="10.5" width="3.5" height="3.5" rx="0.6" fill="currentColor"/></svg></button><div style="flex:1;"></div><button class="seq-btn seq-btn-sq" id="seqSave" title="Save" style="display:none;flex-shrink:0;">💾</button><button class="seq-btn seq-btn-sq" id="seqLoad" title="Load" style="display:none;flex-shrink:0;">📂</button><button class="seq-btn seq-btn-sq" id="seqClearOld" title="Clear" style="display:none;flex-shrink:0;">🗑</button><button class="seq-btn seq-btn-sq" id="seqSndBtn" title="Sound Style" style="display:none;flex-shrink:0;font-size:11px;">♪</button><button class="seq-btn seq-btn-sq" id="seqScrollLockOld" style="display:none;flex-shrink:0;font-size:11px;">🔓</button></div><div class="seq-toolbar-row" id="tbRow2" style="display:none;"><div style="flex:1;"></div><button class="seq-btn seq-btn-sq" id="seqErase" title="Erase Beats" style="display:none;flex-shrink:0;">✂</button><button class="seq-btn seq-btn-sq" id="colorTagBtnOld" title="Color tiles" style="display:none;flex-shrink:0;">🎨</button><button class="seq-btn seq-btn-sq" id="copyModeBtnOld" title="Copy sample" style="display:none;flex-shrink:0;">📋</button></div><div class="seq-toolbar-row" id="tbBpmRow" style="display:none;gap:3px;align-items:stretch;"><div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;"><input id="tbBpmInputOld" type="number" min="40" max="300" value="120" style="width:46px;font-size:11px;font-weight:700;border:1.5px solid var(--cyan);border-radius:3px;padding:2px 3px;background:var(--bg-secondary);color:var(--text-primary);text-align:center;"><button class="seq-btn" id="tbTapBtnOld" style="font-size:8px;font-weight:700;padding:3px 4px;">TAP</button></div><div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;"><div style="display:flex;gap:2px;"><button class="pro-slot" data-slot="0" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--cyan);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">1</button><button class="pro-slot" data-slot="1" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--cyan);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">2</button><button class="pro-slot" data-slot="2" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--cyan);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">3</button><button class="pro-slot" data-slot="3" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--cyan);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">4</button></div><div style="display:flex;gap:2px;align-items:center;"><button class="pro-slot" data-slot="4" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--cyan);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">5</button><button class="pro-slot" data-slot="5" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--cyan);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">6</button><button class="pro-slot" data-slot="6" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--cyan);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">7</button><button class="pro-slot" data-slot="7" style="font-family:monospace;font-size:9px;font-weight:700;padding:0;border:1.5px solid var(--cyan);border-radius:3px;cursor:pointer;width:26px;height:26px;text-align:center;flex-shrink:0;">8</button></div></div><div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;min-width:116px;max-width:120px;"><div style="display:flex;gap:2px;"><button class="seq-btn seq-btn-sq" id="btnGlowToggle" title="Tap glow on/off" style="font-size:10px;padding:0;overflow:hidden;"><canvas id="glowIconCanvas" width="26" height="26" style="display:block;width:26px;height:26px;"></canvas></button><button class="seq-btn" id="btnSensToggle" title="Tap sensitivity (hold for settings)" style="flex:1;font-size:10px;padding:2px 0;">&#x1F44B;</button><button class="seq-btn seq-btn-sq" id="btnSpinToggle" title="Spin on/off" style="font-size:10px;">&#x1F300;</button><button class="seq-btn seq-btn-sq" id="btnParticleToggle" title="Particles on/off" style="font-size:10px;">&#x2728;</button></div></div></div><div id="toolbarBeatOld" style="display:none;flex-direction:column;align-items:center;gap:2px;width:100%;padding:2px 0;"><div id="toolbarBeatDotsOld" style="display:flex;gap:2px;flex-wrap:wrap;align-items:center;justify-content:center;width:100%;"></div></div></div><div id="_pitchTopDock" style="display:none;width:100%;background:var(--bg-secondary);padding:2px 4px;align-items:center;gap:4px;"></div><div class="slim-panel" id="padSlimPanel"><div class="slim-panel-bar" id="padPanelBar" style="display:none;"><button class="slim-panel-bar-arrow" id="padPanelArrow">▲</button><span>PADS</span></div><div class="slim-panel-body" id="padPanelBody" style="max-height:3000px;"><div class="bank-row" style="position:relative;"><div id="_pitchLeftDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:var(--bg-secondary);"></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="width:28px;height:28px;font-size:8px;flex-shrink:0;align-self:flex-start;margin:4px 0 0 0;">SEQ</button><div class="bank"><div class="btiles" id="bank"></div></div><div id="_pitchRightDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:var(--bg-secondary);"></div></div><div id="_pitchBottomDock" style="display:none;width:100%;background:var(--bg-secondary);padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div id="_volBottomDock" style="display:none;width:100%;background:var(--bg-secondary);padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div></div></div></div></div></div>
+  <div class="bank-outer">
+    <!-- PAD TOOLS slim panel (SEQ mode only) -->
+    <div class="slim-panel collapsed" id="padToolsSlimPanel" style="display:none;">
+      <div class="slim-panel-bar" id="padToolsBar"><button class="slim-panel-bar-arrow" id="padToolsArrow">▲</button><span>PAD TOOLS</span></div>
+      <div class="slim-panel-body" id="padToolsBody" style="max-height:3000px;border-bottom:1px solid rgba(0,217,255,0.18);">
+        <div style="display:flex;flex-direction:row;align-items:center;gap:0;padding:4px 6px;">
+          <!-- Left: Save + Load -->
+          <div style="display:flex;gap:3px;flex-shrink:0;">
+            <button class="seq-btn seq-btn-sq" id="seqSave" title="Save" style="flex-shrink:0;">💾</button>
+            <button class="seq-btn seq-btn-sq" id="seqLoad" title="Load" style="flex-shrink:0;">📂</button>
+          </div>
+          <!-- Center: Touch Sense + Spin + Particles + Glow — flex:1 + justify-content:center -->
+          <div style="display:flex;gap:3px;flex:1;justify-content:center;align-items:center;">
+            <button class="seq-btn" id="btnSensToggle" title="Tap sensitivity (hold for settings)" style="flex-shrink:0;font-size:10px;padding:2px 5px;">&#x1F44B;</button>
+            <button class="seq-btn seq-btn-sq" id="btnSpinToggle" title="Spin on/off" style="font-size:10px;flex-shrink:0;">&#x1F300;</button>
+            <button class="seq-btn seq-btn-sq" id="btnParticleToggle" title="Particles on/off" style="font-size:10px;flex-shrink:0;">&#x2728;</button>
+            <button class="seq-btn seq-btn-sq" id="btnGlowToggle" title="Tap glow on/off" style="font-size:10px;padding:0;overflow:hidden;flex-shrink:0;"><canvas id="glowIconCanvas" width="26" height="26" style="display:block;width:26px;height:26px;"></canvas></button>
+          </div>
+          <!-- Right: Color Pads + Sound Style -->
+          <div style="display:flex;gap:3px;flex-shrink:0;">
+            <button class="seq-btn seq-btn-sq" id="colorTagBtnOld" title="Color tiles" style="flex-shrink:0;">🎨</button>
+            <button class="seq-btn seq-btn-sq" id="seqSndBtn" title="Sound Style" style="flex-shrink:0;font-size:11px;">♪</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- PAD ADJUSTMENTS slim panel (SEQ mode only) — sliders built by JS -->
+    <div class="slim-panel collapsed" id="padAdjSlimPanel" style="display:none;">
+      <div class="slim-panel-bar" id="padAdjBar"><button class="slim-panel-bar-arrow" id="padAdjArrow">▲</button><span>PAD ADJUSTMENTS</span></div>
+      <div class="slim-panel-body" id="padAdjBody" style="max-height:3000px;">
+        <!-- Content injected by _initPadAdjPanel() -->
+      </div>
+    </div>
+    <!-- Hidden placeholders so legacy code that references these IDs doesn't break -->
+    <div style="display:none;">
+      <div id="tbSizeSlider"></div>
+      <div id="tbGapSlider"></div>
+      <button id="seqRecOld">⏺</button>
+      <button id="seqPlayOld">▶</button>
+      <div id="tbRow2"><button id="seqErase">✂</button><button id="copyModeBtnOld">📋</button></div>
+      <div id="tbBpmRow"><input id="tbBpmInputOld" type="number" min="40" max="300" value="120"><button id="tbTapBtnOld">TAP</button>
+        <button class="pro-slot" data-slot="0">1</button><button class="pro-slot" data-slot="1">2</button><button class="pro-slot" data-slot="2">3</button><button class="pro-slot" data-slot="3">4</button>
+        <button class="pro-slot" data-slot="4">5</button><button class="pro-slot" data-slot="5">6</button><button class="pro-slot" data-slot="6">7</button><button class="pro-slot" data-slot="7">8</button>
+      </div>
+      <div id="toolbarBeatOld"><div id="toolbarBeatDotsOld"></div></div>
+      <button id="seqScrollLockOld">🔓</button>
+      <button id="seqClearOld">🗑</button>
+    </div>
+    <!-- Pitch top dock -->
+    <div id="_pitchTopDock" style="display:none;width:100%;background:var(--bg-secondary);padding:2px 4px;align-items:center;gap:4px;"></div>
+    <!-- PADS slim panel -->
+    <div class="slim-panel" id="padSlimPanel"><div class="slim-panel-bar" id="padPanelBar" style="display:none;"><button class="slim-panel-bar-arrow" id="padPanelArrow">▲</button><span>PADS</span></div><div class="slim-panel-body" id="padPanelBody" style="max-height:3000px;"><div class="bank-row" style="position:relative;"><div id="_pitchLeftDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:var(--bg-secondary);"></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="display:none;width:0;height:0;padding:0;border:none;overflow:hidden;position:absolute;pointer-events:none;">SEQ</button><div class="bank"><div class="btiles" id="bank"></div></div><div id="_pitchRightDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:var(--bg-secondary);"></div></div><div id="_pitchBottomDock" style="display:none;width:100%;background:var(--bg-secondary);padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div id="_volBottomDock" style="display:none;width:100%;background:var(--bg-secondary);padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div></div></div>
+  </div></div></div></div>
 
 
   <!-- SEQUENCE BANK PANEL — always visible when SEQ active -->
@@ -391,7 +502,6 @@ window.onerror=function(msg,src,line,col,err){
       <button class="seq-abc-btn active" id="seqBankA" data-bank="0">A</button>
       <button class="seq-abc-btn" id="seqBankB" data-bank="1">B</button>
       <button class="seq-abc-btn" id="seqBankC" data-bank="2">C</button>
-      <button class="seq-abc-color-btn" id="seqBankColorBtn" title="Color this bank">🎨</button>
     </div>
 
     <!-- 3×5 slot grid -->
@@ -432,8 +542,8 @@ window.onerror=function(msg,src,line,col,err){
       </div>
       <!-- DEL + color row -->
       <div class="seq-bank-bottom">
-        <button class="seq-btn seq-btn-sq" id="seqClear" title="Clear" style="font-size:11px;">🗑</button>
-        <button class="seq-btn seq-btn-sq" id="colorTagBtn" title="Color tiles" style="font-size:11px;">🎨</button>
+        <button class="seq-del-btn" id="seqClear" title="Clear">DEL</button>
+        <button class="seq-color-btn" id="colorTagBtn" title="Color tiles">Color</button>
         <button class="seq-btn seq-btn-sq" id="copyModeBtn" title="Copy sample" style="font-size:11px;display:none;">📋</button>
       </div>
     </div>
@@ -441,13 +551,17 @@ window.onerror=function(msg,src,line,col,err){
     <!-- Transport panel -->
     <div class="seq-transport-col">
       <div class="seq-bpm-row">
+        <span class="seq-bpm-label">BPM</span>
         <input class="seq-bpm-input" id="tbBpmInput" type="number" min="40" max="300" value="120">
         <button class="seq-tap-btn" id="tbTapBtn">TAP</button>
       </div>
       <button class="seq-play-btn" id="seqPlay" title="Play/Stop">▶</button>
       <div class="seq-transport-btns-row">
+        <div class="seq-scroll-lock-wrap">
+          <button class="seq-btn seq-btn-sq" id="seqScrollLock" title="Lock Scroll" style="font-size:11px;width:28px;height:28px;overflow:hidden;padding:0;"></button>
+          <span class="seq-scroll-lock-lbl">Scroll<br>Lock</span>
+        </div>
         <button class="seq-rec-btn" id="seqRec" title="Record">⏺</button>
-        <button class="seq-btn seq-btn-sq" id="seqScrollLock" title="Lock Scroll" style="font-size:11px;width:28px;height:28px;overflow:hidden;padding:0;"></button>
       </div>
     </div>
   </div><!-- /seq-bank-panel --></div></div></div>
@@ -4204,8 +4318,6 @@ function playBankE(idx,_bankVol){
 var PZ=null,SEL=null,HIST=[],SIZE='xl2',DIFF='hard';
 var TILE_SCALE=1.0;
 var TILE_GAP_MULT=1.0;
-var SNAP_TO_FILL=false;
-try{if(localStorage.getItem('snapToFill')==='1') SNAP_TO_FILL=true;}catch(e){}
 // Tile Spacing Menu padding state
 var BANK_PAD_L=0, BANK_PAD_R=0, BANK_PAD_T=0, BANK_PAD_B=0;
 var _tsMenuOpen=false;
@@ -4371,45 +4483,46 @@ function renderBank(){
   var baseFontSize=bankCount>25?13:bankCount>15?15:18;
   var tileSize=Math.round(baseSize*TILE_SCALE);
   var tileFontSize=Math.round(baseFontSize*TILE_SCALE);
+  var tilePad='0 '+Math.round(8*TILE_SCALE)+'px';
   var tileGap=Math.round(6*TILE_SCALE*TILE_GAP_MULT);
   document.getElementById('bank').style.gap=tileGap+'px';
-  // Apply bank padding
-  var padL=6+BANK_PAD_L, padR=8+BANK_PAD_R;
-  document.getElementById('bank').style.paddingLeft=padL+'px';
-  document.getElementById('bank').style.paddingRight=padR+'px';
-  document.getElementById('bank').style.paddingTop=(6+BANK_PAD_T)+'px';
-  document.getElementById('bank').style.paddingBottom=(6+BANK_PAD_B)+'px';
-
-  // ── Snap-to-fill & max-2-across logic ──
-  // Measure available width inside the btiles container
-  var bankEl=document.getElementById('bank');
-  var bankW=bankEl.getBoundingClientRect().width;
-  if(bankW<=0) bankW=bankEl.offsetWidth||300;
-  var availW=bankW-padL-padR;
-  var borderTotal=3; // 1.5px border each side in content-box
-  // Cap max tile size: 2 tiles across at zero gap
-  // Rendered width per tile = tileSize + borderTotal
-  var max2=Math.floor((availW-tileGap-borderTotal*2)/2);
-  if(tileSize>max2) tileSize=Math.max(10,max2);
-
-  if(SNAP_TO_FILL && availW>0){
-    // Each tile occupies (tileSize + borderTotal) in content-box mode
-    var cellSize=tileSize+borderTotal;
-    var perRow=Math.max(1,Math.floor((availW+tileGap)/(cellSize+tileGap)));
-    // Snap: recalculate so perRow tiles fill width exactly
-    tileSize=Math.max(10,Math.floor((availW-(perRow-1)*tileGap)/perRow-borderTotal));
+  // Snap tile size to fill width edge-to-edge for exact N-per-row (both modes)
+  (function(){
+    var bankParent=document.getElementById('bank').parentElement;
+    var bankW=bankParent?bankParent.getBoundingClientRect().width:0;
+    if(bankW<=0) bankW=bankParent?bankParent.offsetWidth:300;
+    var padLR=window._seqVisible ? (6+BANK_PAD_L)+(8+BANK_PAD_R) : 0;
+    var availW=bankW-padLR;
+    var tilesPerRow;
+    if(window._seqVisible && window._seqTargetRows){
+      tilesPerRow=window._seqTargetRows;
+    } else {
+      tilesPerRow=Math.max(2, Math.floor(availW / (tileSize + tileGap)));
+    }
+    tilesPerRow=Math.max(2, tilesPerRow);
+    var snappedSize=Math.max(15, Math.floor((availW - (tilesPerRow - 1) * tileGap) / tilesPerRow));
+    tileSize=snappedSize;
+    tileFontSize=Math.round(baseFontSize*(tileSize/baseSize));
+    tilePad='0 '+Math.round(tileSize*0.18)+'px';
+    if(window._seqVisible) window._seqActualRows=tilesPerRow;
+  })();
+  // Apply bank padding — sides only in SEQ mode
+  if(window._seqVisible){
+    document.getElementById('bank').style.paddingLeft=(6+BANK_PAD_L)+'px';
+    document.getElementById('bank').style.paddingRight=(8+BANK_PAD_R)+'px';
+    document.getElementById('bank').style.paddingTop=(6+BANK_PAD_T)+'px';
+    document.getElementById('bank').style.paddingBottom=(6+BANK_PAD_B)+'px';
+  } else {
+    document.getElementById('bank').style.paddingLeft='0px';
+    document.getElementById('bank').style.paddingRight='0px';
+    document.getElementById('bank').style.paddingTop='4px';
+    document.getElementById('bank').style.paddingBottom='4px';
   }
-  // Recalculate font size proportionally
-  tileFontSize=Math.round(tileSize/baseSize*baseFontSize);
   for(var i=0;i<PZ.bank.length;i++){
     var item=PZ.bank[i];
     var tile=document.createElement('div');tile.className='bt';
     var tileRadius=Math.max(2,Math.min(10,Math.round(tileSize*0.22)));
-    if(SNAP_TO_FILL){
-      tile.style.cssText='width:'+tileSize+'px;height:'+tileSize+'px;flex-grow:0;flex-shrink:0;padding:0;font-size:'+tileFontSize+'px;border-radius:'+tileRadius+'px;';
-    } else {
-      tile.style.cssText='min-width:'+tileSize+'px;height:'+tileSize+'px;padding:0;font-size:'+tileFontSize+'px;border-radius:'+tileRadius+'px;';
-    }
+    tile.style.cssText='min-width:'+tileSize+'px;height:'+tileSize+'px;padding:'+tilePad+';font-size:'+tileFontSize+'px;border-radius:'+tileRadius+'px;';
     if(item.used)tile.classList.add('used');else if(SEL)tile.classList.add('lit');
     tile.textContent=item.value;
     tile.dataset.sndIdx=i; tile.dataset.bankIdx=i;
@@ -5192,27 +5305,46 @@ function render(){
     // Choose cyan or magenta randomly, with slight shade variation
     var isCyan=Math.random()>0.5;
     var hue=isCyan?(Math.random()*20+170):(Math.random()*30+280);
-    var sat=Math.round(80+Math.random()*20);
-    var lit=Math.round(55+Math.random()*20);
-    var stepMs=Math.round(333/visibleCells.length);
+    var sat=Math.round(95+Math.random()*5);
+    var lit=Math.round(38+Math.random()*14);
+    var stepMs=Math.round(150/visibleCells.length);
     for(var i=0;i<visibleCells.length;i++){
       (function(cellKey,delay){
         setTimeout(function(){
           var d=grid.querySelector('[data-cell-key="'+cellKey+'"]');
           if(!d) return;
-          var cellLit=Math.max(30,Math.min(90,lit+(Math.random()*30-15)));
-          var cellCol='hsl('+hue+','+sat+'%,'+cellLit+'%)';
-          var cellSoft='hsla('+hue+','+sat+'%,'+cellLit+'%,0.25)';
-          d.style.color=cellCol;
-          d.style.textShadow='0 0 8px '+cellCol;
-          d.style.background=cellSoft;
-          d.style.transition='color 0.12s, text-shadow 0.12s, background 0.12s';
+          if(!d._waveOrigColor){
+            d._waveOrigColor   = d.style.color;
+            d._waveOrigShadow  = d.style.textShadow;
+            d._waveOrigBg      = d.style.background;
+          }
+          d._waveCount = (d._waveCount||0) + 1;
+
+          // Per-cell variation: lightness ±16, saturation ±5, alpha 0.35–0.75, glow radius 6–14px
+          var cellLit   = Math.max(28, Math.min(58, lit + (Math.random()*32-16)));
+          var cellSat   = Math.max(85, Math.min(100, sat + (Math.random()*10-5)));
+          var cellAlpha = 0.35 + Math.random()*0.40;
+          var glowR1    = Math.round(8  + Math.random()*6);
+          var glowR2    = Math.round(14 + Math.random()*8);
+          var cellCol  = 'hsl('+hue+','+cellSat+'%,'+cellLit+'%)';
+          var cellSoft = 'hsla('+hue+','+cellSat+'%,'+cellLit+'%,'+cellAlpha.toFixed(2)+')';
+          d.style.color      = cellCol;
+          d.style.textShadow = '0 0 '+glowR1+'px '+cellCol+', 0 0 '+glowR2+'px '+cellCol;
+          d.style.background = cellSoft;
+          d.style.transition = 'color 0.05s, text-shadow 0.05s, background 0.05s';
           setTimeout(function(){
-            d.style.color='';
-            d.style.textShadow='';
-            d.style.background='';
+            d._waveCount = (d._waveCount||1) - 1;
             d.style.transition='color 0.3s, text-shadow 0.3s, background 0.3s';
-            setTimeout(function(){ d.style.transition=''; },300);
+            // Only restore once the last active wave on this cell finishes
+            if(d._waveCount<=0){
+              d._waveCount=0;
+              d.style.color      = d._waveOrigColor  || '';
+              d.style.textShadow = d._waveOrigShadow || '';
+              d.style.background = d._waveOrigBg     || '';
+              // Clear cached originals so next wave re-snapshots cleanly
+              d._waveOrigColor=null; d._waveOrigShadow=null; d._waveOrigBg=null;
+              setTimeout(function(){ d.style.transition=''; },300);
+            }
           }, stepMs+80);
         }, delay);
       })(visibleCells[i], i*stepMs);
@@ -5441,18 +5573,24 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
     var wrap=document.createElement('div');
     wrap.id='sizeCanvasWrap';
-    wrap.style.cssText='display:flex;flex-direction:column;align-items:center;flex-shrink:0;gap:0;padding:4px 3px;background:var(--bg-secondary);touch-action:none;';
+    wrap.style.cssText='display:flex;flex-direction:column;align-items:center;flex-shrink:0;gap:0;padding:4px 3px 4px;background:var(--bg-secondary);touch-action:none;';
 
+    // ── SIZE label ──
+    var sizeLbl=document.createElement('span');
+    sizeLbl.style.cssText='font-family:"IBM Plex Mono",monospace;font-size:6px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(0,217,255,0.5);margin-bottom:2px;user-select:none;';
+    sizeLbl.textContent='SIZE';
+    wrap.appendChild(sizeLbl);
+
+    // ── SIZE vertical slider ──
     var canvasWrap=document.createElement('div');
     canvasWrap.id='sizeCanvasInner';
-    canvasWrap.style.cssText='position:relative;width:28px;flex:1;min-height:120px;cursor:ns-resize;touch-action:none;overflow:visible;filter:drop-shadow(0px 4px 8px rgba(75,123,181,0.7)) drop-shadow(0px 2px 4px rgba(0,0,0,0.4));';
+    canvasWrap.style.cssText='position:relative;width:28px;flex:1;min-height:80px;cursor:ns-resize;touch-action:none;overflow:visible;filter:drop-shadow(0px 4px 8px rgba(75,123,181,0.7)) drop-shadow(0px 2px 4px rgba(0,0,0,0.4));';
 
     var cv=document.createElement('canvas');
     cv.id='sizeVertCanvas';
     cv.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
     canvasWrap.appendChild(cv);
 
-    // Hidden range input drives the value
     var sl=document.createElement('input');
     sl.type='range'; sl.min=0; sl.max=100; sl.step=1; sl.value=50;
     sl.orient='vertical';
@@ -5462,26 +5600,58 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     sl.addEventListener('touchcancel',function(){ _unlockScroll(); },{passive:true});
     sl.addEventListener('input',function(){
       var pct=parseFloat(sl.value);
-      if(window.applyPctH) window.applyPctH(pct);
+      if(window._seqVisible){
+        // SEQ mode: map pct 100→2 rows (big tiles), pct 0→16 rows (small tiles)
+        var rows=Math.round(2+(1-pct/100)*14);
+        window._seqTargetRows=rows;
+        if(PZ) renderBank();
+        if(window._syncPadAdjSize) window._syncPadAdjSize(pct);
+      } else {
+        // Puzzle mode: drive TILE_SCALE directly
+        if(window.applyPctH) window.applyPctH(pct);
+      }
       _drawVert(cv,pct/100);
     });
     canvasWrap.appendChild(sl);
     wrap.appendChild(canvasWrap);
 
-    // SEQ button — move into the canvas wrap column
-    var seqBtn=document.getElementById('seqPro');
-    if(seqBtn && seqBtn.parentNode){
-      wrap.appendChild(seqBtn);
-      seqBtn.style.cssText='width:28px;height:28px;font-size:8px;flex-shrink:0;border-radius:3px;border:2px solid var(--br);background:var(--w);margin-top:5px;';
-    }
+    // ── GAP label ──
+    var gapLbl=document.createElement('span');
+    gapLbl.style.cssText='font-family:"IBM Plex Mono",monospace;font-size:6px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(0,217,255,0.5);margin-top:6px;margin-bottom:2px;user-select:none;';
+    gapLbl.textContent='GAP';
+    wrap.appendChild(gapLbl);
 
-    // Insert before the SEQ button (which sits before .bank), so wrap+SEQ are together
-    var seqProEl=bankRow.querySelector('#seqPro');
+    // ── GAP vertical slider ──
+    var gapWrap=document.createElement('div');
+    gapWrap.id='gapCanvasInner';
+    gapWrap.style.cssText='position:relative;width:28px;flex:1;min-height:80px;cursor:ns-resize;touch-action:none;overflow:visible;filter:drop-shadow(0px 4px 8px rgba(75,123,181,0.7)) drop-shadow(0px 2px 4px rgba(0,0,0,0.4));';
+
+    var cvGap=document.createElement('canvas');
+    cvGap.id='gapVertCanvas';
+    cvGap.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+    gapWrap.appendChild(cvGap);
+
+    // GAP: 0%=no gap, 33%=default (mult 1.0), 100%=3x gap
+    var slGap=document.createElement('input');
+    slGap.type='range'; slGap.min=0; slGap.max=100; slGap.step=1; slGap.value=33;
+    slGap.orient='vertical';
+    slGap.style.cssText='position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ns-resize;z-index:5;-webkit-appearance:slider-vertical;writing-mode:vertical-lr;direction:rtl;touch-action:none;';
+    slGap.addEventListener('touchstart',function(){ _lockScroll(); },{passive:true});
+    slGap.addEventListener('touchend',function(){ _unlockScroll(); },{passive:true});
+    slGap.addEventListener('touchcancel',function(){ _unlockScroll(); },{passive:true});
+    slGap.addEventListener('input',function(){
+      var pct=parseFloat(slGap.value);
+      if(window.applyGapPct) window.applyGapPct(pct);
+      _drawVert(cvGap,pct/100);
+    });
+    gapWrap.appendChild(slGap);
+    wrap.appendChild(gapWrap);
+
+    // Insert wrap before .bank
     var bankDiv=bankRow.querySelector('.bank');
-    var insertBefore=seqProEl||bankDiv;
-    if(insertBefore) bankRow.insertBefore(wrap,insertBefore);
+    if(bankDiv) bankRow.insertBefore(wrap,bankDiv);
 
-    // Touch drag on canvas area
+    // Touch drag — SIZE
     var _drag=false, _sy=0, _sp=50, _scrollLocked=false, _lockedScrollY=0;
     function _lockScroll(){
       if(_scrollLocked) return;
@@ -5513,22 +5683,55 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var h=canvasWrap.offsetHeight||100;
       var newPct=Math.max(0,Math.min(100,_sp+(dy/h)*100));
       sl.value=newPct;
-      if(window.applyPctH) window.applyPctH(newPct);
+      var rows=Math.round(2+(1-newPct/100)*14);
+      if(window._seqVisible){
+        window._seqTargetRows=rows;
+        if(PZ) renderBank();
+        if(window._syncPadAdjSize) window._syncPadAdjSize(newPct);
+      } else {
+        if(window.applyPctH) window.applyPctH(newPct);
+      }
       _drawVert(cv,newPct/100);
     },{passive:false});
     canvasWrap.addEventListener('touchend',function(){ _drag=false; _unlockScroll(); },{passive:true});
     canvasWrap.addEventListener('touchcancel',function(){ _drag=false; _unlockScroll(); },{passive:true});
 
+    // Touch drag — GAP
+    var _gDrag=false, _gSy=0, _gSp=33;
+    gapWrap.addEventListener('touchstart',function(e){
+      e.preventDefault();
+      _gDrag=true; _gSy=e.touches[0].clientY; _gSp=parseFloat(slGap.value);
+      _lockScroll();
+    },{passive:false});
+    gapWrap.addEventListener('touchmove',function(e){
+      if(!_gDrag) return;
+      e.preventDefault();
+      var dy=_gSy-e.touches[0].clientY;
+      var h=gapWrap.offsetHeight||100;
+      var newPct=Math.max(0,Math.min(100,_gSp+(dy/h)*100));
+      slGap.value=newPct;
+      if(window.applyGapPct) window.applyGapPct(newPct);
+      _drawVert(cvGap,newPct/100);
+    },{passive:false});
+    gapWrap.addEventListener('touchend',function(){ _gDrag=false; _unlockScroll(); },{passive:true});
+    gapWrap.addEventListener('touchcancel',function(){ _gDrag=false; _unlockScroll(); },{passive:true});
+
     // Initial draw
     setTimeout(function(){
       _drawVert(cv,0.5);
       if(window.applyPctH) window.applyPctH(50);
+      _drawVert(cvGap,0.333);
+      if(window.applyGapPct) window.applyGapPct(33.33);
     },60);
 
-    // Expose sync for applyPctH
+    // Expose sync for applyPctH / applyGapPct
     window._syncVertSizeBar=function(pct){
       sl.value=pct;
       _drawVert(cv,pct/100);
+    };
+    window._syncVertGapBar=function(pct){
+      slGap.value=pct;
+      _drawVert(cvGap,pct/100);
     };
   }
 
@@ -5571,10 +5774,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   var quantize = '1/8';
   // Slot system: 8 independent track slots
   var slotTracks = []; for(var _si=0;_si<45;_si++) slotTracks.push([]); // 45 slots: 3 banks x 15
-  var currentSlot = 0;  // 0-14 within current bank
-  var currentBank = 0;  // 0=A, 1=B, 2=C
+  var currentSlot = 0;  // 0-14 within current bank — the VIEW (what's highlighted in the panel)
+  var currentBank = 0;  // 0=A, 1=B, 2=C — the VIEW
+  var playingBank = 0;  // bank whose slot is actually playing
+  var playingSlot = 0;  // slot within playingBank that is actually playing
   function getGlobalSlot(bank,slot){ return bank*15+slot; }
-  function getActiveGlobalSlot(){ return getGlobalSlot(currentBank,currentSlot); }
+  function getActiveGlobalSlot(){ return getGlobalSlot(playingBank,playingSlot); }
   var beatInterval = null;
   var currentBeat = 0;
   var totalBeats = 0; // bars * 4
@@ -7075,7 +7280,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // Handle pending slot switch
     if(pendingSlot>=0){
       var ps=pendingSlot; pendingSlot=-1;
-      currentSlot=ps; syncTracks(); updateSlotUI();
+      playingBank=currentBank; playingSlot=ps; currentSlot=ps; syncTracks(); updateSlotUI();
     }
     // Start new recording arm
     if(isRecArmed) startRec();
@@ -7086,6 +7291,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   function startPlayback(){
     clearTimers();
     isPlaying=true;
+    playingBank=currentBank; playingSlot=currentSlot;
     updateUI();
     if(isRecArmed) startRec();
     if(proMode) startBeatClock();
@@ -7108,6 +7314,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     clearTimers();
     stopBeatClock();
     isPlaying=false;
+    playingBank=currentBank; playingSlot=currentSlot;
     stopRec();
     updateUI();
   }
@@ -7153,7 +7360,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   if(btnClear) btnClear.addEventListener('click',function(){
     // Check if there's anything to lose
     var hasTracks=slotTracks[getActiveGlobalSlot()]&&slotTracks[getActiveGlobalSlot()].length>0;
-    if(!hasTracks){ doActualClear([currentSlot]); return; }
+    if(!hasTracks){ doActualClear([playingSlot]); return; }
 
     // Full slot-picker clear dialog
     var ov=document.createElement('div');
@@ -7177,7 +7384,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     for(var si2=0;si2<15;si2++){
       var hasSt=slotTracks[getGlobalSlot(currentBank,si2)]&&slotTracks[getGlobalSlot(currentBank,si2)].length>0;
       var sb=document.createElement('button');
-      sb.style.cssText='font-family:monospace;font-size:10px;font-weight:700;width:34px;height:34px;border-radius:4px;cursor:pointer;border:2px solid '+(hasSt?'#991b1b':'#ccc')+';background:'+(si2===currentSlot?'rgba(196,0,255,0.3)':'transparent')+';color:'+(si2===currentSlot?'#fff':hasSt?'#991b1b':'#bbb')+';';
+      sb.style.cssText='font-family:monospace;font-size:10px;font-weight:700;width:34px;height:34px;border-radius:4px;cursor:pointer;border:2px solid '+(hasSt?'#991b1b':'#ccc')+';background:'+(si2===playingSlot?'rgba(196,0,255,0.3)':'transparent')+';color:'+(si2===playingSlot?'#fff':hasSt?'#991b1b':'#bbb')+';';
       sb.textContent=''+(si2+1);
       (function(idx,btn){
         btn.addEventListener('click',function(){
@@ -7195,7 +7402,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     function mkQ(lbl,fn2){ var b=document.createElement('button'); b.textContent=lbl; b.style.cssText='font-family:monospace;font-size:8px;padding:3px 8px;border:1px solid #888;border-radius:3px;background:transparent;color:#555;cursor:pointer;'; b.onclick=fn2; return b; }
     qRow.appendChild(mkQ('ALL',function(){ for(var i=0;i<8;i++){ selected[i]=true; slotBtns[i].style.background='#991b1b'; slotBtns[i].style.color='#fff'; } }));
     qRow.appendChild(mkQ('NONE',function(){ for(var i=0;i<8;i++){ selected[i]=false; slotBtns[i].style.background='transparent'; slotBtns[i].style.color=(slotTracks[i]&&slotTracks[i].length>0)?'#991b1b':'#bbb'; } }));
-    qRow.appendChild(mkQ('CURRENT',function(){ for(var i=0;i<8;i++){ selected[i]=(i===currentSlot); slotBtns[i].style.background=selected[i]?'#991b1b':'transparent'; slotBtns[i].style.color=selected[i]?'#fff':(slotTracks[i]&&slotTracks[i].length>0)?'#991b1b':'#bbb'; } }));
+    qRow.appendChild(mkQ('CURRENT',function(){ for(var i=0;i<8;i++){ selected[i]=(i===playingSlot); slotBtns[i].style.background=selected[i]?'#991b1b':'transparent'; slotBtns[i].style.color=selected[i]?'#fff':(slotTracks[i]&&slotTracks[i].length>0)?'#991b1b':'#bbb'; } }));
     box.appendChild(qRow);
     // Action buttons
     var btnRow=document.createElement('div');
@@ -7203,7 +7410,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var saveBtn=document.createElement('button');
     saveBtn.textContent='💾  Save first, then clear';
     saveBtn.style.cssText='font-family:monospace;font-size:10px;font-weight:700;padding:8px;border:1.5px solid #00d9ff;border-radius:4px;background:rgba(0,217,255,0.15);color:#00d9ff;cursor:pointer;';
-    saveBtn.onclick=function(){ var toC=Object.keys(selected).filter(function(k){return selected[k];}).map(Number); document.body.removeChild(ov); document.getElementById('seqSave').click(); setTimeout(function(){ doActualClear(toC.length?toC:[currentSlot]); },800); };
+    saveBtn.onclick=function(){ var toC=Object.keys(selected).filter(function(k){return selected[k];}).map(Number); document.body.removeChild(ov); document.getElementById('seqSave').click(); setTimeout(function(){ doActualClear(toC.length?toC:[playingSlot]); },800); };
     var clearBtn=document.createElement('button');
     clearBtn.textContent='🗑  Clear selected';
     clearBtn.style.cssText='font-family:monospace;font-size:10px;padding:8px;border:1.5px solid #991b1b;border-radius:4px;background:transparent;color:#991b1b;cursor:pointer;';
@@ -7221,8 +7428,18 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   var seqTaps = 0, seqTapTimer = null;
 
   function showSeq(){
-    seqVisible = true;
-    var _tb=document.getElementById('seqToolbar'); if(_tb) _tb.classList.add('active');
+    seqVisible = true; window._seqVisible = true;
+    // Swap toggle button to PUZ icon (returns to puzzle)
+    var _iconSeq=document.getElementById('seqPuzIconSeq');
+    var _iconPuz=document.getElementById('seqPuzIconPuz');
+    if(_iconSeq) _iconSeq.style.display='none';
+    if(_iconPuz) _iconPuz.style.display='block';
+    var _puzBtn=document.getElementById('seqPuz');
+    if(_puzBtn){ _puzBtn.title='Back to puzzle'; }
+    // Show the two new collapsible panels (seqPuzBar is now zero-height anchor)
+    var _pb=document.getElementById('seqPuzBar'); if(_pb) _pb.style.display='';
+    var _pt=document.getElementById('padToolsSlimPanel'); if(_pt) _pt.style.display='';
+    var _pa=document.getElementById('padAdjSlimPanel'); if(_pa) _pa.style.display='';
     // Show the sequencer controls panel
     var _sp=document.getElementById('seqCtrlSlimPanel'); if(_sp) _sp.style.display='';
     // Show the seq bank slim panel
@@ -7238,9 +7455,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var el=document.getElementById(id); if(el) el.style.display='';
     });
     var _tbr2=document.getElementById('tbRow2'); if(_tbr2) _tbr2.style.display='flex';
-    if(btnPro){ btnPro.style.display='none'; }
+    if(btnPro){ btnPro.classList.add('active'); }
     var _scw=document.getElementById('sizeCanvasWrap'); if(_scw) _scw.style.display='none';
     TILE_SCALE=1.5;
+    if(!window._seqTargetRows) window._seqTargetRows=4;
     if(window._showTbSizeGap) window._showTbSizeGap();
     if(!proMode){ proMode=true; if(proPanel) { proPanel.style.display='flex'; var _pp=document.getElementById('seqCtrlSlimPanel'); if(_pp){ _pp.classList.remove('collapsed'); var _ab=document.getElementById('seqCtrlArrow'); if(_ab) _ab.textContent='▲'; } } buildBeatDots(); syncTracks(); updateSlotUI(); }
     else { buildBeatDots(); }
@@ -7250,9 +7468,19 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   }
 
   function hideSeq(){
-    seqVisible = false;
+    seqVisible = false; window._seqVisible = false;
     if(window._beatEditToggleTile) clearBeatEditMode();
-    var _tb2=document.getElementById('seqToolbar'); if(_tb2) _tb2.classList.remove('active');
+    // Swap toggle button back to SEQ icon (enters sequencer)
+    var _iconSeq=document.getElementById('seqPuzIconSeq');
+    var _iconPuz=document.getElementById('seqPuzIconPuz');
+    if(_iconSeq) _iconSeq.style.display='block';
+    if(_iconPuz) _iconPuz.style.display='none';
+    var _puzBtn=document.getElementById('seqPuz');
+    if(_puzBtn){ _puzBtn.title='Open Sequencer'; }
+    // Hide the anchor and the two new collapsible panels
+    var _pb=document.getElementById('seqPuzBar'); if(_pb) _pb.style.display='none';
+    var _pt=document.getElementById('padToolsSlimPanel'); if(_pt) _pt.style.display='none';
+    var _pa=document.getElementById('padAdjSlimPanel'); if(_pa) _pa.style.display='none';
     // Hide the sequencer controls panel
     var _sp=document.getElementById('seqCtrlSlimPanel'); if(_sp) _sp.style.display='none';
     // Hide seq bank slim panel
@@ -7273,7 +7501,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var _scw2=document.getElementById('sizeCanvasWrap'); if(_scw2) _scw2.style.display='';
     if(window._hideTbSizeGap) window._hideTbSizeGap();
     var sr=document.getElementById('sndRow'); if(sr) sr.style.display='none';
-    if(btnPro){ btnPro.style.display=''; btnPro.style.background=''; btnPro.style.color=''; }
+    if(btnPro){ btnPro.classList.remove('active'); btnPro.style.background=''; btnPro.style.color=''; }
     stopAll(); stopBeatClock();
     proMode=false; if(proPanel) proPanel.style.display='none';
     // If tile scale was pushed above 1.0 (vertical slider max), clamp back
@@ -7291,8 +7519,19 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     updateUI();
   }
 
+  // Unified SEQ/PUZ toggle — same button, icon swaps with mode
   var btnPuz=document.getElementById('seqPuz');
-  if(btnPuz) btnPuz.addEventListener('click',function(){ btnFx('pro'); hideSeq(); });
+  if(btnPuz) btnPuz.addEventListener('click',function(){
+    btnFx('pro');
+    if(!seqVisible){
+      showSeq();
+    } else {
+      // Double-tap to exit sequencer (same behaviour as before)
+      seqTaps++; clearTimeout(seqTapTimer);
+      seqTapTimer=setTimeout(function(){ seqTaps=0; },400);
+      if(seqTaps>=2){ seqTaps=0; hideSeq(); } else { hideSeq(); }
+    }
+  });
 
   var _seqIntroDone=false;
   function playSeqIntro(cb){
@@ -7392,39 +7631,56 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     }, 400);
   }
 
-  if(btnPro) btnPro.addEventListener('click',function(){
-    btnFx('pro');
-    if(!seqVisible){
-      showSeq();
-    } else {
-      // Already visible: need double tap to hide
-      seqTaps++; clearTimeout(seqTapTimer);
-      seqTapTimer=setTimeout(function(){ seqTaps=0; },400);
-      if(seqTaps>=2){ seqTaps=0; hideSeq(); }
-    }
-  });
+  // (btnPro click is now handled by the unified seqPuz toggle above)
 
   // ── Pro panel controls ────────────────────────────────────
   // Bar length buttons
   // ── Slot system ──────────────────────────────────────────
   function updateSlotUI(){
     // Update new 3x5 grid slot buttons
+    var viewingPlayingBank = (currentBank === playingBank);
     document.querySelectorAll('.seq-slot-btn').forEach(function(btn){
       var slot=parseInt(btn.dataset.slot);
       var globalSlot=getGlobalSlot(currentBank,slot);
-      btn.classList.toggle('active', slot===currentSlot);
+      // Active only shows when viewing the bank that's actually playing
+      var isActive = viewingPlayingBank && slot===playingSlot;
+      var isPending = slot===pendingSlot;
+      btn.classList.toggle('active', isActive);
       btn.classList.toggle('has-data', slotTracks[globalSlot] && slotTracks[globalSlot].length>0);
-      btn.style.borderColor = (slot===pendingSlot) ? '#f97316' : '';
-      btn.style.color = (slot===pendingSlot) ? '#f97316' : '';
+      if(isPending){
+        btn.style.borderColor = '#f97316';
+        btn.style.color = '#f97316';
+      } else if(isActive){
+        btn.style.borderColor = 'var(--cyan)';
+        btn.style.color = 'var(--cyan)';
+      } else {
+        var slotCol = btn.dataset.slotColor;
+        btn.style.borderColor = slotCol ? dimColor(slotCol) : '';
+        btn.style.color = '';
+      }
     });
     // Update A/B/C bank buttons
     document.querySelectorAll('.seq-abc-btn').forEach(function(btn){
-      btn.classList.toggle('active', parseInt(btn.dataset.bank)===currentBank);
+      var bank = parseInt(btn.dataset.bank);
+      var isCurrent = bank === currentBank;
+      var isPlayingBank = isPlaying && bank === playingBank && playingBank !== currentBank;
+      btn.classList.toggle('active', isCurrent);
+      if(isPlayingBank){
+        btn.style.background = 'rgba(249,115,22,0.35)';
+        btn.style.borderColor = '#f97316';
+        btn.style.color = '#f97316';
+        btn.style.boxShadow = '0 0 8px rgba(249,115,22,0.6)';
+      } else {
+        btn.style.background = '';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+        btn.style.boxShadow = '';
+      }
     });
     // Update old pro-slot buttons if they exist (for compatibility)
     document.querySelectorAll('.pro-slot').forEach(function(btn){
       var slot=parseInt(btn.dataset.slot);
-      btn.classList.toggle('active', slot===currentSlot);
+      btn.classList.toggle('active', viewingPlayingBank && slot===playingSlot);
       btn.classList.toggle('has-data', slotTracks[getGlobalSlot(currentBank,slot)] && slotTracks[getGlobalSlot(currentBank,slot)].length>0);
     });
   }
@@ -7442,7 +7698,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     }
     // Stop playback/recording
     stopAll();
-    currentSlot=slot;  // slot is 0-14 within bank
+    currentSlot=slot; playingSlot=slot; playingBank=currentBank;  // slot is 0-14 within bank
     syncTracks();
     updateSlotUI();
     pendingSlot=-1;
@@ -7495,12 +7751,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     exitCloneMode();
     updateSlotUI();
     // If we just cloned to current slot, sync tracks
-    if(destSlot === currentSlot) syncTracks();
+    if(destSlot === playingSlot) syncTracks();
   }
 
   // Update updateSlotUI to show clone states
   var _origUpdateSlotUI = updateSlotUI;
   updateSlotUI = function(){
+    if(window._applyAllSlotColors) window._applyAllSlotColors();
     _origUpdateSlotUI();
     document.querySelectorAll('.pro-slot').forEach(function(btn){
       var slot=parseInt(btn.dataset.slot);
@@ -7538,7 +7795,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
           if(slot===cloneSourceSlot){ exitCloneMode(); return; }
           cloneTo(slot);
         } else {
-          if(slot===currentSlot && pendingSlot<0) return;
+          if(slot===playingSlot && currentBank===playingBank && pendingSlot<0) return;
           if(slot===pendingSlot){ pendingSlot=-1; updateSlotUI(); return; }
           btnFx('play');
           switchSlotWhenReady(slot);
@@ -7557,7 +7814,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
           if(slot===cloneSourceSlot){ exitCloneMode(); return; }
           cloneTo(slot);
         } else {
-          if(slot===currentSlot && pendingSlot<0) return;
+          if(slot===playingSlot && currentBank===playingBank && pendingSlot<0) return;
           if(slot===pendingSlot){ pendingSlot=-1; updateSlotUI(); return; }
           btnFx('play');
           switchSlotWhenReady(slot);
@@ -7575,11 +7832,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   function applyGapPct(pct){
     pct=Math.max(0,Math.min(100,pct));
-    var _tb=document.getElementById('seqToolbar');
+    var _tb=document.getElementById('seqPuzBar')||document.querySelector('.bank-outer');
     var _tbTop=_tb?_tb.getBoundingClientRect().top:null;
     TILE_GAP_MULT=pctToMult(pct);
     if(PZ) renderBank();
     if(window._syncTbGap) window._syncTbGap(pct);
+    if(window._syncVertGapBar) window._syncVertGapBar(pct);
     document.querySelectorAll('.bt[data-bank-idx]').forEach(function(t){
       var i=parseInt(t.dataset.bankIdx);
       if(!isNaN(i)) applyTileColor(t,i);
@@ -7749,7 +8007,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   // Apply current padding values to #bank
   function _applyPad(){
-    var _tb=document.getElementById('seqToolbar');
+    var _tb=document.getElementById('seqPuzBar')||document.querySelector('.bank-outer');
     var _tbTop=_tb?_tb.getBoundingClientRect().top:null;
     var be=document.getElementById('bank');
     if(be){
@@ -7808,30 +8066,6 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     }
     _rebuildSize();
     menu.appendChild(sizeWrap);
-
-    // ── SNAP TO FILL toggle ──────────────────────────────────
-    var snapWrap=document.createElement('div');
-    snapWrap.style.cssText='display:flex;align-items:center;gap:6px;padding:1px 0;';
-    var snapBtn=document.createElement('button');
-    snapBtn.id='_snapFillBtn';
-    snapBtn.style.cssText='font-family:monospace;font-size:7px;font-weight:700;letter-spacing:.5px;padding:3px 7px;border:1.5px solid '+(SNAP_TO_FILL?'#00d9ff':'#555')+';border-radius:3px;background:'+(SNAP_TO_FILL?'rgba(0,217,255,0.15)':'transparent')+';color:'+(SNAP_TO_FILL?'#00d9ff':'#555')+';cursor:pointer;touch-action:manipulation;transition:all .15s;';
-    snapBtn.textContent='SNAP TO FILL';
-    var snapLbl=document.createElement('span');
-    snapLbl.style.cssText='font-family:monospace;font-size:7px;color:#555;';
-    snapLbl.textContent='Sizes snap to fill width';
-    snapBtn.addEventListener('click',function(){
-      SNAP_TO_FILL=!SNAP_TO_FILL;
-      snapBtn.style.borderColor=SNAP_TO_FILL?'#00d9ff':'#555';
-      snapBtn.style.background=SNAP_TO_FILL?'rgba(0,217,255,0.15)':'transparent';
-      snapBtn.style.color=SNAP_TO_FILL?'#00d9ff':'#555';
-      try{localStorage.setItem('snapToFill',SNAP_TO_FILL?'1':'0');}catch(e){}
-      if(PZ) renderBank();
-    });
-    // Restore saved state
-    try{if(localStorage.getItem('snapToFill')==='1'){SNAP_TO_FILL=true;snapBtn.style.borderColor='#00d9ff';snapBtn.style.background='rgba(0,217,255,0.15)';snapBtn.style.color='#00d9ff';}}catch(e){}
-    snapWrap.appendChild(snapBtn);
-    snapWrap.appendChild(snapLbl);
-    menu.appendChild(snapWrap);
 
     // ── GAP section ───────────────────────────────────────────
     var gapWrap=document.createElement('div');
@@ -8143,9 +8377,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       _tbSize.sl.value=Math.round(Math.max(0,Math.min(100,v)));
       _tbSize.redraw();
     }
+    // Also sync PAD ADJUSTMENTS SIZE slider
+    if(window._syncPadAdjSize) window._syncPadAdjSize(pct);
   };
   window._syncTbGap=function(pct){
     if(_tbGap){ _tbGap.sl.value=Math.round(pct); _tbGap.redraw(); }
+    // Also sync PAD ADJUSTMENTS GAP slider
+    if(window._syncPadAdjGap) window._syncPadAdjGap(pct);
   };
 })();
 
@@ -8156,8 +8394,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   function applyPctH(pct){
     pct=Math.max(0,Math.min(100,pct));
-    // Capture toolbar position before layout change
-    var _tb=document.getElementById('seqToolbar');
+    // Capture anchor position before layout change
+    var _tb=document.getElementById('seqPuzBar')||document.getElementById('bank-outer');
     var _tbTop=_tb?_tb.getBoundingClientRect().top:null;
     TILE_SCALE=pctToScaleH(pct);
     if(PZ) renderBank();
@@ -8179,10 +8417,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 })();
 
 // ── Scroll drift fix ──────────────────────────────────────────
-// Keep the toolbar visually anchored when content below it
+// Keep the top of bank-outer visually anchored when content below
 // changes height (tile resize or panel collapse).
 window._clampScrollDrift=function(){
-  var tb=document.getElementById('seqToolbar');
+  var tb=document.getElementById('seqPuzBar')||document.querySelector('.bank-outer');
   if(!tb) return;
   var rectBefore=tb.getBoundingClientRect().top;
   requestAnimationFrame(function(){
@@ -8195,7 +8433,7 @@ window._clampScrollDrift=function(){
   });
 };
 window._clampScrollTransition=function(){
-  var tb=document.getElementById('seqToolbar');
+  var tb=document.getElementById('seqPuzBar')||document.querySelector('.bank-outer');
   if(!tb) return;
   var targetTop=tb.getBoundingClientRect().top;
   var frames=0;
@@ -8544,6 +8782,10 @@ window._clampScrollTransition=function(){
   window._getSlotTracks = function(){ return slotTracks; };
   window._getCurrentBank = function(){ return currentBank; };
   window._setCurrentBank = function(b){ currentBank=b; };
+  window._getPlayingBank = function(){ return playingBank; };
+  window._getIsPlaying = function(){ return isPlaying; };
+  window._getPlayingSlot = function(){ return playingSlot; };
+  window._clearPendingSlot = function(){ pendingSlot=-1; };
 
   window._seq = {
     getBpm:   function(){ return bpm; },
@@ -8636,6 +8878,7 @@ window._clampScrollTransition=function(){
       isLooping = !!data.isLooping; clickOn = !!data.clickOn;
       accentOn = data.accentOn!==false;
       currentSlot = data.currentSlot||0;
+      playingSlot = currentSlot; playingBank = currentBank;
       slotTracks = data.slotTracks||(function(){ var a=[]; for(var i=0;i<45;i++) a.push([]); return a; })();
       while(slotTracks.length<45) slotTracks.push([]);
       syncTracks();
@@ -11307,7 +11550,7 @@ window._clampScrollTransition=function(){
 (function(){
   var colorMode = false;
   var activeColor = '#ef4444';
-  var btn = document.getElementById('colorTagBtn');
+  var btn = document.getElementById('colorTagBtnOld');
   if(!btn) return;
 
   var palette = [
@@ -11881,9 +12124,14 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     btn.addEventListener('click', function(){
       var bank = parseInt(btn.dataset.bank);
       if(window._getCurrentBank && bank === window._getCurrentBank()) return;
-      if(window.stopAll) window.stopAll();
       if(window._setCurrentBank) window._setCurrentBank(bank);
-      if(window.syncTracks) window.syncTracks();
+      // During playback, just change the view — don't syncTracks (keep playing what was playing)
+      // Clear any pending slot queued for the old bank view
+      if(window._getIsPlaying && window._getIsPlaying()){
+        if(window._clearPendingSlot) window._clearPendingSlot();
+      } else {
+        if(window.syncTracks) window.syncTracks();
+      }
       if(window.updateSlotUI) window.updateSlotUI();
       if(window.updateBeatDotActivity) window.updateBeatDotActivity();
       if(window.clearBeatEditMode) window.clearBeatEditMode();
@@ -11942,12 +12190,193 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     clearBtn.addEventListener('click', function(){ clearBtnOld.click(); });
   }
 
-  // Color tag button
-  var colorTagBtn = document.getElementById('colorTagBtn');
-  var colorTagBtnOld = document.getElementById('colorTagBtnOld');
-  if(colorTagBtn && colorTagBtnOld){
-    colorTagBtn.addEventListener('click', function(){ colorTagBtnOld.click(); });
-  }
+  // Color tag button — slot color mode (colors seq slot buttons, not pads)
+  (function(){
+    var colorMode = false;
+    var activeColor = '#ef4444';
+    var btn = document.getElementById('colorTagBtn');
+    if(!btn) return;
+
+    // Per-slot color store: key = slot index (0–14), value = hex color or 'none'
+    if(!window._slotColors) window._slotColors = {};
+    var slotColors = window._slotColors;
+
+    var palette = [
+      '#ef4444','#f97316','#eab308','#22c55e',
+      '#06b6d4','#3b82f6','#7c3aed','#ec4899',
+      '#ffffff','#6b7280'
+    ];
+
+    var pickerOv = null;
+
+    function getGlobalKey(slotIdx){
+      var bank = (window._getCurrentBank && !isNaN(window._getCurrentBank())) ? window._getCurrentBank() : 0;
+      return bank * 15 + slotIdx;
+    }
+
+    function applySlotColor(slotBtn, slotIdx){
+      var key = getGlobalKey(slotIdx);
+      var col = slotColors[key];
+      if(!col || col === 'none'){
+        slotBtn.style.boxShadow = '';
+        slotBtn.dataset.slotColor = '';
+      } else {
+        slotBtn.style.boxShadow = '0 0 6px 1px ' + col;
+        slotBtn.dataset.slotColor = col;
+      }
+    }
+
+    function applyAllSlotColors(){
+      document.querySelectorAll('.seq-slot-btn').forEach(function(b){
+        var idx = parseInt(b.dataset.slot);
+        if(!isNaN(idx)) applySlotColor(b, idx);
+      });
+    }
+
+    // Expose so slot buttons can be re-styled after DOM changes
+    window._applyAllSlotColors = applyAllSlotColors;
+
+    function showPicker(){
+      if(pickerOv) return;
+      pickerOv = document.createElement('div');
+      pickerOv.style.cssText = 'position:fixed;z-index:600;background:#151515;border:2px solid rgba(0,217,255,0.4);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:220px;';
+      var br = btn.getBoundingClientRect();
+      var cTop = Math.min(br.bottom + 4, window.innerHeight - 240);
+      var cLeft = Math.max(4, Math.min(br.left, window.innerWidth - 224));
+      pickerOv.style.top = cTop + 'px';
+      pickerOv.style.left = cLeft + 'px';
+
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-family:monospace;font-size:9px;color:#888;letter-spacing:1px;';
+      lbl.textContent = 'COLOR SLOTS';
+      pickerOv.appendChild(lbl);
+
+      var grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:repeat(5,1fr);gap:6px;';
+      palette.forEach(function(col){
+        var sw = document.createElement('button');
+        sw.style.cssText = 'width:30px;height:30px;border-radius:5px;cursor:pointer;border:2px solid '+(col===activeColor?'#fff':'rgba(255,255,255,0.15)')+';background:'+col+';touch-action:manipulation;transition:transform .1s;';
+        if(col === activeColor) sw.style.transform = 'scale(1.2)';
+        sw.addEventListener('click', function(e){
+          e.stopPropagation();
+          activeColor = col;
+          closePicker();
+          enterColorMode();
+        });
+        grid.appendChild(sw);
+      });
+      pickerOv.appendChild(grid);
+
+      var customRow = document.createElement('div');
+      customRow.style.cssText = 'display:flex;align-items:center;gap:6px;border-top:1px solid #333;padding-top:6px;';
+      var customLbl = document.createElement('span');
+      customLbl.style.cssText = 'font-family:monospace;font-size:9px;color:#888;';
+      customLbl.textContent = 'CUSTOM:';
+      var colorInput = document.createElement('input');
+      colorInput.type = 'color';
+      colorInput.value = activeColor.startsWith('#') ? activeColor : '#ef4444';
+      colorInput.style.cssText = 'width:36px;height:30px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px;';
+      colorInput.addEventListener('input', function(){ activeColor = colorInput.value; });
+      var useBtn = document.createElement('button');
+      useBtn.textContent = 'USE';
+      useBtn.style.cssText = 'font-family:monospace;font-size:9px;font-weight:700;padding:4px 8px;border:1.5px solid #888;border-radius:4px;background:transparent;color:#fff;cursor:pointer;';
+      useBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        activeColor = colorInput.value;
+        closePicker(); enterColorMode();
+      });
+      var clearBtn2 = document.createElement('button');
+      clearBtn2.textContent = '✕ CLEAR';
+      clearBtn2.style.cssText = 'font-family:monospace;font-size:9px;padding:4px 8px;border:1.5px solid #666;border-radius:4px;background:transparent;color:#aaa;cursor:pointer;margin-left:auto;';
+      clearBtn2.addEventListener('click', function(e){
+        e.stopPropagation();
+        activeColor = 'none';
+        closePicker(); enterColorMode();
+      });
+      customRow.appendChild(customLbl); customRow.appendChild(colorInput);
+      customRow.appendChild(useBtn); customRow.appendChild(clearBtn2);
+      pickerOv.appendChild(customRow);
+
+      document.body.appendChild(pickerOv);
+      setTimeout(function(){
+        function _close(e){
+          if(pickerOv && !pickerOv.contains(e.target) && e.target !== btn){
+            closePicker();
+            document.removeEventListener('touchstart', _close, true);
+            document.removeEventListener('mousedown', _close, true);
+          }
+        }
+        document.addEventListener('touchstart', _close, true);
+        document.addEventListener('mousedown', _close, true);
+      }, 50);
+    }
+
+    function closePicker(){
+      if(pickerOv && document.body.contains(pickerOv)) document.body.removeChild(pickerOv);
+      pickerOv = null;
+    }
+
+    function enterColorMode(){
+      colorMode = true;
+      if(activeColor === 'none'){
+        btn.style.background = '#374151'; btn.style.borderColor = '#6b7280'; btn.style.color = '#fff';
+      } else {
+        btn.style.background = activeColor; btn.style.borderColor = activeColor;
+        btn.style.color = (activeColor === '#ffffff' || activeColor === '#eab308') ? '#000' : '#fff';
+      }
+    }
+
+    function exitColorMode(){
+      colorMode = false;
+      btn.style.background = ''; btn.style.borderColor = ''; btn.style.color = '';
+    }
+
+    function paintSlot(slotBtn){
+      var idx = parseInt(slotBtn.dataset.slot);
+      if(isNaN(idx)) return;
+      var key = getGlobalKey(idx);
+      if(activeColor === 'none') delete slotColors[key];
+      else slotColors[key] = activeColor;
+      applySlotColor(slotBtn, idx);
+    }
+
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(colorMode){ exitColorMode(); }
+      else { if(pickerOv) closePicker(); else showPicker(); }
+    });
+
+    // Touch paint on slot buttons
+    var grid = document.getElementById('seqSlotGrid');
+    if(grid){
+      grid.addEventListener('touchstart', function(e){
+        if(!colorMode) return;
+        var t = e.target.closest('.seq-slot-btn');
+        if(t){ e.preventDefault(); paintSlot(t); }
+      }, {passive: false});
+      grid.addEventListener('touchmove', function(e){
+        if(!colorMode) return;
+        e.preventDefault();
+        var touch = e.touches[0];
+        var el = document.elementFromPoint(touch.clientX, touch.clientY);
+        if(el){ var b = el.closest('.seq-slot-btn'); if(b) paintSlot(b); }
+      }, {passive: false});
+    }
+
+    // Mouse paint
+    var painting = false;
+    document.addEventListener('mousedown', function(e){
+      if(!colorMode) return;
+      var b = e.target.closest('.seq-slot-btn');
+      if(b){ painting = true; paintSlot(b); }
+    });
+    document.addEventListener('mousemove', function(e){
+      if(!colorMode || !painting) return;
+      var b = e.target.closest('.seq-slot-btn');
+      if(b) paintSlot(b);
+    });
+    document.addEventListener('mouseup', function(){ painting = false; });
+  })();
 })();
 
 // ── SLIM PANEL TOGGLES ───────────────────────────────────────
@@ -11958,14 +12387,76 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     if(!panel||!bar) return;
     var collapsed=false;
     try{ collapsed=localStorage.getItem(storageKey)==='1'; }catch(e){}
-    function setCollapsed(c){
-      collapsed=c;
-      panel.classList.toggle('collapsed',c);
-      try{ localStorage.setItem(storageKey,c?'1':'0'); }catch(e){}
-      if(window._clampScrollTransition) window._clampScrollTransition();
+
+    function ensureInner(body){
+      if(!body) return null;
+      var inner=body.querySelector('.slim-panel-body-inner');
+      if(!inner){
+        inner=document.createElement('div');
+        inner.className='slim-panel-body-inner';
+        inner.style.cssText='transform:translateY(0);transition:transform 0.2s ease;';
+        while(body.firstChild) inner.appendChild(body.firstChild);
+        body.appendChild(inner);
+      }
+      return inner;
     }
-    setCollapsed(collapsed);
-    bar.addEventListener('click',function(){ setCollapsed(!collapsed); });
+
+    function setCollapsed(c, animate){
+      collapsed=c;
+      try{ localStorage.setItem(storageKey,c?'1':'0'); }catch(e){}
+      var body=panel.querySelector('.slim-panel-body');
+      if(!body){ panel.classList.toggle('collapsed',c); return; }
+      var inner=ensureInner(body);
+
+      if(c){
+        // CLOSING: slide inner up, then hide
+        if(inner) inner.style.transform='translateY(-100%)';
+        body.style.transition='max-height 0.2s ease, opacity 0.2s ease';
+        body.style.maxHeight=body.scrollHeight+'px'; // pin current height first
+        requestAnimationFrame(function(){
+          body.style.maxHeight='0px';
+          body.style.opacity='0';
+        });
+        setTimeout(function(){
+          panel.classList.add('collapsed');
+          body.style.overflow='hidden';
+          if(window._clampScrollTransition) window._clampScrollTransition();
+        }, 200);
+      } else {
+        // OPENING: show and slide inner down
+        panel.classList.remove('collapsed');
+        body.style.overflow='hidden';
+        body.style.maxHeight='0px';
+        body.style.opacity='0';
+        body.style.transition='max-height 0.2s ease, opacity 0.2s ease';
+        if(inner){ inner.style.transition='none'; inner.style.transform='translateY(-100%)'; }
+        requestAnimationFrame(function(){
+          requestAnimationFrame(function(){
+            var h=body.scrollHeight||3000;
+            body.style.maxHeight=h+'px';
+            body.style.opacity='1';
+            if(inner){ inner.style.transition='transform 0.2s ease'; inner.style.transform='translateY(0)'; }
+            setTimeout(function(){
+              body.style.maxHeight='';
+              body.style.transition='';
+              body.style.overflow='';
+              if(window._clampScrollTransition) window._clampScrollTransition();
+            }, 220);
+          });
+        });
+      }
+    }
+
+    // Initial state — no animation
+    if(collapsed){
+      panel.classList.add('collapsed');
+    } else {
+      panel.classList.remove('collapsed');
+    }
+
+    bar.addEventListener('click',function(){ setCollapsed(!collapsed, true); });
+    // Expose for external callers
+    panel._setCollapsed = setCollapsed;
   }
 
   initSlimPanel('padSlimPanel','padPanelBar','slimPad');
@@ -11974,13 +12465,330 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
   if(_padSP) _padSP.classList.remove('collapsed');
   initSlimPanel('seqBankSlimPanel','seqBankPanelBar','slimSeqBank');
   initSlimPanel('seqCtrlSlimPanel','seqCtrlBar','slimSeqCtrl');
+  // Wire up PAD TOOLS and PAD ADJUSTMENTS slim panels (default collapsed)
+  initSlimPanel('padToolsSlimPanel','padToolsBar','slimPadTools');
+  initSlimPanel('padAdjSlimPanel','padAdjBar','slimPadAdjust');
 
-  // Move SEQUENCE BANK panel between toolbar and PADS (inside bank-outer)
+  // Move SEQUENCE BANK panel to top — just before PAD TOOLS (first panel after toolbar)
   var _sbp=document.getElementById('seqBankSlimPanel');
-  var _padPanel=document.getElementById('padSlimPanel');
-  if(_sbp&&_padPanel&&_padPanel.parentNode){
-    _padPanel.parentNode.insertBefore(_sbp,_padPanel);
+  var _padToolsPanel=document.getElementById('padToolsSlimPanel');
+  if(_sbp&&_padToolsPanel&&_padToolsPanel.parentNode){
+    _padToolsPanel.parentNode.insertBefore(_sbp,_padToolsPanel);
   }
+
+
+
+
+
+
+
+
+  // Build PAD ADJUSTMENTS panel content (sliders for Size, Gap, H Pad, V Pad)
+  (function(){
+    var body=document.getElementById('padAdjBody');
+    if(!body) return;
+    var TS_COLOR='#4b7bb5';
+    var _hexWithAlpha=window._hexWithAlpha||function(h,a){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return 'rgba('+r+','+g+','+b+','+a+')';};
+    var _darkenHex=window._darkenHex||function(h,a){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);r=Math.round(r*(1-a));g=Math.round(g*(1-a));b=Math.round(b*(1-a));return 'rgb('+r+','+g+','+b+')';};
+
+    function _drawSlider(cv, pct, color){
+      if(!cv) return;
+      var wrap=cv.parentElement; if(!wrap) return;
+      var W=Math.max(10,wrap.offsetWidth||160), H=Math.max(10,wrap.offsetHeight||22);
+      cv.width=W; cv.height=H;
+      cv.style.width=W+'px'; cv.style.height=H+'px';
+      var ctx=cv.getContext('2d');
+      ctx.clearRect(0,0,W,H);
+      var PAD=2, R=3;
+      var trackH=Math.round(H*0.55), trackY=Math.round((H-trackH)/2);
+      var handleX=Math.round(PAD+(W-PAD*2)*pct);
+      var fillX=PAD, fillW=handleX-fillX;
+      ctx.beginPath();
+      ctx.moveTo(PAD+R,trackY); ctx.lineTo(W-PAD-R,trackY);
+      ctx.arcTo(W-PAD,trackY,W-PAD,trackY+R,R);
+      ctx.lineTo(W-PAD,trackY+trackH-R);
+      ctx.arcTo(W-PAD,trackY+trackH,W-PAD-R,trackY+trackH,R);
+      ctx.lineTo(PAD+R,trackY+trackH);
+      ctx.arcTo(PAD,trackY+trackH,PAD,trackY+trackH-R,R);
+      ctx.lineTo(PAD,trackY+R);
+      ctx.arcTo(PAD,trackY,PAD+R,trackY,R);
+      ctx.closePath();
+      ctx.fillStyle=_hexWithAlpha(color,0.07); ctx.fill();
+      ctx.strokeStyle=_darkenHex(color,0.28); ctx.lineWidth=1.5; ctx.stroke();
+      if(fillW>0){
+        ctx.save(); ctx.beginPath();
+        ctx.moveTo(Math.max(PAD,fillX)+R,trackY+1);
+        ctx.lineTo(Math.min(W-PAD,fillX+fillW),trackY+1);
+        ctx.lineTo(Math.min(W-PAD,fillX+fillW),trackY+trackH-1);
+        ctx.lineTo(Math.max(PAD,fillX),trackY+trackH-1);
+        ctx.closePath(); ctx.clip();
+        ctx.globalAlpha=0.45; ctx.fillStyle=color;
+        ctx.fillRect(fillX,trackY+1,fillW,trackH-2);
+        ctx.globalAlpha=0.55; ctx.strokeStyle=color; ctx.lineWidth=1.2;
+        for(var xi=fillX-trackH;xi<fillX+fillW+trackH;xi+=6){
+          ctx.beginPath(); ctx.moveTo(xi,trackY+1); ctx.lineTo(xi+trackH,trackY+trackH-1); ctx.stroke();
+        }
+        ctx.globalAlpha=1; ctx.restore();
+      }
+      var hW=10, hH=H+4, hX=Math.round(handleX-hW/2), hY=-2;
+      ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=3; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1;
+      ctx.fillStyle='#1a1a1a'; ctx.beginPath();
+      ctx.moveTo(hX+2,hY); ctx.lineTo(hX+hW-2,hY);
+      ctx.arcTo(hX+hW,hY,hX+hW,hY+2,2); ctx.lineTo(hX+hW,hY+hH-2);
+      ctx.arcTo(hX+hW,hY+hH,hX+hW-2,hY+hH,2); ctx.lineTo(hX+2,hY+hH);
+      ctx.arcTo(hX,hY+hH,hX,hY+hH-2,2); ctx.lineTo(hX,hY+2);
+      ctx.arcTo(hX,hY,hX+2,hY,2); ctx.closePath(); ctx.fill();
+      ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0;
+      ctx.strokeStyle='#000'; ctx.lineWidth=1; ctx.stroke();
+      ctx.strokeStyle='#666'; ctx.lineWidth=1;
+      var cx2=hX+hW/2, cy=H/2;
+      [-3,0,3].forEach(function(dy){
+        ctx.beginPath(); ctx.moveTo(hX+2,cy+dy); ctx.lineTo(hX+hW-2,cy+dy); ctx.stroke();
+      });
+    }
+
+    function _mkRow(label, color, initPct, minV, maxV, fmtVal, onChange){
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:2px;width:100%;';
+      if(label){
+        var lbl=document.createElement('span');
+        lbl.style.cssText='font-family:monospace;font-size:8px;color:#888;min-width:32px;flex-shrink:0;letter-spacing:.5px;';
+        lbl.textContent=label;
+        row.appendChild(lbl);
+      }
+      var slWrap=document.createElement('div');
+      slWrap.style.cssText='position:relative;flex:1;height:22px;touch-action:none;cursor:ew-resize;overflow:visible;filter:drop-shadow(0px 4px 8px '+_hexWithAlpha(color,0.7)+') drop-shadow(0px 2px 4px rgba(0,0,0,0.4));';
+      var cv=document.createElement('canvas');
+      cv.dataset.slColor=color;
+      cv.style.cssText='position:absolute;left:0;top:0;pointer-events:none;z-index:2;display:block;';
+      var sl=document.createElement('input');
+      sl.type='range'; sl.min=minV; sl.max=maxV; sl.step=1;
+      sl.value=Math.round(initPct*(maxV-minV)+minV);
+      sl.style.cssText='position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ew-resize;z-index:5;-webkit-appearance:none;appearance:none;background:transparent;';
+      sl.addEventListener('touchstart',function(e){e.stopPropagation();},{passive:true});
+      slWrap.appendChild(cv); slWrap.appendChild(sl);
+      row.appendChild(slWrap);
+      // Value label — NOT appended to row; caller places it in the header
+      var vlbl=document.createElement('span');
+      vlbl.style.cssText='font-family:monospace;font-size:7px;color:'+color+';margin-left:auto;flex-shrink:0;';
+      vlbl.textContent=fmtVal(parseFloat(sl.value));
+      function redraw(){
+        var pct=(parseFloat(sl.value)-minV)/(maxV-minV);
+        _drawSlider(cv,pct,color);
+        vlbl.textContent=fmtVal(parseFloat(sl.value));
+      }
+      sl.addEventListener('input',function(){ redraw(); onChange(parseFloat(sl.value)); });
+      if(typeof ResizeObserver!=='undefined'){
+        var _ro=new ResizeObserver(function(){ redraw(); });
+        _ro.observe(slWrap);
+      }
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ redraw(); }); });
+      return {row:row, sl:sl, redraw:redraw, vlbl:vlbl};
+    }
+
+    function _mkSideToggle(sides, active, onChange){
+      var wrap=document.createElement('div');
+      wrap.style.cssText='display:flex;gap:2px;';
+      sides.forEach(function(s){
+        var b=document.createElement('button');
+        b.textContent=s.toUpperCase();
+        b.dataset.s=s;
+        var isA=(s===active);
+        b.style.cssText='font-family:monospace;font-size:7px;font-weight:700;padding:2px 5px;border:1.5px solid '+(isA?TS_COLOR:'#bbb')+';border-radius:3px;background:'+(isA?_hexWithAlpha(TS_COLOR,0.12):'transparent')+';color:'+(isA?TS_COLOR:'#aaa')+';cursor:pointer;touch-action:manipulation;';
+        b.addEventListener('click',function(){
+          wrap.querySelectorAll('button').forEach(function(bb){
+            var sel=bb.dataset.s===s;
+            bb.style.borderColor=sel?TS_COLOR:'#bbb';
+            bb.style.background=sel?_hexWithAlpha(TS_COLOR,0.12):'transparent';
+            bb.style.color=sel?TS_COLOR:'#aaa';
+          });
+          onChange(s);
+        });
+        wrap.appendChild(b);
+      });
+      return wrap;
+    }
+
+    function _applyPadInline(){
+      var be=document.getElementById('bank');
+      if(be){
+        be.style.paddingLeft=(6+BANK_PAD_L)+'px';
+        be.style.paddingRight=(8+BANK_PAD_R)+'px';
+        be.style.paddingTop=(6+BANK_PAD_T)+'px';
+        be.style.paddingBottom=(6+BANK_PAD_B)+'px';
+      }
+      if(PZ) renderBank();
+    }
+
+    var outer=document.createElement('div');
+    outer.style.cssText='display:flex;flex-direction:column;gap:0;padding:4px 20px 6px;';
+
+    // ── TOP ROW: H PAD (left) | V PAD (right) ──
+    var topRow=document.createElement('div');
+    topRow.style.cssText='display:flex;flex-direction:row;gap:4px;';
+
+    // ── H PAD column ──
+    var _hLocked=true, _hSide='l';
+    var hCol=document.createElement('div');
+    hCol.style.cssText='display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;';
+
+    var hHdr=document.createElement('div');
+    hHdr.style.cssText='display:flex;align-items:center;gap:3px;';
+    var hLbl=document.createElement('span');
+    hLbl.style.cssText='font-family:monospace;font-size:8px;color:#888;letter-spacing:.5px;flex-shrink:0;';
+    hLbl.textContent='H PAD';
+    var hLock=document.createElement('button');
+    hLock.textContent='🔒';
+    hLock.style.cssText='font-size:9px;padding:1px 3px;border:1px solid '+TS_COLOR+';border-radius:3px;background:transparent;cursor:pointer;flex-shrink:0;touch-action:manipulation;line-height:1;';
+    var hSides=document.createElement('div');
+    hSides.style.display='none';
+    var hSideToggle=_mkSideToggle(['l','r'],_hSide,function(s){ _hSide=s; });
+    hSides.appendChild(hSideToggle);
+    hLock.addEventListener('click',function(){
+      _hLocked=!_hLocked;
+      hLock.textContent=_hLocked?'🔒':'🔓';
+      hLock.style.borderColor=_hLocked?TS_COLOR:'#ccc';
+      hSides.style.display=_hLocked?'none':'flex';
+    });
+    hHdr.appendChild(hLbl); hHdr.appendChild(hSides); hHdr.appendChild(hLock);
+    hCol.appendChild(hHdr);
+
+    var initH=Math.round((BANK_PAD_L+BANK_PAD_R)/2);
+    var hR=_mkRow('',TS_COLOR,initH/100,0,100,function(v){return Math.round(v)+'px';},function(v){
+      var px=Math.round(v);
+      if(_hLocked){BANK_PAD_L=px;BANK_PAD_R=px;}
+      else if(_hSide==='l'){BANK_PAD_L=px;} else {BANK_PAD_R=px;}
+      _applyPadInline();
+    });
+    hR.sl.value=initH;
+    hHdr.appendChild(hR.vlbl);
+    hCol.appendChild(hR.row);
+    topRow.appendChild(hCol);
+
+    // thin vertical divider between the two columns
+    var vDiv=document.createElement('div');
+    vDiv.style.cssText='width:1px;background:rgba(0,217,255,0.12);flex-shrink:0;align-self:stretch;';
+    topRow.appendChild(vDiv);
+
+    // ── V PAD column ──
+    var _vLocked=true, _vSide='t';
+    var vCol=document.createElement('div');
+    vCol.style.cssText='display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;';
+
+    var vHdr=document.createElement('div');
+    vHdr.style.cssText='display:flex;align-items:center;gap:3px;';
+    var vLbl=document.createElement('span');
+    vLbl.style.cssText='font-family:monospace;font-size:8px;color:#888;letter-spacing:.5px;flex-shrink:0;';
+    vLbl.textContent='V PAD';
+    var vLock=document.createElement('button');
+    vLock.textContent='🔒';
+    vLock.style.cssText='font-size:9px;padding:1px 3px;border:1px solid '+TS_COLOR+';border-radius:3px;background:transparent;cursor:pointer;flex-shrink:0;touch-action:manipulation;line-height:1;';
+    var vSides=document.createElement('div');
+    vSides.style.display='none';
+    var vSideToggle=_mkSideToggle(['t','b'],_vSide,function(s){ _vSide=s; });
+    vSides.appendChild(vSideToggle);
+    vLock.addEventListener('click',function(){
+      _vLocked=!_vLocked;
+      vLock.textContent=_vLocked?'🔒':'🔓';
+      vLock.style.borderColor=_vLocked?TS_COLOR:'#ccc';
+      vSides.style.display=_vLocked?'none':'flex';
+    });
+    vHdr.appendChild(vLbl); vHdr.appendChild(vSides); vHdr.appendChild(vLock);
+    vCol.appendChild(vHdr);
+
+    var initV=0;
+    BANK_PAD_T=0; BANK_PAD_B=0;
+    var vR=_mkRow('',TS_COLOR,0,0,100,function(v){return Math.round(v)+'px';},function(v){
+      var px=Math.round(v);
+      if(_vLocked){BANK_PAD_T=px;BANK_PAD_B=px;}
+      else if(_vSide==='t'){BANK_PAD_T=px;} else {BANK_PAD_B=px;}
+      _applyPadInline();
+    });
+    vR.sl.value=0;
+    vHdr.appendChild(vR.vlbl);
+    vCol.appendChild(vR.row);
+    topRow.appendChild(vCol);
+
+    outer.appendChild(topRow);
+
+    // thin horizontal divider
+    var hDiv=document.createElement('div');
+    hDiv.style.cssText='width:100%;height:1px;background:rgba(0,217,255,0.1);margin:5px 0 3px;';
+    outer.appendChild(hDiv);
+
+    // ── BOTTOM ROW: PAD SIZE (left) | PAD GAP (right) ──
+    var botRow=document.createElement('div');
+    botRow.style.cssText='display:flex;flex-direction:row;gap:4px;';
+
+    // SIZE column — slider controls tiles-per-row (2=biggest, 16=smallest)
+    // Slider value: 2..16, left=2 pads (big), right=16 pads (small)
+    var sizeCol=document.createElement('div');
+    sizeCol.style.cssText='display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;';
+    var sizeHdr=document.createElement('div');
+    sizeHdr.style.cssText='display:flex;align-items:center;';
+    var sizeLbl=document.createElement('span');
+    sizeLbl.style.cssText='font-family:monospace;font-size:8px;color:#888;letter-spacing:.5px;';
+    sizeLbl.textContent='PAD SIZE';
+    // Determine current tilesPerRow from TILE_SCALE + available width as best guess
+    var _curRows=window._seqTargetRows||4;
+    // Slider: left=16 pads (small/many), right=2 pads (big/few)
+    // slider value = 18 - rows, so v=2→16pads, v=16→2pads
+    var _slVal=18-_curRows;
+    var sizeR=_mkRow('',TS_COLOR,(_slVal-2)/14,2,16,function(v){return (18-Math.round(v))+' pads';},function(v){
+      var rows=18-Math.round(v);
+      window._seqTargetRows=rows;
+      if(PZ) renderBank();
+    });
+    sizeR.sl.min=2; sizeR.sl.max=16; sizeR.sl.step=1;
+    sizeR.sl.value=_slVal;
+    sizeR.sl.addEventListener('input',function(){
+      var rows=18-Math.round(parseFloat(sizeR.sl.value));
+      window._seqTargetRows=rows;
+      sizeR.vlbl.textContent=rows+' pads';
+      sizeR.redraw();
+      if(PZ) renderBank();
+    });
+    sizeR.vlbl.textContent=_curRows+' pads';
+    sizeHdr.appendChild(sizeLbl); sizeHdr.appendChild(sizeR.vlbl);
+    sizeCol.appendChild(sizeHdr);
+    sizeCol.appendChild(sizeR.row);
+    window._syncPadAdjSize=function(pct){
+      var rows=window._seqTargetRows||_curRows;
+      sizeR.sl.value=18-rows;
+      sizeR.vlbl.textContent=rows+' pads';
+      sizeR.redraw();
+    };
+    botRow.appendChild(sizeCol);
+
+    // thin vertical divider
+    var bvDiv=document.createElement('div');
+    bvDiv.style.cssText='width:1px;background:rgba(0,217,255,0.12);flex-shrink:0;align-self:stretch;';
+    botRow.appendChild(bvDiv);
+
+    // GAP column
+    var gapCol=document.createElement('div');
+    gapCol.style.cssText='display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;';
+    var gapHdr=document.createElement('div');
+    gapHdr.style.cssText='display:flex;align-items:center;';
+    var gapLbl=document.createElement('span');
+    gapLbl.style.cssText='font-family:monospace;font-size:8px;color:#888;letter-spacing:.5px;';
+    gapLbl.textContent='PAD GAP';
+    var curGapPct=TILE_GAP_MULT*33.33;
+    var gapR=_mkRow('',TS_COLOR,curGapPct/100,0,100,function(v){return Math.round(v)+'%';},function(v){
+      if(window.applyGapPct) window.applyGapPct(v);
+      if(window._syncPadAdjGap) window._syncPadAdjGap(v);
+    });
+    gapHdr.appendChild(gapLbl); gapHdr.appendChild(gapR.vlbl);
+    gapCol.appendChild(gapHdr);
+    gapCol.appendChild(gapR.row);
+    window._syncPadAdjGap=function(pct){ gapR.sl.value=Math.round(pct); gapR.redraw(); };
+    botRow.appendChild(gapCol);
+
+    outer.appendChild(botRow);
+
+    body.appendChild(outer);
+    body.style.overflowAnchor='none';
+  })();
 
   // Fix scroll drift on panel collapse: disable browser scroll anchoring
   // on collapsible panel bodies so the browser doesn't anchor to content
@@ -12027,8 +12835,11 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     // Remove the "MASTER EQ" label from inside eqRow (the bar has it now)
     var oldLabel=eqRow.querySelector('.pro-lbl');
     if(oldLabel&&oldLabel.textContent.trim()==='MASTER EQ') oldLabel.style.display='none';
-    // Move eqRow into the new panel body
-    body.appendChild(eqRow);
+    // Wrap in inner div for pull-down animation
+    var eqInner=document.createElement('div');
+    eqInner.className='slim-panel-body-inner';
+    eqInner.appendChild(eqRow);
+    body.appendChild(eqInner);
     panel.appendChild(bar);
     panel.appendChild(body);
     // Insert after seqCtrlSlimPanel in game-screen
