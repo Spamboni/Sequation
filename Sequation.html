@@ -376,7 +376,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(0,217,255,0.35);letter-spacing:2px;text-align:center;">v4.48</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(0,217,255,0.35);letter-spacing:2px;text-align:center;">v4.49</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -8420,33 +8420,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 // Keep the top of bank-outer visually anchored when content below
 // changes height (tile resize or panel collapse).
 window._clampScrollDrift=function(){
-  var tb=document.getElementById('seqPuzBar')||document.querySelector('.bank-outer');
-  if(!tb) return;
-  var rectBefore=tb.getBoundingClientRect().top;
-  requestAnimationFrame(function(){
-    var rectAfter=tb.getBoundingClientRect().top;
-    var drift=rectAfter-rectBefore;
-    if(Math.abs(drift)>1) window.scrollBy(0,drift);
-    var maxScroll=document.documentElement.scrollHeight-window.innerHeight;
-    if(maxScroll<=0) window.scrollTo(0,0);
-    else if(window.scrollY>maxScroll) window.scrollTo(0,maxScroll);
-  });
+  // Only clamp if scrolled past the bottom of content
+  var maxScroll=document.documentElement.scrollHeight-window.innerHeight;
+  if(maxScroll>0 && window.scrollY>maxScroll) window.scrollTo(0,maxScroll);
 };
 window._clampScrollTransition=function(){
-  var tb=document.getElementById('seqPuzBar')||document.querySelector('.bank-outer');
-  if(!tb) return;
-  var targetTop=tb.getBoundingClientRect().top;
-  var frames=0;
-  function step(){
-    var cur=tb.getBoundingClientRect().top;
-    var drift=cur-targetTop;
-    if(Math.abs(drift)>1) window.scrollBy(0,drift);
-    var maxScroll=document.documentElement.scrollHeight-window.innerHeight;
-    if(maxScroll<=0) window.scrollTo(0,0);
-    else if(window.scrollY>maxScroll) window.scrollTo(0,maxScroll);
-    if(++frames<25) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
+  // Do nothing — let scroll position stay fixed when panels collapse/expand.
+  // Content above the fold doesn't move; content below shrinks/grows naturally.
 };
 
   // Recording volume slider
