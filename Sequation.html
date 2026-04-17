@@ -1,4 +1,4 @@
-<!-- Sequation v4.95 | Built: 2026-04-16 08:05 CT | github.com/Spamboni/Sequation -->
+<!-- Sequation v5.06 | Built: 2026-04-16 CT | github.com/Spamboni/Sequation -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -148,6 +148,11 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .sizebar-arrows{position:absolute;left:50%;transform:translate(-50%,50%);width:5px;height:16px;border:1.5px solid var(--cyan);border-radius:3px;background:var(--bg-secondary);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:6px;line-height:1;color:var(--cyan);pointer-events:none;transition:bottom .05s;z-index:4;}
 .sizebar-lbl{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);text-align:center;line-height:1.6;pointer-events:none;user-select:none;}
 .bt{min-width:44px;height:44px;padding:0 8px;border:1.5px solid rgba(0,217,255,0.35);background:var(--bg-secondary);color:var(--text-primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:none;transition:transform 0.04s,box-shadow 0.15s,background 0.1s;touch-action:pan-y;aspect-ratio:1;}
+.bt._noNums{color:transparent !important;}
+.bt._exprGrid{position:relative;overflow:hidden;}
+.bt._exprGrid::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:var(--expr-grid-bg, none);
+}
 .bt:hover{border-color:rgba(0,217,255,0.35);box-shadow:none;}
 /* On touch devices, suppress hover state entirely so tapped tiles don't stay lit */
 @media(hover:none){
@@ -236,6 +241,16 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 #btnSensToggle.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
 #btnPadPanToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #btnPadPanToggle.active { background:rgba(34,197,94,0.15); border-color:#22c55e; box-shadow: 0 0 12px rgba(34,197,94,0.7); color:#22c55e; }
+#btnPadExprToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
+#btnPadExprToggle.active { background:rgba(251,191,36,0.15); border-color:#fbbf24; box-shadow: 0 0 12px rgba(251,191,36,0.7); color:#fbbf24; }
+#btnExprGrid { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
+#btnExprGrid.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
+#btnHideNums { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
+#btnHideNums.active { background:rgba(249,115,22,0.15); border-color:#f97316; box-shadow: 0 0 12px rgba(249,115,22,0.7); color:#f97316; }
+#btnSnapX { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
+#btnSnapX.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
+#btnSnapY { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
+#btnSnapY.active { background:rgba(251,191,36,0.15); border-color:#fbbf24; box-shadow: 0 0 12px rgba(251,191,36,0.7); color:#fbbf24; }
 #btnSpinToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #btnSpinToggle.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
 #btnParticleToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
@@ -385,7 +400,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v4.95</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v5.06</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -464,6 +479,7 @@ window.onerror=function(msg,src,line,col,err){
           <div style="display:flex;gap:3px;flex:1;justify-content:center;align-items:center;">
             <button class="seq-btn" id="btnSensToggle" title="Tap sensitivity (hold for settings)" style="flex-shrink:0;font-size:10px;padding:2px 5px;">&#x1F44B;</button>
             <button class="seq-btn seq-btn-sq" id="btnPadPanToggle" title="Pad pan (tap position = L/R pan)" style="flex-shrink:0;font-size:9px;font-weight:700;padding:2px 4px;">L·R</button>
+            <button class="seq-btn seq-btn-sq" id="btnPadExprToggle" title="Expression (X=volume, Y=pitch)" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 4px;">EXPR</button>
             <button class="seq-btn seq-btn-sq" id="btnSpinToggle" title="Spin on/off" style="font-size:10px;flex-shrink:0;">&#x1F300;</button>
             <button class="seq-btn seq-btn-sq" id="btnParticleToggle" title="Particles on/off" style="font-size:10px;flex-shrink:0;">&#x2728;</button>
             <button class="seq-btn seq-btn-sq" id="btnGlowToggle" title="Tap glow on/off" style="font-size:10px;padding:0;overflow:hidden;flex-shrink:0;"><canvas id="glowIconCanvas" width="26" height="26" style="display:block;width:26px;height:26px;"></canvas></button>
@@ -475,6 +491,14 @@ window.onerror=function(msg,src,line,col,err){
             <button class="seq-btn seq-btn-sq" id="padLabelsBtn" title="Show sample names on pads" style="flex-shrink:0;font-size:9px;font-weight:700;letter-spacing:0.5px;">ABC</button>
             <button class="seq-btn seq-btn-sq" id="seqSettingsBtn" title="Settings" style="flex-shrink:0;font-size:12px;">⚙</button>
           </div>
+        </div>
+        <!-- Row 2: additional controls -->
+        <div style="display:flex;flex-direction:row;align-items:center;gap:3px;padding:0 6px 4px;">
+          <button class="seq-btn" id="btnExprGrid" title="Show EXPR grid on pads" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 6px;letter-spacing:0.5px;">GRID</button>
+          <button class="seq-btn" id="btnHideNums" title="Hide numbers on pads" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 6px;letter-spacing:0.5px;">123</button>
+          <button class="seq-btn" id="btnSnapX" title="Snap volume to grid" style="flex-shrink:0;font-size:7px;font-weight:700;padding:2px 5px;">SX</button>
+          <button class="seq-btn" id="btnSnapY" title="Snap pitch to grid" style="flex-shrink:0;font-size:7px;font-weight:700;padding:2px 5px;">SY</button>
+          <button class="seq-btn" id="btnGridEdit" title="Edit grid divisions" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 5px;">⊞#</button>
         </div>
       </div>
     </div>
@@ -2371,6 +2395,8 @@ var _masterLim={ node:null, threshold:-2, ratio:20, release:0.08 };
   merger.connect(reverbSplit);
   _masterWide.splitter=splitter;
   _masterWide.merger=merger;
+  _masterWide._outputMerger=merger;
+  _masterWide._reverbSplit=reverbSplit;
   _masterWide.delayR=delayR;
   _masterWide.input=wideInput;
 
@@ -2408,36 +2434,219 @@ var _masterLim={ node:null, threshold:-2, ratio:20, release:0.08 };
   masterEQInput=prev;
 })();
 // ── Global Stereo Panner ──
-// Inserted into the master chain so ALL pad sounds automatically route through it.
-var _masterPanner=null;
+// ── Global Panner (dual-mode: Crossfeed/Freq for speakers, StereoPanner for headphones) ──
+// Inserted AFTER the stereo widener so panning survives the mono upmix.
+var _masterPanner=null;        // StereoPannerNode for headphones mode
 var _masterPanValue=0;
-var _prePannerDest=masterEQInput; // save the old destination
+var _panInsertPoint=null;
+var _panSourcePoint=null;
+// Crossfeed spatial panner nodes (speaker mode)
+var _spatialNodes=null;
+
 (function(){
   if(!AC) return;
+  if(_masterWide && _masterWide._outputMerger && _masterWide._reverbSplit){
+    _panSourcePoint=_masterWide._outputMerger;
+    _panInsertPoint=_masterWide._reverbSplit;
+  }
   if(AC.createStereoPanner){
     _masterPanner=AC.createStereoPanner();
     _masterPanner.pan.value=0;
-    _masterPanner.connect(_prePannerDest);
-    // Now getMasterDest returns the panner, so everything routes through it
-    masterEQInput=_masterPanner;
   }
+
+  // Build spatial crossfeed/frequency nodes
+  // Chain: input → splitter → [L path: shelf + gain] → merger → output
+  //                          → [R path: shelf + gain + delay] → merger
+  // Pan position controls: shelf gains, channel gains, delay amount
+  function _buildSpatialNodes(){
+    var sn={};
+    sn.input=AC.createGain(); sn.input.gain.value=1.0;
+    sn.splitter=AC.createChannelSplitter(2);
+    sn.merger=AC.createChannelMerger(2);
+    // L channel processing
+    sn.shelfL=AC.createBiquadFilter();
+    sn.shelfL.type='lowshelf'; sn.shelfL.frequency.value=300; sn.shelfL.gain.value=0;
+    sn.hiCutL=AC.createBiquadFilter();
+    sn.hiCutL.type='highshelf'; sn.hiCutL.frequency.value=3000; sn.hiCutL.gain.value=0;
+    sn.gainL=AC.createGain(); sn.gainL.gain.value=1.0;
+    // R channel processing
+    sn.shelfR=AC.createBiquadFilter();
+    sn.shelfR.type='lowshelf'; sn.shelfR.frequency.value=300; sn.shelfR.gain.value=0;
+    sn.hiCutR=AC.createBiquadFilter();
+    sn.hiCutR.type='highshelf'; sn.hiCutR.frequency.value=3000; sn.hiCutR.gain.value=0;
+    sn.gainR=AC.createGain(); sn.gainR.gain.value=1.0;
+    sn.delayR=AC.createDelay(0.01);
+    sn.delayR.delayTime.value=0;
+    // Wire: input → splitter
+    sn.input.connect(sn.splitter);
+    // L path: splitter[0] → shelfL → hiCutL → gainL → merger[0]
+    sn.splitter.connect(sn.shelfL, 0);
+    sn.shelfL.connect(sn.hiCutL);
+    sn.hiCutL.connect(sn.gainL);
+    sn.gainL.connect(sn.merger, 0, 0);
+    // R path: splitter[1] → shelfR → hiCutR → gainR → delayR → merger[1]
+    sn.splitter.connect(sn.shelfR, 1);
+    sn.shelfR.connect(sn.hiCutR);
+    sn.hiCutR.connect(sn.gainR);
+    sn.gainR.connect(sn.delayR);
+    sn.delayR.connect(sn.merger, 0, 1);
+    // Crossfeed: send some of L to R and vice versa (subtle)
+    sn.crossL=AC.createGain(); sn.crossL.gain.value=0; // L bleeds into R
+    sn.crossR=AC.createGain(); sn.crossR.gain.value=0; // R bleeds into L
+    sn.hiCutL.connect(sn.crossL);
+    sn.crossL.connect(sn.merger, 0, 1); // L content into R channel
+    sn.hiCutR.connect(sn.crossR);
+    sn.crossR.connect(sn.merger, 0, 0); // R content into L channel
+    return sn;
+  }
+
+  // Apply pan value to spatial nodes: v = -1 (full left) to +1 (full right)
+  window._applySpatialPan=function(v, sn){
+    if(!sn) sn=_spatialNodes;
+    if(!sn) return;
+    var t=AC.currentTime;
+    var absV=Math.abs(v);
+    // Volume: the "pan side" gets slightly louder, opposite gets slightly quieter
+    // But keep it subtle — mostly rely on frequency/timing cues
+    var nearGain=1.0;
+    var farGain=Math.max(0.65, 1.0 - absV*0.35);
+    // Low shelf boost on pan side (+6dB max), cut on opposite
+    var nearBass=absV*6;
+    var farBass=-absV*3;
+    // High shelf: cut highs on far side (simulates head shadow)
+    var nearHiCut=0;
+    var farHiCut=-absV*8;
+    // Delay on far side: 0 to 0.5ms (inter-aural time difference)
+    var farDelay=absV*0.0005;
+    // Crossfeed: far side bleeds ~20% into near side at max pan
+    var crossAmt=absV*0.2;
+
+    if(v<=0){
+      // Panning LEFT: L=near, R=far
+      sn.gainL.gain.setValueAtTime(nearGain, t);
+      sn.gainR.gain.setValueAtTime(farGain, t);
+      sn.shelfL.gain.setValueAtTime(nearBass, t);
+      sn.shelfR.gain.setValueAtTime(farBass, t);
+      sn.hiCutL.gain.setValueAtTime(nearHiCut, t);
+      sn.hiCutR.gain.setValueAtTime(farHiCut, t);
+      sn.delayR.delayTime.setValueAtTime(farDelay, t);
+      sn.crossL.gain.setValueAtTime(0, t);       // near doesn't bleed
+      sn.crossR.gain.setValueAtTime(crossAmt, t); // far bleeds into near
+    } else {
+      // Panning RIGHT: R=near, L=far
+      sn.gainR.gain.setValueAtTime(nearGain, t);
+      sn.gainL.gain.setValueAtTime(farGain, t);
+      sn.shelfR.gain.setValueAtTime(nearBass, t);
+      sn.shelfL.gain.setValueAtTime(farBass, t);
+      sn.hiCutR.gain.setValueAtTime(nearHiCut, t);
+      sn.hiCutL.gain.setValueAtTime(farHiCut, t);
+      sn.delayR.delayTime.setValueAtTime(farDelay, t);
+      sn.crossR.gain.setValueAtTime(0, t);
+      sn.crossL.gain.setValueAtTime(crossAmt, t);
+    }
+  };
+
+  _spatialNodes=_buildSpatialNodes();
+
+  window._rebuildPanChain=function(){
+    if(!AC||!_panSourcePoint||!_panInsertPoint) return;
+    var mode=(window._sfxSettings&&window._sfxSettings.panMode)||'speaker';
+    try{ _panSourcePoint.disconnect(); }catch(e){}
+    try{ if(_masterPanner) _masterPanner.disconnect(); }catch(e){}
+    try{ if(_spatialNodes) _spatialNodes.merger.disconnect(); }catch(e){}
+
+    if(mode==='off'){
+      try{ _panSourcePoint.connect(_panInsertPoint); }catch(e){}
+    } else if(mode==='headphones' && _masterPanner){
+      try{
+        _panSourcePoint.connect(_masterPanner);
+        _masterPanner.connect(_panInsertPoint);
+        _masterPanner.pan.setValueAtTime(_masterPanValue, AC.currentTime);
+      }catch(e){ try{_panSourcePoint.connect(_panInsertPoint);}catch(e2){} }
+    } else if(_spatialNodes){
+      try{
+        _panSourcePoint.connect(_spatialNodes.input);
+        _spatialNodes.merger.connect(_panInsertPoint);
+        window._applySpatialPan(_masterPanValue);
+      }catch(e){ try{_panSourcePoint.connect(_panInsertPoint);}catch(e2){} }
+    } else {
+      try{ _panSourcePoint.connect(_panInsertPoint); }catch(e){}
+    }
+  };
+  window._rebuildPanChain();
 })();
-// When _currentNotePan is set, getMasterDest returns a per-note StereoPannerNode.
-// This means ALL existing g.connect(getMasterDest()) calls automatically get panning.
+
 function getMasterDest(){
   var base=masterEQInput||(AC?AC.destination:null);
   var pan=window._currentNotePan;
-  if(pan!==null && pan!==undefined && AC && AC.createStereoPanner){
-    var p=AC.createStereoPanner();
-    p.pan.value=Math.max(-1,Math.min(1,pan));
-    p.connect(base);
-    return p;
+  var panV=window._currentNotePanV;
+  var mode=(window._sfxSettings&&window._sfxSettings.panMode)||'speaker';
+
+  // Start with base destination
+  var dest=base;
+
+  // Apply horizontal pan if active
+  if(mode!=='off' && pan!==null && pan!==undefined && AC){
+    var afterWide=_panInsertPoint||base;
+    if(mode==='headphones' && AC.createStereoPanner){
+      var p=AC.createStereoPanner();
+      p.pan.value=Math.max(-1,Math.min(1,pan));
+      p.connect(afterWide);
+      dest=p;
+    } else {
+      try{
+        var sp=AC.createStereoPanner();
+        sp.pan.value=Math.max(-1,Math.min(1,pan));
+        var tilt=AC.createBiquadFilter();
+        tilt.type='lowshelf'; tilt.frequency.value=300;
+        tilt.gain.value=Math.abs(pan)*4;
+        var hiTilt=AC.createBiquadFilter();
+        hiTilt.type='highshelf'; hiTilt.frequency.value=3000;
+        hiTilt.gain.value=-Math.abs(pan)*5;
+        sp.connect(tilt);
+        tilt.connect(hiTilt);
+        hiTilt.connect(afterWide);
+        dest=sp;
+      }catch(e){}
+    }
   }
-  return base;
+
+  // Apply vertical pan if active
+  if(panV!==null && panV!==undefined && AC){
+    if(mode==='headphones'){
+      // Headphones: use HRTF front-to-back (Z axis)
+      // Top of pad = in front (Z=-1), bottom = behind (Z=+1)
+      try{
+        var fbp=AC.createPanner();
+        fbp.panningModel='HRTF';
+        fbp.distanceModel='inverse';
+        fbp.refDistance=1; fbp.maxDistance=100; fbp.rolloffFactor=1;
+        // X=0 (center L/R, horizontal pan handles that), Y=0, Z = front/back
+        var zPos=Math.max(-1,Math.min(1,panV)); // -1=front, +1=back
+        fbp.setPosition(0, 0, -1 + zPos*2); // Z: -1 (front) to +1 (back)
+        fbp.connect(dest);
+        dest=fbp;
+      }catch(e){}
+    } else if(mode==='speaker' && AC.createStereoPanner){
+      // Speakers: simple top/bottom volume pan between physical speakers
+      var vp=AC.createStereoPanner();
+      vp.pan.value=Math.max(-1,Math.min(1,panV));
+      vp.connect(dest);
+      dest=vp;
+    }
+  }
+
+  return dest;
 }
+
 window._setMasterPan=function(v){
   _masterPanValue=Math.max(-1,Math.min(1,v));
-  if(_masterPanner) try{ _masterPanner.pan.setTargetAtTime(_masterPanValue, AC.currentTime, 0.02); }catch(e){}
+  var mode=(window._sfxSettings&&window._sfxSettings.panMode)||'speaker';
+  if(mode==='headphones' && _masterPanner){
+    try{ _masterPanner.pan.setValueAtTime(_masterPanValue, AC.currentTime); }catch(e){}
+  } else if(mode!=='off' && _spatialNodes){
+    window._applySpatialPan(_masterPanValue);
+  }
 };
 window._getMasterPan=function(){ return _masterPanValue; };
 
@@ -3649,19 +3858,24 @@ function renderStockToBuffer(playIdx, callback){
   }catch(e){callback(null);}
 }
 
-function playBankSound(idx, eventVol, notePan){
+function playBankSound(idx, eventVol, notePan, notePanV){
   if(!AC)return; resumeAC();
-  // Set per-note pan FIRST so getMasterDest() picks it up for all paths
+  // Set per-note horizontal pan so getMasterDest() picks it up
   window._currentNotePan=(notePan!==undefined&&notePan!==null)?notePan:null;
+  // Store vertical pan for connecting after getMasterDest
+  window._currentNotePanV=(notePanV!==undefined&&notePanV!==null)?notePanV:null;
 
-  // Check for stock sound alias (copied stock sound — no userSample but has alias meta)
+  // Check for stock sound alias
   if(!userSamples[idx]){
     var _meta0=sampleMeta[idx]||{};
     if(_meta0._aliasIdx!==undefined){
-      playBankSound(_meta0._aliasIdx, eventVol, notePan);
+      playBankSound(_meta0._aliasIdx, eventVol, notePan, notePanV);
       return;
     }
   }
+
+  // Helper: get final destination, optionally inserting vertical panner
+  // (Now handled by getMasterDest via _currentNotePanV — this is a passthrough)
 
   // User sample overrides synth sound
   if(userSamples[idx]){
@@ -3677,6 +3891,7 @@ function playBankSound(idx, eventVol, notePan){
       src.start(AC.currentTime);
     }catch(e){}
     window._currentNotePan=null;
+    window._currentNotePanV=null;
     return;
   }
   // Pass volume to synth sounds — capture per-call to avoid race conditions
@@ -3686,8 +3901,14 @@ function playBankSound(idx, eventVol, notePan){
   var _metaV=(sampleMeta[_useIdx]&&sampleMeta[_useIdx].volume!==undefined)?sampleMeta[_useIdx].volume:1.0;
   var _volLin=Math.max(0.0001,((eventVol!==undefined)?eventVol:1.0)*_metaV);
   var _vol=Math.pow(_volLin,1.5);
-  // Apply pitch bend
-  window._currentPitchRatio=(window._getPitchRatio)?window._getPitchRatio():1.0;
+  // Apply pitch bend — multiply with any EXPR pitch already set
+  var _basePitchRatio=(window._getPitchRatio)?window._getPitchRatio():1.0;
+  if(window._exprPitch!==null && window._exprPitch!==undefined && PAD_EXPR_ON){
+    // EXPR pitch (semitones) multiplied with pitch bend slider
+    window._currentPitchRatio=_basePitchRatio * Math.pow(2, window._exprPitch/12);
+  } else {
+    window._currentPitchRatio=_basePitchRatio;
+  }
   if(_useStyle==='B') playBankB(_useIdx,_vol);
   else if(_useStyle==='C') playBankC(_useIdx,_vol);
   else if(_useStyle==='D') playBankD(_useIdx,_vol);
@@ -3699,6 +3920,7 @@ function playBankSound(idx, eventVol, notePan){
   else if(_useStyle==='J') playBankJ(_useIdx,_vol);
   else playBankA(_useIdx,_vol);
   window._currentNotePan=null; // clear so non-pad sounds don't inherit
+  window._currentNotePanV=null;
 }
 
 // Preview a stock sound from any style without permanently changing SOUND_STYLE
@@ -4866,6 +5088,14 @@ var SPIN_ON=true;
 var GLOW_ON=true;
 var PARTICLES_ON=true;
 var PAD_PAN_ON=false; // per-tap panning based on hit position within pad
+var PAD_EXPR_ON=false; // per-tap expression: X=volume, Y=pitch
+var EXPR_GRID_ON=false; // show grid overlay on pads during EXPR mode
+var EXPR_SNAP_X=false; // snap X (volume) to grid
+var EXPR_SNAP_Y=false; // snap Y (pitch) to grid
+var EXPR_GRID_X=5; // number of vertical grid divisions (volume)
+var EXPR_GRID_Y=10; // number of horizontal grid divisions (pitch = semitones)
+var EXPR_PITCH_RANGE=5; // ±semitones
+var HIDE_NUMS_ON=false; // hide numbers on pads in sequencer mode
 var PRESSURE_BASE=3.1;
 var PRESSURE_RANGE=1.0;
 // Pressure jitter: ±_pressureJitter shift applied 50% of the time (25% each direction).
@@ -5047,7 +5277,7 @@ function renderBank(){
     } else {
       tilesPerRow=Math.max(2, Math.floor(availW / (tileSize + tileGap)));
     }
-    tilesPerRow=Math.max(2, tilesPerRow);
+    tilesPerRow=Math.max(1, tilesPerRow);
     var snappedSize=Math.max(15, Math.floor((availW - (tilesPerRow - 1) * tileGap) / tilesPerRow));
     tileSize=snappedSize;
     tileFontSize=Math.round(baseFontSize*(tileSize/baseSize));
@@ -5333,21 +5563,29 @@ function renderBank(){
         var _factor=_volAtBase>0?_volAtPress/_volAtBase:1.0;
 
         var vol=Math.max(0.01,recVolume*_factor);
+
+        // EXPR mode: override volume with X-axis position
+        if(PAD_EXPR_ON && window._exprVol!==null){
+          vol=window._exprVol;
+        }
+        // EXPR pitch is applied inside playBankSound via window._exprPitch
+
         // Remember this volume so any drag-over pads after this tap inherit the same level
         window._lastTapVol=vol;
         if(window._beatEditToggleTile&&window._beatEditToggleTile(sndIdx)) return;
-        playBankSound(sndIdx,vol,window._currentTapPan);
+        playBankSound(sndIdx,vol,window._currentTapPan,window._currentTapPanV);
         window._lastActivePad=idx;
-        window._lastTapPanVal=window._currentTapPan; // save for drag-over
+        window._lastTapPanVal=window._currentTapPan;
         if(window._seqNoteOn) _seqNoteOn(sndIdx,idx,vol);
 
         // ── Hit marker glow ──
         // Show a radial glow at the exact tap position inside the pad.
         // Size scales with volume when touch sensitivity is on.
-        if(PAD_PAN_ON && el.offsetWidth>=60){
+        if((PAD_PAN_ON||PAD_EXPR_ON) && el.offsetWidth>=60){
           var _hmX=window._currentTapRelX||0.5;
           var _hmY=window._currentTapRelY||0.5;
-          var _hmSize=Math.max(20, Math.min(60, el.offsetWidth*0.4*(0.6+vol*0.8)));
+          var _hmVolNorm=Math.max(0,Math.min(1, vol/Math.max(0.5,recVolume))); // 0=silent, 1=full vol
+          var _hmSize=Math.max(16, Math.min(el.offsetWidth*0.7, el.offsetWidth*(0.2 + _hmVolNorm*0.5)));
           var _hm=document.createElement('div');
           _hm.className='_hitMarker';
           _hm.style.cssText='position:absolute;pointer-events:none;border-radius:50%;z-index:10;'+
@@ -5405,31 +5643,65 @@ function renderBank(){
         _holdStartX=_ct.clientX;
         _holdStartY=_ct.clientY;
         _holdFired=false;
-        // Fire after 500ms while finger is still down
-        _holdTimer=setTimeout(function(){
-          _holdFired=true; _holdTimer=null;
-          el.style.background='#7c3aed'; el.style.color='#fff'; el.style.borderColor='#4c1d95';
-          setTimeout(function(){ el.style.background=''; el.style.color=''; el.style.borderColor=''; },200);
-          if(window._startSampleRecord) window._startSampleRecord(idx);
-        },500);
+        // Fire after 500ms while finger is still down (if long-press enabled)
+        var _lpEnabled=(window._sfxSettings&&window._sfxSettings.longPressEditor!==undefined)?window._sfxSettings.longPressEditor:true;
+        if(_lpEnabled){
+          _holdTimer=setTimeout(function(){
+            _holdFired=true; _holdTimer=null;
+            el.style.background='#7c3aed'; el.style.color='#fff'; el.style.borderColor='#4c1d95';
+            setTimeout(function(){ el.style.background=''; el.style.color=''; el.style.borderColor=''; },200);
+            if(window._startSampleRecord) window._startSampleRecord(idx);
+          },500);
+        }
         if(!SEL){
           var _t=e.changedTouches[0];
           var _r=(_t.radiusX||_t.webkitRadiusX||PRESSURE_BASE);
 
           // ── Per-tap pan automation ──
-          // Calculate tap X position within the pad → pan value -1..+1
           var _tapPanVal=null;
-          var _tapRelX=0.5, _tapRelY=0.5; // normalized 0..1 position within tile
+          var _tapRelX=0.5, _tapRelY=0.5;
+          var _tapPanVVal=null;
           if(PAD_PAN_ON && el.offsetWidth>=60){
             var _tileRect=el.getBoundingClientRect();
             _tapRelX=Math.max(0,Math.min(1,(_t.clientX-_tileRect.left)/_tileRect.width));
             _tapRelY=Math.max(0,Math.min(1,(_t.clientY-_tileRect.top)/_tileRect.height));
-            _tapPanVal=(_tapRelX*2)-1; // 0→-1 (left), 0.5→0 (center), 1→+1 (right)
+            _tapPanVal=(_tapRelX*2)-1;
+            _tapPanVVal=(_tapRelY*2)-1;
           }
-          // Store for doSound to pass through to playBankSound
           window._currentTapPan=_tapPanVal;
+          window._currentTapPanV=_tapPanVVal;
           window._currentTapRelX=_tapRelX;
           window._currentTapRelY=_tapRelY;
+
+          // ── EXPR mode: X=volume, Y=pitch ──
+          // X: 0(left)=10% vol, 0.5(center)=55% vol, 1(right)=100% vol
+          // Y: 0(top)=+5 semitones, 0.5(center)=0, 1(bottom)=-5 semitones
+          window._exprVol=null;
+          window._exprPitch=null;
+          if(PAD_EXPR_ON && el.offsetWidth>=60){
+            var _eRect=el.getBoundingClientRect();
+            var _eRelX=Math.max(0,Math.min(1,(_t.clientX-_eRect.left)/_eRect.width));
+            var _eRelY=Math.max(0,Math.min(1,(_t.clientY-_eRect.top)/_eRect.height));
+
+            // Snap X to grid if enabled
+            if(EXPR_SNAP_X && EXPR_GRID_X>1){
+              _eRelX=Math.round(_eRelX*EXPR_GRID_X)/EXPR_GRID_X;
+              _eRelX=Math.max(0,Math.min(1,_eRelX));
+            }
+            // Snap Y to grid if enabled
+            if(EXPR_SNAP_Y && EXPR_GRID_Y>1){
+              _eRelY=Math.round(_eRelY*EXPR_GRID_Y)/EXPR_GRID_Y;
+              _eRelY=Math.max(0,Math.min(1,_eRelY));
+            }
+
+            // Volume: 1% at left edge, 150% at right edge
+            window._exprVol=0.01 + _eRelX*1.49;
+            // Pitch: +RANGE at top, -RANGE at bottom (semitones)
+            var _pr=EXPR_PITCH_RANGE||5;
+            window._exprPitch=_pr - _eRelY*(_pr*2);
+            window._currentTapRelX=_eRelX;
+            window._currentTapRelY=_eRelY;
+          }
           // Weighted jitter: 50% actual, 25% each for ±jitter amount
           // Adds organic feel and smooths choppy jumps; amount is user-configurable.
           var _jAmt=window._pressureJitter||0;
@@ -5514,6 +5786,8 @@ function renderBank(){
   document.getElementById('undo').disabled=HIST.length===0;
   // Apply pad name labels (and refresh mic icons) now that tiles are fresh
   if(window._updateSampleIcons) window._updateSampleIcons();
+  if(window._updateExprGrid) window._updateExprGrid();
+  if(window._updateHideNums) window._updateHideNums();
 }
 
 // Re-render bank tile mic icons after sample load
@@ -6113,12 +6387,15 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         var _dragVol=(window._lastTapVol!==undefined)?window._lastTapVol:recVolume;
         // Calculate pan from finger position on this tile (drag-over)
         var _dragPan=null;
+        var _dragPanV=null;
         if(PAD_PAN_ON && tile.offsetWidth>=60){
           var _dRect=tile.getBoundingClientRect();
           var _dRelX=Math.max(0,Math.min(1,(touch.clientX-_dRect.left)/_dRect.width));
+          var _dRelY=Math.max(0,Math.min(1,(touch.clientY-_dRect.top)/_dRect.height));
           _dragPan=(_dRelX*2)-1;
+          _dragPanV=(_dRelY*2)-1;
         }
-        playBankSound(sndIdx, _dragVol, _dragPan);
+        playBankSound(sndIdx, _dragVol, _dragPan, _dragPanV);
         if(window._seqNoteOn) _seqNoteOn(sndIdx, idx, _dragVol);
         if(!SEL && window._pulseRandomEq) window._pulseRandomEq();
         // Full tap effect — color, glow, particles, spin
@@ -6273,7 +6550,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var pct=parseFloat(sl.value);
       if(window._seqVisible){
         // SEQ mode: map pct 100→2 rows (big tiles), pct 0→16 rows (small tiles)
-        var rows=Math.round(2+(1-pct/100)*14);
+        var rows=Math.round(1+(1-pct/100)*15);
         window._seqTargetRows=rows;
         if(PZ) renderBank();
         if(window._syncPadAdjSize) window._syncPadAdjSize(pct);
@@ -6354,7 +6631,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var h=canvasWrap.offsetHeight||100;
       var newPct=Math.max(0,Math.min(100,_sp+(dy/h)*100));
       sl.value=newPct;
-      var rows=Math.round(2+(1-newPct/100)*14);
+      var rows=Math.round(1+(1-newPct/100)*15);
       if(window._seqVisible){
         window._seqTargetRows=rows;
         if(PZ) renderBank();
@@ -7285,7 +7562,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var tabs=[
       {id:'sounds', label:'SOUNDS', build:null},
       {id:'haptic', label:'HAPTIC', build:null},
-      {id:'visual', label:'VISUAL', build:null}
+      {id:'visual', label:'VISUAL', build:null},
+      {id:'pads', label:'PADS', build:null}
     ];
 
     // Tab button element refs (so setActiveTab can style them)
@@ -7401,6 +7679,45 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       body.appendChild(_toggleRow('Button FX (REC/PLAY/etc.)',
         function(){return window._sfxSettings.buttonFx;},
         function(v){window._sfxSettings.buttonFx=v; window._saveSfxSettings();}));
+
+      // Pan mode selector
+      var panRow=document.createElement('div');
+      panRow.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:9px 4px;border-top:1px solid rgba(0,217,255,0.15);margin-top:6px;';
+      var panLbl=document.createElement('span');
+      panLbl.textContent='PAN MODE';
+      panLbl.style.cssText='font-family:monospace;font-size:10px;color:#ccc;letter-spacing:1px;';
+      var panSelect=document.createElement('div');
+      panSelect.style.cssText='display:flex;gap:4px;';
+      var modes=[
+        {id:'speaker',label:'SPATIAL',hint:'HRTF spatial (best on speakers)'},
+        {id:'headphones',label:'STEREO',hint:'Simple L/R (headphones)'},
+        {id:'off',label:'OFF',hint:'No panning'}
+      ];
+      var currentMode=window._sfxSettings.panMode||'speaker';
+      modes.forEach(function(m){
+        var btn=document.createElement('button');
+        btn.textContent=m.label;
+        btn.title=m.hint;
+        var isActive=(currentMode===m.id);
+        btn.style.cssText='font-family:monospace;font-size:8px;font-weight:700;padding:4px 10px;border:1.5px solid '+(isActive?'#22c55e':'#555')+';border-radius:10px;background:'+(isActive?'rgba(34,197,94,0.15)':'rgba(0,0,0,0.3)')+';color:'+(isActive?'#22c55e':'#888')+';cursor:pointer;letter-spacing:0.5px;touch-action:manipulation;'+(isActive?'box-shadow:0 0 6px rgba(34,197,94,0.4);':'');
+        btn.addEventListener('click',function(e){
+          e.stopPropagation();
+          window._sfxSettings.panMode=m.id;
+          window._saveSfxSettings();
+          if(window._rebuildPanChain) window._rebuildPanChain();
+          // Rebuild tab to refresh button states
+          body.innerHTML='';
+          tabs[0].build(body);
+        });
+        panSelect.appendChild(btn);
+      });
+      panRow.appendChild(panLbl); panRow.appendChild(panSelect);
+      body.appendChild(panRow);
+
+      var panHint=document.createElement('div');
+      panHint.style.cssText='font-family:monospace;font-size:8px;color:#555;padding:2px 4px;line-height:1.4;';
+      panHint.textContent='SPATIAL: crossfeed L/R + top/bottom speakers. STEREO: true L/R + HRTF front/back (headphones). L\u00B7R button enables per-tap 2D panning.';
+      body.appendChild(panHint);
     };
 
     tabs[1].build=function(body){
@@ -7422,6 +7739,16 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       ph.style.cssText='font-family:monospace;font-size:9px;color:#666;padding:16px 4px;text-align:center;letter-spacing:1px;line-height:1.6;';
       ph.innerHTML='Visual settings coming soon.<br><br>— Tap glow, spin, particles, etc. will move here —';
       body.appendChild(ph);
+    };
+
+    tabs[3].build=function(body){
+      // PADS tab
+      body.appendChild(_toggleRow('Long-press to open sample editor',
+        function(){return window._sfxSettings.longPressEditor!==false;},
+        function(v){window._sfxSettings.longPressEditor=v; window._saveSfxSettings();}));
+      body.appendChild(_toggleRow('EXPR grid overlay on pads',
+        function(){return window._sfxSettings.exprGrid!==false;},
+        function(v){window._sfxSettings.exprGrid=v; window._saveSfxSettings(); if(window._updateExprGrid) window._updateExprGrid();}));
     };
 
     ov.appendChild(card);
@@ -7480,7 +7807,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     });
     // Toggle buttons: chirp up when turning on, down when turning off.
     // We read the 'active' class AFTER the click lands, via a microtask.
-    var toggleBtns=['btnSpinToggle','btnParticleToggle','btnGlowToggle','btnPadPanToggle'];
+    var toggleBtns=['btnSpinToggle','btnParticleToggle','btnGlowToggle','btnPadPanToggle','btnPadExprToggle','btnExprGrid','btnHideNums','btnSnapX','btnSnapY'];
     toggleBtns.forEach(function(id){
       var el=document.getElementById(id);
       if(!el) return;
@@ -7677,7 +8004,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       sliderDrag: true,     // subtle noise while dragging sliders
       sliderHaptic: true,   // vibration pulses while dragging sliders
       padHaptic: true,      // vibration on pad taps (scales with pressure when sens on)
-      buttonFx: true        // REC/PLAY/STOP etc. button sounds
+      buttonFx: true,       // REC/PLAY/STOP etc. button sounds
+      panMode: 'speaker',   // 'speaker' = HRTF spatial, 'headphones' = simple stereo, 'off' = disabled
+      longPressEditor: true // long-press pad to open sample editor
     };
     try{
       var saved=JSON.parse(localStorage.getItem('sfxSettings')||'{}');
@@ -7871,8 +8200,11 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   // Global hook: any time a <input type="range"> fires input, play the slider fx
   // and trigger a tiny vibration. Covers all sliders current and future.
+  // Excluded: pitch/vol/pan sliders (they're performance controls, not settings).
+  var _noSfxSliders={pitchBendSlider:1, tbVolSlider:1, panSlider:1};
   document.addEventListener('input', function(e){
     if(e.target && e.target.tagName==='INPUT' && e.target.type==='range'){
+      if(_noSfxSliders[e.target.id]) return;
       _sliderFx();
       _sliderHaptic();
     }
@@ -8254,10 +8586,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var qt = quantizeTime(rawTime);
       qt = Math.max(0, Math.min(loopMs - 10, qt));
       var _pb=_pitchBend, _pr=_pitchRange;
-      // Use the actual played volume (includes touch sensitivity) if provided,
-      // otherwise fall back to the static recVolume slider value.
       var _vol=(actualVol!==undefined)?actualVol:(parseFloat(recVolume)||1.0);
-      var _ev={ sndIdx:sndIdx, bankIdx:bankIdx, time:qt, bpmAtRecord:bpm, vol:_vol, pitchCurve:[[0,_pb]] };
+      // Capture current pan values (set during tap handler)
+      var _panH=window._currentTapPan||null;
+      var _panV=window._currentTapPanV||null;
+      // Capture EXPR pitch if active
+      var _exprP=(PAD_EXPR_ON && window._exprPitch!==null)?window._exprPitch:null;
+      var _ev={ sndIdx:sndIdx, bankIdx:bankIdx, time:qt, bpmAtRecord:bpm, vol:_vol, panH:_panH, panV:_panV, exprPitch:_exprP, pitchCurve:[[0,_pb]] };
       recTrack.push(_ev);
       // Sample pitch every 40ms for 640ms to capture the bend curve
       var _ps=1;
@@ -8386,10 +8721,19 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
             // Apply recorded pitch curve
             var _curve=ev.pitchCurve;
             var _initPitch=(_curve&&_curve.length)?_curve[0][1]:0;
-            window._currentPitchRatio=Math.pow(2,_initPitch/12);
+            var _basePR=Math.pow(2,_initPitch/12);
+            // Apply recorded EXPR pitch if present
+            if(ev.exprPitch!==null && ev.exprPitch!==undefined){
+              window._exprPitch=ev.exprPitch;
+              _basePR=_basePR * Math.pow(2, ev.exprPitch/12);
+            } else {
+              window._exprPitch=null;
+            }
+            window._currentPitchRatio=_basePR;
             window._markOscsAsPlayback=true;
-            playBankSound(ev.sndIdx, (ev.vol!==undefined)?ev.vol:1.0);
+            playBankSound(ev.sndIdx, (ev.vol!==undefined)?ev.vol:1.0, ev.panH||null, ev.panV||null);
             window._markOscsAsPlayback=false;
+            window._exprPitch=null; // clear after use
             if(_curve&&_curve.length>1){
               var _ci=1;
               var _pTimer=setInterval(function(){
@@ -8771,6 +9115,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       if(varrows) varrows.style.bottom='100%';
     }
     updateUI();
+    if(window._updateHideNums) window._updateHideNums();
+    if(window._updateExprGrid) window._updateExprGrid();
   }
 
   // Unified SEQ/PUZ toggle — same button, icon swaps with mode
@@ -12627,21 +12973,175 @@ window._clampScrollTransition=function(anchorEl){
 
   // Pad pan toggle
   var padPanBtn=document.getElementById('btnPadPanToggle');
+  var padExprBtn=document.getElementById('btnPadExprToggle');
+  function updatePadPanBtn(){
+    if(padPanBtn){ padPanBtn.classList.toggle('active', PAD_PAN_ON); padPanBtn.style.opacity=PAD_PAN_ON?'1':'0.5'; }
+  }
+  function updatePadExprBtn(){
+    if(padExprBtn){ padExprBtn.classList.toggle('active', PAD_EXPR_ON); padExprBtn.style.opacity=PAD_EXPR_ON?'1':'0.5'; }
+  }
   if(padPanBtn){
-    function updatePadPanBtn(){
-      padPanBtn.classList.toggle('active', PAD_PAN_ON);
-      padPanBtn.style.opacity=PAD_PAN_ON?'1':'0.5';
-    }
     padPanBtn.addEventListener('click',function(){
       PAD_PAN_ON=!PAD_PAN_ON;
-      // When pad pan turns on, auto-disable spin (they conflict visually)
-      if(PAD_PAN_ON && SPIN_ON){
-        SPIN_ON=false;
-        updateBtns(); // refresh spin button visual
+      if(PAD_PAN_ON){
+        // Mutual exclusion: turn off EXPR
+        PAD_EXPR_ON=false; updatePadExprBtn();
+        // Auto-disable spin
+        if(SPIN_ON){ SPIN_ON=false; updateBtns(); }
       }
       updatePadPanBtn();
     });
     updatePadPanBtn();
+  }
+  if(padExprBtn){
+    padExprBtn.addEventListener('click',function(){
+      PAD_EXPR_ON=!PAD_EXPR_ON;
+      if(PAD_EXPR_ON){
+        // Mutual exclusion: turn off L·R
+        PAD_PAN_ON=false; updatePadPanBtn();
+        // Auto-disable spin
+        if(SPIN_ON){ SPIN_ON=false; updateBtns(); }
+      }
+      updatePadExprBtn();
+      if(window._updateExprGrid) window._updateExprGrid();
+    });
+    updatePadExprBtn();
+  }
+
+  // GRID toggle
+  var gridBtn=document.getElementById('btnExprGrid');
+  function updateGridBtn(){
+    if(gridBtn){ gridBtn.classList.toggle('active', EXPR_GRID_ON); gridBtn.style.opacity=EXPR_GRID_ON?'1':'0.5'; }
+  }
+  if(gridBtn){
+    gridBtn.addEventListener('click',function(){
+      EXPR_GRID_ON=!EXPR_GRID_ON;
+      updateGridBtn();
+      window._updateExprGrid();
+    });
+    updateGridBtn();
+  }
+
+  // Apply/remove grid and hide-nums classes on all bank tiles
+  window._updateExprGrid=function(){
+    var tiles=document.querySelectorAll('#bank .bt');
+    tiles.forEach(function(t){
+      if(EXPR_GRID_ON && PAD_EXPR_ON && t.offsetWidth>=60){
+        t.classList.add('_exprGrid');
+        // Build dynamic grid background based on current grid counts
+        var gy=EXPR_GRID_Y||10, gx=EXPR_GRID_X||5;
+        var hPct=(100/gy).toFixed(4)+'%';
+        var vPct=(100/gx).toFixed(4)+'%';
+        var bg=
+          'repeating-linear-gradient(0deg,transparent,transparent calc('+hPct+' - 0.5px),rgba(251,191,36,0.18) calc('+hPct+' - 0.5px),rgba(251,191,36,0.18) '+hPct+',transparent '+hPct+')'+
+          ',linear-gradient(0deg,transparent 49.5%,rgba(251,191,36,0.4) 49.5%,rgba(251,191,36,0.4) 50.5%,transparent 50.5%)'+
+          ',repeating-linear-gradient(90deg,transparent,transparent calc('+vPct+' - 0.5px),rgba(0,217,255,0.12) calc('+vPct+' - 0.5px),rgba(0,217,255,0.12) '+vPct+',transparent '+vPct+')'+
+          ',linear-gradient(90deg,transparent 49.5%,rgba(0,217,255,0.25) 49.5%,rgba(0,217,255,0.25) 50.5%,transparent 50.5%)';
+        t.style.setProperty('--expr-grid-bg', bg);
+      } else {
+        t.classList.remove('_exprGrid');
+        t.style.removeProperty('--expr-grid-bg');
+      }
+    });
+  };
+  window._updateHideNums=function(){
+    var tiles=document.querySelectorAll('#bank .bt');
+    var seqMode=document.querySelector('.game-screen[style*="display:none"]')?true:false;
+    // Check if we're in sequencer mode by looking at proPanel visibility
+    var inSeq=!!(document.getElementById('proPanel')&&document.getElementById('proPanel').style.display!=='none');
+    tiles.forEach(function(t){
+      if(HIDE_NUMS_ON && inSeq){
+        t.classList.add('_noNums');
+      } else {
+        t.classList.remove('_noNums');
+      }
+    });
+  };
+
+  // 123 toggle (hide numbers)
+  var numBtn=document.getElementById('btnHideNums');
+  function updateNumBtn(){
+    if(numBtn){ numBtn.classList.toggle('active', HIDE_NUMS_ON); numBtn.style.opacity=HIDE_NUMS_ON?'1':'0.5'; }
+  }
+  if(numBtn){
+    numBtn.addEventListener('click',function(){
+      HIDE_NUMS_ON=!HIDE_NUMS_ON;
+      updateNumBtn();
+      window._updateHideNums();
+    });
+    updateNumBtn();
+  }
+
+  // SNAP X toggle
+  var snapXBtn=document.getElementById('btnSnapX');
+  function updateSnapXBtn(){ if(snapXBtn){ snapXBtn.classList.toggle('active',EXPR_SNAP_X); snapXBtn.style.opacity=EXPR_SNAP_X?'1':'0.5'; } }
+  if(snapXBtn){
+    snapXBtn.addEventListener('click',function(){ EXPR_SNAP_X=!EXPR_SNAP_X; updateSnapXBtn(); });
+    updateSnapXBtn();
+  }
+
+  // SNAP Y toggle
+  var snapYBtn=document.getElementById('btnSnapY');
+  function updateSnapYBtn(){ if(snapYBtn){ snapYBtn.classList.toggle('active',EXPR_SNAP_Y); snapYBtn.style.opacity=EXPR_SNAP_Y?'1':'0.5'; } }
+  if(snapYBtn){
+    snapYBtn.addEventListener('click',function(){ EXPR_SNAP_Y=!EXPR_SNAP_Y; updateSnapYBtn(); });
+    updateSnapYBtn();
+  }
+
+  // Grid editor button — opens a small modal to adjust grid counts + pitch range
+  var gridEditBtn=document.getElementById('btnGridEdit');
+  if(gridEditBtn){
+    gridEditBtn.addEventListener('click',function(){
+      var ex=document.getElementById('_gridEditOv');
+      if(ex){ ex.parentNode.removeChild(ex); return; }
+
+      var ov=document.createElement('div');
+      ov.id='_gridEditOv';
+      ov.style.cssText='position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px;touch-action:none;';
+
+      var card=document.createElement('div');
+      card.style.cssText='background:#141414;border:1.5px solid rgba(0,217,255,0.5);border-radius:10px;padding:16px;max-width:300px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.8);';
+      card.addEventListener('click',function(e){ e.stopPropagation(); });
+
+      var hdr=document.createElement('div');
+      hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;';
+      var ttl=document.createElement('span');
+      ttl.textContent='EXPR GRID';
+      ttl.style.cssText='font-family:monospace;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--cyan);';
+      var closeBtn=document.createElement('button');
+      closeBtn.textContent='\u2715';
+      closeBtn.style.cssText='background:transparent;border:1px solid rgba(0,217,255,0.4);border-radius:4px;color:var(--cyan);font-family:monospace;font-size:12px;width:26px;height:26px;cursor:pointer;line-height:1;';
+      closeBtn.addEventListener('click',function(){ ov.parentNode&&ov.parentNode.removeChild(ov); });
+      hdr.appendChild(ttl); hdr.appendChild(closeBtn);
+      card.appendChild(hdr);
+
+      function mkRow(label,value,min,max,onChange){
+        var row=document.createElement('div');
+        row.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:10px;';
+        var lbl=document.createElement('span');
+        lbl.textContent=label;
+        lbl.style.cssText='font-family:monospace;font-size:9px;color:#aaa;min-width:90px;letter-spacing:1px;';
+        var inp=document.createElement('input');
+        inp.type='number'; inp.min=min; inp.max=max; inp.value=value;
+        inp.style.cssText='width:50px;font-family:monospace;font-size:12px;padding:4px;border:1.5px solid var(--cyan);border-radius:4px;background:#1a1a1a;color:#f0f0f0;text-align:center;';
+        inp.addEventListener('change',function(){ onChange(parseInt(inp.value)||value); });
+        row.appendChild(lbl); row.appendChild(inp);
+        return row;
+      }
+
+      card.appendChild(mkRow('X DIVISIONS', EXPR_GRID_X, 2, 20, function(v){ EXPR_GRID_X=v; if(window._updateExprGrid) window._updateExprGrid(); }));
+      card.appendChild(mkRow('Y DIVISIONS', EXPR_GRID_Y, 2, 24, function(v){ EXPR_GRID_Y=v; if(window._updateExprGrid) window._updateExprGrid(); }));
+      card.appendChild(mkRow('PITCH \u00B1', EXPR_PITCH_RANGE, 1, 12, function(v){ EXPR_PITCH_RANGE=v; EXPR_GRID_Y=v*2; if(window._updateExprGrid) window._updateExprGrid(); }));
+
+      var hint=document.createElement('div');
+      hint.style.cssText='font-family:monospace;font-size:8px;color:#555;margin-top:6px;line-height:1.4;';
+      hint.textContent='Changing pitch range auto-sets Y divisions to match (2 per semitone).';
+      card.appendChild(hint);
+
+      ov.appendChild(card);
+      ov.addEventListener('click',function(){ ov.parentNode&&ov.parentNode.removeChild(ov); });
+      document.body.appendChild(ov);
+    });
   }
 
   updateBtns();
@@ -14439,12 +14939,12 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     // Slider: left=16 pads (small/many), right=2 pads (big/few)
     // slider value = 18 - rows, so v=2→16pads, v=16→2pads
     var _slVal=18-_curRows;
-    var sizeR=_mkRow('',TS_COLOR,(_slVal-2)/14,2,16,function(v){return (18-Math.round(v))+' pads';},function(v){
+    var sizeR=_mkRow('',TS_COLOR,(_slVal-2)/15,2,17,function(v){return (18-Math.round(v))+' pads';},function(v){
       var rows=18-Math.round(v);
       window._seqTargetRows=rows;
       if(PZ) renderBank();
     });
-    sizeR.sl.min=2; sizeR.sl.max=16; sizeR.sl.step=1;
+    sizeR.sl.min=2; sizeR.sl.max=17; sizeR.sl.step=1;
     sizeR.sl.value=_slVal;
     sizeR.sl.addEventListener('input',function(){
       var rows=18-Math.round(parseFloat(sizeR.sl.value));
