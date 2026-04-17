@@ -1,4 +1,4 @@
-<!-- Sequation v4.89 | Built: 2026-04-16 06:27 CT | github.com/Spamboni/Sequation -->
+<!-- Sequation v4.95 | Built: 2026-04-16 08:05 CT | github.com/Spamboni/Sequation -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -170,6 +170,11 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
   70% {transform:rotate(320deg) scale(0.82);}
   100%{transform:rotate(360deg) scale(1);}
 }
+@keyframes _hitGlow{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(0.6);}
+  50%{opacity:0.8;transform:translate(-50%,-50%) scale(1.1);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.3);}
+}
 .bt.spinning{animation:bt-spin var(--spin-dur,380ms) cubic-bezier(0.25,0.46,0.45,0.94) forwards;}
 /* particles via canvas */
 .bt-mic{position:absolute;top:2px;left:2px;width:5px;height:5px;border-radius:50%;pointer-events:none;}
@@ -229,6 +234,8 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 #btnGlowToggle.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
 #btnSensToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #btnSensToggle.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
+#btnPadPanToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
+#btnPadPanToggle.active { background:rgba(34,197,94,0.15); border-color:#22c55e; box-shadow: 0 0 12px rgba(34,197,94,0.7); color:#22c55e; }
 #btnSpinToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #btnSpinToggle.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
 #btnParticleToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
@@ -378,7 +385,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v4.89</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v4.95</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -456,6 +463,7 @@ window.onerror=function(msg,src,line,col,err){
           <!-- Center: Touch Sense + Spin + Particles + Glow — flex:1 + justify-content:center -->
           <div style="display:flex;gap:3px;flex:1;justify-content:center;align-items:center;">
             <button class="seq-btn" id="btnSensToggle" title="Tap sensitivity (hold for settings)" style="flex-shrink:0;font-size:10px;padding:2px 5px;">&#x1F44B;</button>
+            <button class="seq-btn seq-btn-sq" id="btnPadPanToggle" title="Pad pan (tap position = L/R pan)" style="flex-shrink:0;font-size:9px;font-weight:700;padding:2px 4px;">L·R</button>
             <button class="seq-btn seq-btn-sq" id="btnSpinToggle" title="Spin on/off" style="font-size:10px;flex-shrink:0;">&#x1F300;</button>
             <button class="seq-btn seq-btn-sq" id="btnParticleToggle" title="Particles on/off" style="font-size:10px;flex-shrink:0;">&#x2728;</button>
             <button class="seq-btn seq-btn-sq" id="btnGlowToggle" title="Tap glow on/off" style="font-size:10px;padding:0;overflow:hidden;flex-shrink:0;"><canvas id="glowIconCanvas" width="26" height="26" style="display:block;width:26px;height:26px;"></canvas></button>
@@ -572,28 +580,39 @@ window.onerror=function(msg,src,line,col,err){
 
   <div class="slim-panel" id="seqCtrlSlimPanel" style="display:none;"><div class="slim-panel-bar" id="seqCtrlBar"><button class="slim-panel-bar-arrow" id="seqCtrlArrow">▲</button><span>SEQUENCER CONTROLS</span></div>
     <div class="slim-panel-body" id="seqCtrlBody" style="max-height:3000px;">
-<div class="pro-panel" id="proPanel" style="display:none;"><div class="pro-row" id="pitchBendRow" style="gap:4px;align-items:center;padding-top:5px;margin-top:2px;display:grid;grid-template-columns:36px 1fr auto auto auto;">
-<span class="pro-lbl" style="font-size:7px;white-space:nowrap;">PITCH</span>
-<div class="cslider-wrap" id="pitchSliderWrap" style="height:22px;filter:drop-shadow(0px 3px 6px rgba(196,0,255,0.6));"><canvas class="cslider-canvas" id="pitchSliderCanvas"></canvas><input type="range" id="pitchBendSlider" min="-1" max="1" step="0.01" value="0" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ew-resize;z-index:5;-webkit-appearance:none;appearance:none;background:transparent;pointer-events:auto;"></div>
-<span class="pro-lbl" id="pitchBendLbl" style="font-size:7px;min-width:22px;text-align:right;">0</span>
-<span class="pro-lbl" style="font-size:7px;white-space:nowrap;margin-left:4px;">RNG</span>
+<div class="pro-panel" id="proPanel" style="display:none;">
+<!-- PITCH / VOL / PAN slim panel -->
+<div class="slim-panel" id="pvpSlimPanel"><div class="slim-panel-bar" id="pvpBar"><button class="slim-panel-bar-arrow" id="pvpArrow">▲</button><span>PITCH · VOL · PAN</span></div>
+<div class="slim-panel-body" id="pvpBody" style="max-height:3000px;">
+<div style="display:flex;flex-direction:column;gap:3px;padding:4px 6px;">
+<!-- PITCH row -->
+<div id="pitchBendRow" style="display:flex;align-items:center;gap:4px;">
+<span class="pro-lbl" style="font-size:7px;white-space:nowrap;min-width:30px;">PITCH</span>
+<div class="cslider-wrap" id="pitchSliderWrap" style="height:22px;flex:1;max-width:calc(100% - 160px);filter:drop-shadow(0px 3px 6px rgba(196,0,255,0.6));"><canvas class="cslider-canvas" id="pitchSliderCanvas"></canvas><input type="range" id="pitchBendSlider" min="-1" max="1" step="0.01" value="0" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ew-resize;z-index:5;-webkit-appearance:none;appearance:none;background:transparent;pointer-events:auto;"></div>
+<span class="pro-lbl" id="pitchBendLbl" style="font-size:7px;min-width:18px;text-align:right;">0</span>
+<span class="pro-lbl" style="font-size:7px;white-space:nowrap;">RNG</span>
 <select id="pitchBendRange" style="font-family:monospace;font-size:8px;border:1px solid var(--cyan);border-radius:3px;background:var(--bg-secondary);color:var(--text-primary);padding:1px 2px;">
-<option value="1">1</option>
-<option value="2">2</option>
-<option value="3" selected>3</option>
-<option value="4">4</option>
-<option value="5">5</option>
-<option value="7">7</option>
+<option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option><option value="7">7</option>
 </select>
-<button id="pitchUndockBtn" title="Undock pitch slider" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid var(--cyan);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;flex-shrink:0;">⊞</button>
+<button id="pitchUndockBtn" title="Undock pitch slider" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid var(--cyan);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;flex-shrink:0;margin-right:6px;">⊞</button>
 </div>
-<div class="pro-row" id="volRow" style="gap:4px;align-items:center;display:grid;grid-template-columns:36px 1fr auto auto auto;">
-<span class="pro-lbl" style="font-size:7px;white-space:nowrap;">VOL</span>
-<div class="cslider-wrap" id="volSliderWrap" style="height:22px;filter:drop-shadow(0px 3px 6px rgba(0,217,255,0.5));"><canvas class="cslider-canvas" id="volSliderCanvas"></canvas><input type="range" id="tbVolSlider" min="0.05" max="1" step="0.05" value="1" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ew-resize;z-index:5;-webkit-appearance:none;appearance:none;background:transparent;pointer-events:auto;"></div>
+<!-- VOL row -->
+<div id="volRow" style="display:flex;align-items:center;gap:4px;">
+<span class="pro-lbl" style="font-size:7px;white-space:nowrap;min-width:30px;">VOL</span>
+<div class="cslider-wrap" id="volSliderWrap" style="height:22px;flex:1;max-width:calc(100% - 160px);filter:drop-shadow(0px 3px 6px rgba(0,217,255,0.5));"><canvas class="cslider-canvas" id="volSliderCanvas"></canvas><input type="range" id="tbVolSlider" min="0.05" max="1" step="0.05" value="1" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ew-resize;z-index:5;-webkit-appearance:none;appearance:none;background:transparent;pointer-events:auto;"></div>
 <span class="pro-lbl" id="volLbl" style="font-size:7px;min-width:28px;text-align:right;">100%</span>
 <button id="volLockBtn" title="Lock volume" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid var(--cyan);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;flex-shrink:0;">🔓</button>
-<button id="volUndockBtn" title="Undock volume slider" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid var(--cyan);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;flex-shrink:0;">⊞</button>
+<button id="volUndockBtn" title="Undock volume slider" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid var(--cyan);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;flex-shrink:0;margin-right:6px;">⊞</button>
 </div>
+<!-- PAN row -->
+<div id="panRow" style="display:flex;align-items:center;gap:4px;">
+<span class="pro-lbl" style="font-size:7px;white-space:nowrap;min-width:30px;">PAN</span>
+<div class="cslider-wrap" id="panSliderWrap" style="height:22px;flex:1;max-width:calc(100% - 160px);filter:drop-shadow(0px 3px 6px rgba(34,197,94,0.5));"><canvas class="cslider-canvas" id="panSliderCanvas"></canvas><input type="range" id="panSlider" min="-1" max="1" step="0.01" value="0" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ew-resize;z-index:5;-webkit-appearance:none;appearance:none;background:transparent;pointer-events:auto;"></div>
+<span class="pro-lbl" id="panLbl" style="font-size:7px;min-width:28px;text-align:right;">C</span>
+<button id="panUndockBtn" title="Undock pan slider" style="font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid var(--cyan);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;flex-shrink:0;margin-right:6px;">⊞</button>
+</div>
+</div>
+</div></div>
 <div class="pro-row pro-top" style="justify-content:space-between;align-items:center;gap:4px;"><button id="barsMenuBtn" class="pro-btn active" style="flex-shrink:0;font-size:8px;padding:3px 6px;white-space:nowrap;">BARS&nbsp;2</button><div class="pro-beats" id="proBeats" style="flex:1;justify-content:center;"></div><div id="undockBeats" style="display:none;"></div></div><div class="pro-row"><span class="pro-lbl">BPM</span><input class="pro-bpm" id="proBpm" type="number" min="40" max="300" value="120"><div class="pro-tap" id="proTap">TAP</div><div class="pro-slot-btns" id="proSlots"></div></div><div class="pro-row"><span class="pro-lbl">CLICK</span><button class="pro-btn active" id="proClick">ON</button><span class="pro-lbl" style="margin-left:6px;">ACCENT</span><button class="pro-btn active" id="proAccent">4/4</button></div><div class="pro-row"><span class="pro-lbl">FEEL</span><div class="pro-bar-btns" id="feelBtns"><button class="pro-btn pro-feel active" data-feel="4" data-q-auto="1/4">4</button><button class="pro-btn pro-feel" data-feel="6" data-q-auto="1/4t">6</button><button class="pro-btn pro-feel" data-feel="8" data-q-auto="1/8">8</button><button class="pro-btn pro-feel" data-feel="12" data-q-auto="1/8t">12</button><button class="pro-btn pro-feel" data-feel="16" data-q-auto="1/16">16</button></div></div><div class="pro-row"><span class="pro-lbl">QUANTIZE</span><div class="pro-bar-btns"><button class="pro-btn" data-q="none">FREE</button><button class="pro-btn" data-q="1/4">1/4</button><button class="pro-btn" data-q="1/4t">1/4T</button><button class="pro-btn active" data-q="1/8">1/8</button><button class="pro-btn" data-q="1/8t">1/8T</button><button class="pro-btn" data-q="1/16">1/16</button><button class="pro-btn" data-q="1/16t">1/16T</button></div></div><div class="pro-row" id="masterEQRow" style="flex-direction:column;gap:4px;border-top:1px solid rgba(0,217,255,0.2);padding-top:5px;margin-top:2px;"><span class="pro-lbl">MASTER EQ</span><div style="display:flex;gap:6px;"><button id="masterEQBasicTab" style="flex:1;font-family:monospace;font-size:8px;font-weight:700;padding:5px 0;border:1.5px solid var(--cyan);border-radius:4px;background:transparent;color:var(--text-secondary);cursor:pointer;letter-spacing:.5px;touch-action:manipulation;">BASIC</button><button id="masterEQParamTab" style="flex:1;font-family:monospace;font-size:8px;font-weight:700;padding:5px 0;border:1.5px solid var(--cyan);border-radius:4px;background:transparent;color:var(--text-secondary);cursor:pointer;letter-spacing:.5px;touch-action:manipulation;">PARAMETRIC</button></div><div id="masterEQBasicBody" style="display:none;flex-direction:column;gap:4px;"><div style="display:flex;align-items:center;justify-content:flex-end;"><button id="eqResetBtn" style="font-family:monospace;font-size:7px;padding:2px 6px;border:1px solid var(--cyan);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;">RESET</button></div><div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;"><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_sub" style="font-family:monospace;font-size:7px;color:var(--text-muted);">0</span><input type="range" id="eq_sub" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:var(--cyan);cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">SUB</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_bass" style="font-family:monospace;font-size:7px;color:var(--text-muted);">0</span><input type="range" id="eq_bass" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:var(--cyan);cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">BASS</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_mid" style="font-family:monospace;font-size:7px;color:var(--text-muted);">0</span><input type="range" id="eq_mid" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:var(--cyan);cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">MID</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_pres" style="font-family:monospace;font-size:7px;color:var(--text-muted);">0</span><input type="range" id="eq_pres" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:var(--cyan);cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">PRES</span></div><div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><span id="eqVal_hi" style="font-family:monospace;font-size:7px;color:var(--text-muted);">0</span><input type="range" id="eq_hi" min="-20" max="20" step="0.5" value="0" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:60px;width:20px;accent-color:var(--cyan);cursor:pointer;"><span class="pro-lbl" style="font-size:7px;">HI</span></div></div></div><div id="masterEQParamBody" style="display:none;flex-direction:column;align-items:center;gap:4px;"><canvas id="masterEQCanvas" width="280" height="80" style="width:280px;height:80px;border:1.5px solid var(--cyan);border-radius:4px;background:var(--bg);display:block;cursor:crosshair;touch-action:none;"></canvas><div id="masterEQBandControls" style="display:flex;flex-direction:column;gap:4px;width:100%;"></div></div></div>
 <div class="pro-row" id="eraseRow" style="display:none;background:rgba(249,115,22,0.08);border:1.5px solid #f97316;border-radius:4px;padding:6px 8px;gap:4px;flex-direction:column;"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span class="pro-lbl" style="color:#f97316;">ERASE MODE</span><span class="pro-lbl" id="eraseStatus" style="color:var(--text-muted);font-size:7px;">Tap beat dots to select range · tap bank numbers to filter</span></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"><button class="pro-btn" id="eraseConfirm" style="background:rgba(249,115,22,0.2);border-color:#f97316;color:#f97316;font-size:9px;">ERASE HITS</button><button class="pro-btn" id="eraseCancel" style="font-size:9px;">CANCEL</button><span class="pro-lbl" id="eraseInfo" style="color:var(--text-muted);"></span></div></div></div>
 
@@ -2388,7 +2407,39 @@ var _masterLim={ node:null, threshold:-2, ratio:20, release:0.08 };
   }
   masterEQInput=prev;
 })();
-function getMasterDest(){ return masterEQInput||(AC?AC.destination:null); }
+// ── Global Stereo Panner ──
+// Inserted into the master chain so ALL pad sounds automatically route through it.
+var _masterPanner=null;
+var _masterPanValue=0;
+var _prePannerDest=masterEQInput; // save the old destination
+(function(){
+  if(!AC) return;
+  if(AC.createStereoPanner){
+    _masterPanner=AC.createStereoPanner();
+    _masterPanner.pan.value=0;
+    _masterPanner.connect(_prePannerDest);
+    // Now getMasterDest returns the panner, so everything routes through it
+    masterEQInput=_masterPanner;
+  }
+})();
+// When _currentNotePan is set, getMasterDest returns a per-note StereoPannerNode.
+// This means ALL existing g.connect(getMasterDest()) calls automatically get panning.
+function getMasterDest(){
+  var base=masterEQInput||(AC?AC.destination:null);
+  var pan=window._currentNotePan;
+  if(pan!==null && pan!==undefined && AC && AC.createStereoPanner){
+    var p=AC.createStereoPanner();
+    p.pan.value=Math.max(-1,Math.min(1,pan));
+    p.connect(base);
+    return p;
+  }
+  return base;
+}
+window._setMasterPan=function(v){
+  _masterPanValue=Math.max(-1,Math.min(1,v));
+  if(_masterPanner) try{ _masterPanner.pan.setTargetAtTime(_masterPanValue, AC.currentTime, 0.02); }catch(e){}
+};
+window._getMasterPan=function(){ return _masterPanValue; };
 
 // ── Master FX control API ──
 window._setMasterReverb=function(level){
@@ -3315,23 +3366,26 @@ window._showSaveKitModal=function(){
   ov.style.cssText='position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:20px;touch-action:none;';
 
   var card=document.createElement('div');
-  card.style.cssText='background:#141414;border:1.5px solid rgba(251,191,36,0.5);border-radius:10px;padding:16px;max-width:360px;width:100%;max-height:70vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.8);';
+  card.style.cssText='background:#141414;border:1.5px solid rgba(251,191,36,0.5);border-radius:10px;padding:16px;max-width:360px;width:100%;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.8);';
   card.addEventListener('click',function(e){ e.stopPropagation(); });
 
-  // Header
   var hdr=document.createElement('div');
   hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;';
   var ttl=document.createElement('span');
   ttl.textContent='SAVE SOUND STYLE';
   ttl.style.cssText='font-family:monospace;font-size:11px;font-weight:700;letter-spacing:2px;color:#fbbf24;';
   var closeBtn=document.createElement('button');
-  closeBtn.textContent='✕';
+  closeBtn.textContent='\u2715';
   closeBtn.style.cssText='background:transparent;border:1px solid rgba(251,191,36,0.4);border-radius:4px;color:#fbbf24;font-family:monospace;font-size:12px;width:26px;height:26px;cursor:pointer;line-height:1;';
   closeBtn.addEventListener('click',function(){ ov.parentNode&&ov.parentNode.removeChild(ov); });
   hdr.appendChild(ttl); hdr.appendChild(closeBtn);
   card.appendChild(hdr);
 
-  // Name input
+  var note=document.createElement('div');
+  note.style.cssText='font-family:monospace;font-size:9px;color:#888;margin-bottom:10px;line-height:1.4;';
+  note.textContent='Saves as a .kit file. Use LOAD on the PADS bar to open it later.';
+  card.appendChild(note);
+
   var nameLabel=document.createElement('div');
   nameLabel.textContent='NAME';
   nameLabel.style.cssText='font-family:monospace;font-size:8px;font-weight:700;letter-spacing:2px;color:#888;margin-bottom:4px;';
@@ -3343,34 +3397,6 @@ window._showSaveKitModal=function(){
   nameInput.style.cssText='width:100%;box-sizing:border-box;font-family:monospace;font-size:13px;padding:8px;border:1.5px solid #fbbf24;border-radius:4px;background:#1a1a1a;color:#f0f0f0;margin-bottom:12px;';
   card.appendChild(nameInput);
 
-  // Status message area
-  var statusMsg=document.createElement('div');
-  statusMsg.style.cssText='font-family:monospace;font-size:9px;color:#888;margin-bottom:10px;min-height:14px;';
-  card.appendChild(statusMsg);
-
-  // Existing saves list (for reference / overwrite target)
-  var saved=window._savedKits||[];
-  if(saved.length>0){
-    var existLabel=document.createElement('div');
-    existLabel.textContent='EXISTING SAVES';
-    existLabel.style.cssText='font-family:monospace;font-size:8px;font-weight:700;letter-spacing:2px;color:#555;margin-bottom:4px;';
-    card.appendChild(existLabel);
-    var listWrap=document.createElement('div');
-    listWrap.style.cssText='max-height:120px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid #222;border-radius:4px;margin-bottom:12px;';
-    saved.forEach(function(kit){
-      var row=document.createElement('div');
-      row.style.cssText='padding:6px 8px;border-bottom:1px solid #1a1a1a;cursor:pointer;touch-action:manipulation;font-family:monospace;font-size:10px;color:#ccc;';
-      row.textContent=kit.name;
-      row.addEventListener('click',function(){
-        nameInput.value=kit.name;
-        nameInput.focus();
-      });
-      listWrap.appendChild(row);
-    });
-    card.appendChild(listWrap);
-  }
-
-  // Buttons
   var btnRow=document.createElement('div');
   btnRow.style.cssText='display:flex;gap:8px;justify-content:flex-end;';
   var cancelBtn=document.createElement('button');
@@ -3382,35 +3408,59 @@ window._showSaveKitModal=function(){
   saveBtn.style.cssText='font-family:monospace;font-size:10px;font-weight:700;padding:8px 20px;border:1.5px solid #fbbf24;border-radius:4px;background:rgba(251,191,36,0.15);color:#fbbf24;cursor:pointer;letter-spacing:1px;';
   saveBtn.addEventListener('click',function(){
     var name=(nameInput.value||'').trim().slice(0,48);
-    if(!name){ statusMsg.textContent='Please enter a name'; statusMsg.style.color='#f87171'; return; }
-    // Check for existing kit with same name
-    var existingIdx=-1;
-    for(var i=0;i<window._savedKits.length;i++){
-      if(window._savedKits[i].name===name){ existingIdx=i; break; }
+    if(!name) return;
+    var kit=window._buildKitData(name);
+    var json=JSON.stringify(kit,null,2);
+    var fname=name.replace(/[^a-z0-9_-]/gi,'_')+'.kit';
+    var blob=new Blob([json],{type:'application/octet-stream'});
+    var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if(!isMobile && window.showSaveFilePicker){
+      window.showSaveFilePicker({suggestedName:fname,types:[{description:'Sound Style',accept:{'application/octet-stream':['.kit']}}]})
+        .then(function(fh){ return fh.createWritable(); })
+        .then(function(w){ return w.write(blob).then(function(){ return w.close(); }); })
+        .then(function(){
+          window._currentKitName=name;
+          var sn=document.getElementById('padsBarStyleName'); if(sn) sn.textContent=name;
+          ov.parentNode&&ov.parentNode.removeChild(ov);
+        }).catch(function(e){ if(e.name!=='AbortError') _kitDL(blob,fname,name,ov); });
+      return;
     }
-    if(existingIdx>=0){
-      if(!confirm('A style named "'+name+'" already exists. Overwrite it?')) return;
-      // Overwrite: replace the existing kit data but keep its position
-      var newKit=window._buildKitData(name);
-      newKit.id=window._savedKits[existingIdx].id; // preserve original ID
-      window._savedKits[existingIdx]=newKit;
-    } else {
-      window._savedKits.push(window._buildKitData(name));
-    }
-    window._saveKitsStorage();
-    window._currentKitName=name;
-    var sn=document.getElementById('padsBarStyleName');
-    if(sn) sn.textContent=name;
-    ov.parentNode&&ov.parentNode.removeChild(ov);
+    _kitDL(blob,fname,name,ov);
   });
   btnRow.appendChild(cancelBtn); btnRow.appendChild(saveBtn);
   card.appendChild(btnRow);
-
+  nameInput.onkeydown=function(e){ if(e.key==='Enter') saveBtn.click(); };
   ov.appendChild(card);
   ov.addEventListener('click',function(){ ov.parentNode&&ov.parentNode.removeChild(ov); });
   document.body.appendChild(ov);
   setTimeout(function(){ nameInput.focus(); nameInput.select(); },80);
 };
+
+function _kitDL(blob,fname,name,ov){
+  if(navigator.share&&navigator.canShare){
+    try{
+      var file=new File([blob],fname,{type:'application/octet-stream'});
+      if(navigator.canShare({files:[file]})){
+        navigator.share({files:[file],title:fname}).then(function(){
+          window._currentKitName=name;
+          var sn=document.getElementById('padsBarStyleName'); if(sn) sn.textContent=name;
+          if(ov&&ov.parentNode) ov.parentNode.removeChild(ov);
+        }).catch(function(e){ if(e.name!=='AbortError') _kitADL(blob,fname,name,ov); });
+        return;
+      }
+    }catch(e){}
+  }
+  _kitADL(blob,fname,name,ov);
+}
+function _kitADL(blob,fname,name,ov){
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download=fname; a.style.display='none';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },2000);
+  window._currentKitName=name;
+  var sn=document.getElementById('padsBarStyleName'); if(sn) sn.textContent=name;
+  if(ov&&ov.parentNode) ov.parentNode.removeChild(ov);
+}
 
 // Load a saved kit onto all pads
 window._loadKit=function(kit){
@@ -3419,9 +3469,7 @@ window._loadKit=function(kit){
   Object.keys(sampleMeta).forEach(function(k){ delete sampleMeta[k]; });
   if(window._tileStyleOverride) Object.keys(window._tileStyleOverride).forEach(function(k){ delete window._tileStyleOverride[k]; });
   if(kit.overrides){
-    Object.keys(kit.overrides).forEach(function(k){
-      window._tileStyleOverride[k]=kit.overrides[k];
-    });
+    Object.keys(kit.overrides).forEach(function(k){ window._tileStyleOverride[k]=kit.overrides[k]; });
   }
   if(kit.pads){
     Object.keys(kit.pads).forEach(function(k){
@@ -3431,7 +3479,7 @@ window._loadKit=function(kit){
         var bytes=new Uint8Array(raw.length);
         for(var i=0;i<raw.length;i++) bytes[i]=raw.charCodeAt(i);
         var floats=new Float32Array(bytes.buffer);
-        var buf=AC.createBuffer(p.ch, p.len, p.sr);
+        var buf=AC.createBuffer(p.ch,p.len,p.sr);
         for(var c=0;c<p.ch;c++){
           var out=buf.getChannelData(c);
           for(var s=0;s<p.len;s++) out[s]=floats[s*p.ch+c];
@@ -3448,13 +3496,12 @@ window._loadKit=function(kit){
   window._currentKitName=kit.name;
 };
 
-// Show the LOAD sound style modal — tabbed: BUILT-IN / MY STYLES
+// Show the LOAD sound style modal — tabbed: BUILT-IN / MY STYLES (file picker)
 window._showKitPicker=function(){
   var existing=document.getElementById('_kitPickerOv');
   if(existing){ existing.parentNode.removeChild(existing); }
   var builtIn=['A','B','C','D','E','F','G','H','I','J'];
   var _SNAMES={A:'Classic',B:'8-Bit',C:'Sci-Fi',D:'Nature',E:'Industrial',F:'Piano',G:'Violin',H:'Flute',I:'Guitar',J:'Bass'};
-  var saved=window._savedKits||[];
 
   var ov=document.createElement('div');
   ov.id='_kitPickerOv';
@@ -3464,20 +3511,18 @@ window._showKitPicker=function(){
   card.style.cssText='background:#141414;border:1.5px solid rgba(0,217,255,0.5);border-radius:10px;padding:14px;max-width:360px;width:100%;max-height:70vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.8);';
   card.addEventListener('click',function(e){ e.stopPropagation(); });
 
-  // Header
   var hdr=document.createElement('div');
   hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;';
   var ttl=document.createElement('span');
   ttl.textContent='LOAD SOUND STYLE';
   ttl.style.cssText='font-family:monospace;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--cyan);';
   var closeBtn=document.createElement('button');
-  closeBtn.textContent='✕';
+  closeBtn.textContent='\u2715';
   closeBtn.style.cssText='background:transparent;border:1px solid rgba(0,217,255,0.4);border-radius:4px;color:var(--cyan);font-family:monospace;font-size:12px;width:26px;height:26px;cursor:pointer;line-height:1;';
   closeBtn.addEventListener('click',function(){ ov.parentNode&&ov.parentNode.removeChild(ov); });
   hdr.appendChild(ttl); hdr.appendChild(closeBtn);
   card.appendChild(hdr);
 
-  // Tab bar
   var tabBar=document.createElement('div');
   tabBar.style.cssText='display:flex;border-bottom:1.5px solid rgba(0,217,255,0.25);margin-bottom:8px;';
   var tabBody=document.createElement('div');
@@ -3520,8 +3565,7 @@ window._showKitPicker=function(){
         if(window._updateSampleIcons) window._updateSampleIcons();
         if(PZ) renderBank();
         window._currentKitName=_SNAMES[k];
-        var sn=document.getElementById('padsBarStyleName');
-        if(sn) sn.textContent=_SNAMES[k];
+        var sn=document.getElementById('padsBarStyleName'); if(sn) sn.textContent=_SNAMES[k];
         ov.parentNode&&ov.parentNode.removeChild(ov);
       });
       tabBody.appendChild(row);
@@ -3530,40 +3574,39 @@ window._showKitPicker=function(){
 
   function buildCustom(){
     tabBody.innerHTML='';
-    var saved2=window._savedKits||[];
-    if(saved2.length===0){
-      var empty=document.createElement('div');
-      empty.style.cssText='font-family:monospace;font-size:9px;color:#555;padding:20px 8px;text-align:center;line-height:1.6;';
-      empty.innerHTML='No saved styles yet.<br><br>Use SAVE on the PADS bar to create one.';
-      tabBody.appendChild(empty);
-      return;
-    }
-    saved2.forEach(function(kit,idx){
-      var isCurrent=(window._currentKitName===kit.name);
-      var row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;gap:4px;padding:9px 8px;border-bottom:1px solid #1a1a1a;cursor:pointer;touch-action:manipulation;'+(isCurrent?'background:rgba(251,191,36,0.06);':'');
-      var dot=document.createElement('div');
-      dot.style.cssText='width:8px;height:8px;border-radius:50%;margin-right:6px;flex-shrink:0;border:1.5px solid '+(isCurrent?'#fbbf24':'#444')+';box-sizing:border-box;'+(isCurrent?'background:#fbbf24;':'');
-      var nameEl=document.createElement('span');
-      nameEl.textContent=kit.name;
-      nameEl.style.cssText='font-family:monospace;font-size:10px;color:'+(isCurrent?'#fbbf24':'#e5e5e5')+';flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
-      var delBtn=document.createElement('button');
-      delBtn.textContent='✕';
-      delBtn.style.cssText='font-family:monospace;font-size:8px;padding:2px 5px;border:1px solid #555;border-radius:3px;background:transparent;color:#f87171;cursor:pointer;flex-shrink:0;touch-action:manipulation;';
-      delBtn.addEventListener('click',function(e){
-        e.stopPropagation();
-        if(!confirm('Delete "'+kit.name+'"?')) return;
-        window._savedKits.splice(idx,1);
-        window._saveKitsStorage();
-        buildCustom(); // rebuild the list
-      });
-      row.addEventListener('click',function(){
-        window._loadKit(kit);
-        ov.parentNode&&ov.parentNode.removeChild(ov);
-      });
-      row.appendChild(dot); row.appendChild(nameEl); row.appendChild(delBtn);
-      tabBody.appendChild(row);
+    var msg=document.createElement('div');
+    msg.style.cssText='font-family:monospace;font-size:9px;color:#aaa;padding:16px 8px;text-align:center;line-height:1.6;';
+    msg.innerHTML='Tap below to load a .kit file<br>saved with the SAVE button.';
+    tabBody.appendChild(msg);
+    var loadBtn=document.createElement('button');
+    loadBtn.textContent='\uD83D\uDCC2  BROWSE FILES';
+    loadBtn.style.cssText='font-family:monospace;font-size:11px;font-weight:700;padding:10px 20px;border:2px solid #fbbf24;border-radius:6px;background:rgba(251,191,36,0.1);color:#fbbf24;cursor:pointer;touch-action:manipulation;letter-spacing:2px;width:calc(100% - 16px);margin:0 8px;';
+    loadBtn.addEventListener('click',function(){
+      var fi=document.createElement('input');
+      fi.type='file'; fi.accept='.kit,.json,application/json,application/octet-stream';
+      fi.style.cssText='position:fixed;top:-200px;left:-200px;opacity:0.01;';
+      document.body.appendChild(fi);
+      fi.onchange=function(){
+        var file=fi.files&&fi.files[0];
+        if(document.body.contains(fi)) document.body.removeChild(fi);
+        if(!file) return;
+        var reader=new FileReader();
+        reader.onload=function(ev){
+          try{
+            var kit=JSON.parse(ev.target.result);
+            if(!kit.name){ kit.name=file.name.replace(/\.(kit|json)$/i,''); }
+            window._loadKit(kit);
+            ov.parentNode&&ov.parentNode.removeChild(ov);
+          }catch(e){
+            alert('Could not read kit file: '+e.message);
+          }
+        };
+        reader.onerror=function(){ alert('Error reading file'); };
+        reader.readAsText(file);
+      };
+      setTimeout(function(){ fi.click(); },0);
     });
+    tabBody.appendChild(loadBtn);
   }
 
   tabBuiltIn.addEventListener('click',function(){ activateTab(tabBuiltIn,tabCustom); buildBuiltIn(); });
@@ -3574,13 +3617,7 @@ window._showKitPicker=function(){
   ov.appendChild(card);
   ov.addEventListener('click',function(){ ov.parentNode&&ov.parentNode.removeChild(ov); });
   document.body.appendChild(ov);
-
-  // Default to BUILT-IN tab, or MY STYLES if there are saves
-  if(saved.length>0){
-    activateTab(tabCustom,tabBuiltIn); buildCustom();
-  } else {
-    activateTab(tabBuiltIn,tabCustom); buildBuiltIn();
-  }
+  activateTab(tabBuiltIn,tabCustom); buildBuiltIn();
 };
 
 // Track last-tapped pad
@@ -3612,16 +3649,20 @@ function renderStockToBuffer(playIdx, callback){
   }catch(e){callback(null);}
 }
 
-function playBankSound(idx, eventVol){
+function playBankSound(idx, eventVol, notePan){
   if(!AC)return; resumeAC();
+  // Set per-note pan FIRST so getMasterDest() picks it up for all paths
+  window._currentNotePan=(notePan!==undefined&&notePan!==null)?notePan:null;
+
   // Check for stock sound alias (copied stock sound — no userSample but has alias meta)
   if(!userSamples[idx]){
     var _meta0=sampleMeta[idx]||{};
     if(_meta0._aliasIdx!==undefined){
-      playBankSound(_meta0._aliasIdx, eventVol);
+      playBankSound(_meta0._aliasIdx, eventVol, notePan);
       return;
     }
   }
+
   // User sample overrides synth sound
   if(userSamples[idx]){
     try{
@@ -3632,9 +3673,10 @@ function playBankSound(idx, eventVol){
       var sampleVol=(meta.volume!==undefined)?meta.volume:1.0;
       var evVol=(eventVol!==undefined)?eventVol:1.0;
       g.gain.value=sampleVol*evVol;
-      src.connect(g);g.connect(getMasterDest());
+      src.connect(g); g.connect(getMasterDest());
       src.start(AC.currentTime);
     }catch(e){}
+    window._currentNotePan=null;
     return;
   }
   // Pass volume to synth sounds — capture per-call to avoid race conditions
@@ -3656,6 +3698,7 @@ function playBankSound(idx, eventVol){
   else if(_useStyle==='I') playBankI(_useIdx,_vol);
   else if(_useStyle==='J') playBankJ(_useIdx,_vol);
   else playBankA(_useIdx,_vol);
+  window._currentNotePan=null; // clear so non-pad sounds don't inherit
 }
 
 // Preview a stock sound from any style without permanently changing SOUND_STYLE
@@ -4822,6 +4865,7 @@ var _tsGapDockedInMenu=true;   // true = gap slider is inside menu (not toolbar)
 var SPIN_ON=true;
 var GLOW_ON=true;
 var PARTICLES_ON=true;
+var PAD_PAN_ON=false; // per-tap panning based on hit position within pad
 var PRESSURE_BASE=3.1;
 var PRESSURE_RANGE=1.0;
 // Pressure jitter: ±_pressureJitter shift applied 50% of the time (25% each direction).
@@ -5292,9 +5336,31 @@ function renderBank(){
         // Remember this volume so any drag-over pads after this tap inherit the same level
         window._lastTapVol=vol;
         if(window._beatEditToggleTile&&window._beatEditToggleTile(sndIdx)) return;
-        playBankSound(sndIdx,vol);
+        playBankSound(sndIdx,vol,window._currentTapPan);
         window._lastActivePad=idx;
-        if(window._seqNoteOn) _seqNoteOn(sndIdx,idx);
+        window._lastTapPanVal=window._currentTapPan; // save for drag-over
+        if(window._seqNoteOn) _seqNoteOn(sndIdx,idx,vol);
+
+        // ── Hit marker glow ──
+        // Show a radial glow at the exact tap position inside the pad.
+        // Size scales with volume when touch sensitivity is on.
+        if(PAD_PAN_ON && el.offsetWidth>=60){
+          var _hmX=window._currentTapRelX||0.5;
+          var _hmY=window._currentTapRelY||0.5;
+          var _hmSize=Math.max(20, Math.min(60, el.offsetWidth*0.4*(0.6+vol*0.8)));
+          var _hm=document.createElement('div');
+          _hm.className='_hitMarker';
+          _hm.style.cssText='position:absolute;pointer-events:none;border-radius:50%;z-index:10;'+
+            'left:'+(_hmX*100)+'%;top:'+(_hmY*100)+'%;'+
+            'width:'+_hmSize+'px;height:'+_hmSize+'px;'+
+            'transform:translate(-50%,-50%) scale(1);'+
+            'background:radial-gradient(circle,rgba(255,255,255,0.7) 0%,rgba(0,217,255,0.5) 40%,transparent 70%);'+
+            'animation:_hitGlow 250ms ease-out forwards;';
+          el.style.position='relative';
+          el.style.overflow='hidden';
+          el.appendChild(_hm);
+          setTimeout(function(){ if(_hm.parentNode) _hm.parentNode.removeChild(_hm); },300);
+        }
         // Pulse a random equation if nothing is selected in puzzle
         if(!SEL && window._pulseRandomEq) window._pulseRandomEq();
         // Use tile's color for tap glow, complement for playback flash
@@ -5349,6 +5415,21 @@ function renderBank(){
         if(!SEL){
           var _t=e.changedTouches[0];
           var _r=(_t.radiusX||_t.webkitRadiusX||PRESSURE_BASE);
+
+          // ── Per-tap pan automation ──
+          // Calculate tap X position within the pad → pan value -1..+1
+          var _tapPanVal=null;
+          var _tapRelX=0.5, _tapRelY=0.5; // normalized 0..1 position within tile
+          if(PAD_PAN_ON && el.offsetWidth>=60){
+            var _tileRect=el.getBoundingClientRect();
+            _tapRelX=Math.max(0,Math.min(1,(_t.clientX-_tileRect.left)/_tileRect.width));
+            _tapRelY=Math.max(0,Math.min(1,(_t.clientY-_tileRect.top)/_tileRect.height));
+            _tapPanVal=(_tapRelX*2)-1; // 0→-1 (left), 0.5→0 (center), 1→+1 (right)
+          }
+          // Store for doSound to pass through to playBankSound
+          window._currentTapPan=_tapPanVal;
+          window._currentTapRelX=_tapRelX;
+          window._currentTapRelY=_tapRelY;
           // Weighted jitter: 50% actual, 25% each for ±jitter amount
           // Adds organic feel and smooths choppy jumps; amount is user-configurable.
           var _jAmt=window._pressureJitter||0;
@@ -6030,8 +6111,15 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         // Use the volume from the originating tap so the entire drag stroke
         // plays at the same level the user picked with their first finger-press.
         var _dragVol=(window._lastTapVol!==undefined)?window._lastTapVol:recVolume;
-        playBankSound(sndIdx, _dragVol);
-        if(window._seqNoteOn) _seqNoteOn(sndIdx, idx);
+        // Calculate pan from finger position on this tile (drag-over)
+        var _dragPan=null;
+        if(PAD_PAN_ON && tile.offsetWidth>=60){
+          var _dRect=tile.getBoundingClientRect();
+          var _dRelX=Math.max(0,Math.min(1,(touch.clientX-_dRect.left)/_dRect.width));
+          _dragPan=(_dRelX*2)-1;
+        }
+        playBankSound(sndIdx, _dragVol, _dragPan);
+        if(window._seqNoteOn) _seqNoteOn(sndIdx, idx, _dragVol);
         if(!SEL && window._pulseRandomEq) window._pulseRandomEq();
         // Full tap effect — color, glow, particles, spin
         var _stc=tileColors[idx];
@@ -7077,6 +7165,61 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   // Spring return syncs float via _pitchDockable.syncVal (handled in _origSpring2 wrapper above)
 
+  // ── PAN slider ──
+  // Draw pan canvas slider (green, center-origin like pitch)
+  var _panSlider=document.getElementById('panSlider');
+  var _panCanvas=document.getElementById('panSliderCanvas');
+  function _drawPanSlider(){
+    if(!_panCanvas) return;
+    var v=_panSlider?parseFloat(_panSlider.value):0;
+    var pct=(v+1)/2; // -1..1 → 0..1
+    _drawMixerSlider('panSliderCanvas', pct, '#22c55e', true);
+    var lbl=document.getElementById('panLbl');
+    if(lbl){
+      if(Math.abs(v)<0.02) lbl.textContent='C';
+      else if(v<0) lbl.textContent=Math.round(Math.abs(v)*100)+'L';
+      else lbl.textContent=Math.round(v*100)+'R';
+    }
+  }
+  if(_panSlider){
+    _panSlider.addEventListener('input',function(){
+      var v=parseFloat(this.value);
+      if(window._setMasterPan) window._setMasterPan(v);
+      _drawPanSlider();
+    });
+  }
+
+  // Pan dockable slider
+  var _panDockable=_makeDockableSlider({
+    id:'pan',
+    label:'PAN',
+    color:'#22c55e',
+    min:-1, max:1, step:0.01,
+    value:0,
+    panelRowId:'panRow',
+    isCenter:true,
+    fmtLabel:function(v){
+      if(Math.abs(v)<0.02) return 'C';
+      if(v<0) return Math.round(Math.abs(v)*100)+'L';
+      return Math.round(v*100)+'R';
+    },
+    onChange:function(v){
+      var lbl=document.getElementById('panLbl'); if(lbl){
+        if(Math.abs(v)<0.02) lbl.textContent='C';
+        else if(v<0) lbl.textContent=Math.round(Math.abs(v)*100)+'L';
+        else lbl.textContent=Math.round(v*100)+'R';
+      }
+      if(_panSlider) _panSlider.value=v;
+      if(window._setMasterPan) window._setMasterPan(v);
+    },
+    onRelease:null
+  });
+  var _panUndockBtn=document.getElementById('panUndockBtn');
+  if(_panUndockBtn) _panUndockBtn.addEventListener('click',function(){ _panDockable.undock(); });
+
+  // Init the PITCH·VOL·PAN slim panel
+  // PVP slim panel init is deferred to after initSlimPanel is defined (see below)
+
   var seqSndBtn=document.getElementById('seqSndBtn');
   var SOUND_STYLE_NAMES={A:'♪ Classic',B:'♪ 8-Bit',C:'♪ Sci-Fi',D:'♪ Nature',E:'♪ Industrial',F:'🎹 Piano',G:'🎻 Violin',H:'🪈 Flute',I:'🎸 Guitar',J:'🎸 Bass'};
   function showSndMenu(){
@@ -7337,7 +7480,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     });
     // Toggle buttons: chirp up when turning on, down when turning off.
     // We read the 'active' class AFTER the click lands, via a microtask.
-    var toggleBtns=['btnSpinToggle','btnParticleToggle','btnGlowToggle'];
+    var toggleBtns=['btnSpinToggle','btnParticleToggle','btnGlowToggle','btnPadPanToggle'];
     toggleBtns.forEach(function(id){
       var el=document.getElementById(id);
       if(!el) return;
@@ -8103,7 +8246,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   }
 
   // Called by bank sound triggers
-  window._seqNoteOn = function(sndIdx, bankIdx){
+  window._seqNoteOn = function(sndIdx, bankIdx, actualVol){
     if(recTrack !== null){
       var rawTime = Date.now() - loopStartTime;
       var loopMs = getLoopMs();
@@ -8111,7 +8254,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var qt = quantizeTime(rawTime);
       qt = Math.max(0, Math.min(loopMs - 10, qt));
       var _pb=_pitchBend, _pr=_pitchRange;
-      var _ev={ sndIdx:sndIdx, bankIdx:bankIdx, time:qt, bpmAtRecord:bpm, vol:parseFloat(recVolume)||1.0, pitchCurve:[[0,_pb]] };
+      // Use the actual played volume (includes touch sensitivity) if provided,
+      // otherwise fall back to the static recVolume slider value.
+      var _vol=(actualVol!==undefined)?actualVol:(parseFloat(recVolume)||1.0);
+      var _ev={ sndIdx:sndIdx, bankIdx:bankIdx, time:qt, bpmAtRecord:bpm, vol:_vol, pitchCurve:[[0,_pb]] };
       recTrack.push(_ev);
       // Sample pitch every 40ms for 640ms to capture the bend curve
       var _ps=1;
@@ -8481,6 +8627,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var _pb=document.getElementById('seqPuzBar'); if(_pb) _pb.style.display='';
     var _pt=document.getElementById('padToolsSlimPanel'); if(_pt){ _pt.style.display=''; _syncPanelState(_pt,'slimPadTools'); }
     var _pa=document.getElementById('padAdjSlimPanel'); if(_pa){ _pa.style.display=''; _syncPanelState(_pa,'slimPadAdjust'); }
+    // Sync PVP panel state
+    var _pvp=document.getElementById('pvpSlimPanel'); if(_pvp) _syncPanelState(_pvp,'slimPVP');
     // Show the sequencer controls panel
     var _sp=document.getElementById('seqCtrlSlimPanel'); if(_sp){ _sp.style.display=''; _syncPanelState(_sp,'slimSeqCtrl'); }
     // Show the seq bank slim panel
@@ -9671,7 +9819,7 @@ window._clampScrollTransition=function(anchorEl){
   }
 
   // Init
-  setTimeout(function(){ _syncPitchBar(0); _syncVolBar(1); }, 50);
+  setTimeout(function(){ _syncPitchBar(0); _syncVolBar(1); _drawMixerSlider('panSliderCanvas', 0.5, '#22c55e', true); }, 50);
 
   // Wire pitch bar
   var _pbSlider=document.getElementById('pitchBendSlider');
@@ -10057,7 +10205,7 @@ window._clampScrollTransition=function(anchorEl){
       // Try native file picker on desktop only (unreliable on mobile — often saves to unexpected locations)
       var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if(!isMobile && window.showSaveFilePicker){
-        window.showSaveFilePicker({suggestedName:fname,types:[{description:'Sequation File',accept:{'application/json':['.seq']}}]})
+        window.showSaveFilePicker({suggestedName:fname,types:[{description:'Sequation File',accept:{'application/octet-stream':['.seq']}}]})
           .then(function(fh){ return fh.createWritable(); })
           .then(function(w){ return w.write(blob).then(function(){ return w.close(); }); })
           .then(function(){
@@ -12476,6 +12624,26 @@ window._clampScrollTransition=function(anchorEl){
     updateBtns();
   });
   if(glowBtn) glowBtn.addEventListener('click',function(){ GLOW_ON=!GLOW_ON; updateBtns(); });
+
+  // Pad pan toggle
+  var padPanBtn=document.getElementById('btnPadPanToggle');
+  if(padPanBtn){
+    function updatePadPanBtn(){
+      padPanBtn.classList.toggle('active', PAD_PAN_ON);
+      padPanBtn.style.opacity=PAD_PAN_ON?'1':'0.5';
+    }
+    padPanBtn.addEventListener('click',function(){
+      PAD_PAN_ON=!PAD_PAN_ON;
+      // When pad pan turns on, auto-disable spin (they conflict visually)
+      if(PAD_PAN_ON && SPIN_ON){
+        SPIN_ON=false;
+        updateBtns(); // refresh spin button visual
+      }
+      updatePadPanBtn();
+    });
+    updatePadPanBtn();
+  }
+
   updateBtns();
 })();
 
@@ -14002,6 +14170,7 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
   // Wire up PAD TOOLS and PAD ADJUSTMENTS slim panels (default collapsed)
   initSlimPanel('padToolsSlimPanel','padToolsBar','slimPadTools');
   initSlimPanel('padAdjSlimPanel','padAdjBar','slimPadAdjust');
+  initSlimPanel('pvpSlimPanel','pvpBar','slimPVP');
 
   // Move SEQUENCE BANK panel to top — just before PAD TOOLS (first panel after toolbar)
   var _sbp=document.getElementById('seqBankSlimPanel');
