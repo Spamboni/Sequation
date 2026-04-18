@@ -1,4 +1,4 @@
-<!-- Sequation v5.60 | Built: 2026-04-17 CT | github.com/Spamboni/Sequation -->
+<!-- Sequation v5.91 | Built: 2026-04-17 CT | github.com/Spamboni/Sequation -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,6 +46,11 @@ if('serviceWorker' in navigator){
   --text-primary:#f0f0f0;--text-secondary:#b0b0b0;--text-muted:#555555;
   /* Neon accents */
   --cyan:#00d9ff;--cyan-bright:#00ffff;--magenta:#c400ff;--magenta-bright:#ff00ff;--purple:#9d4edd;
+  /* Transport button accents — green for play (leans cyan), red for record
+     (leans magenta), so both blend with the neon aesthetic while clearly
+     signaling go/stop. */
+  --green:#2afc8a;--green-bright:#5cffb0;
+  --red:#ff2a55;--red-bright:#ff5577;
   /* Legacy compat */
   --w:#f0f0f0;--bk:#151515;--br:#00d9ff;--ac:#c400ff;--bl:#9d4edd;--gn:#00d9ff;--mu:#b0b0b0;
 }
@@ -147,7 +152,14 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .sizebar-handle{position:absolute;left:-2px;right:-2px;height:8px;background:var(--bg);border:1px solid var(--cyan);border-radius:2px;pointer-events:none;transition:bottom .05s;z-index:3;}
 .sizebar-arrows{position:absolute;left:50%;transform:translate(-50%,50%);width:5px;height:16px;border:1.5px solid var(--cyan);border-radius:3px;background:var(--bg-secondary);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:6px;line-height:1;color:var(--cyan);pointer-events:none;transition:bottom .05s;z-index:4;}
 .sizebar-lbl{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);text-align:center;line-height:1.6;pointer-events:none;user-select:none;}
-.bt{min-width:44px;height:44px;padding:0 8px;border:1.5px solid rgba(0,217,255,0.35);background:var(--bg-secondary);color:var(--text-primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:none;transition:transform 0.04s,box-shadow 0.15s,background 0.1s;touch-action:pan-y;aspect-ratio:1;}
+.bt{min-width:44px;height:44px;padding:0 8px;border:1.5px solid rgba(0,217,255,0.35);background:var(--bg-secondary);color:var(--text-primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;cursor:pointer;box-shadow:none;transition:transform 0.04s,box-shadow 0.15s,background 0.1s;touch-action:pan-y;aspect-ratio:1;isolation:isolate;}
+/* Waveform canvas sits behind tile content via z-index:-1 (inside the tile's
+   isolation:isolate stacking context so the negative z stays scoped to this
+   tile). Uses border-radius matching the tile so the canvas's pixel content
+   visually conforms to the rounded corners without needing overflow:hidden
+   on the parent — overflow:hidden was making the spin animation stutter
+   because the browser had to recompute the clipping region every frame. */
+.bt-wave{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;opacity:0.55;border-radius:10px;}
 .bt._noNums{color:transparent !important;}
 /* Pad edit mode — pulsing purple outline on all pads to signal they're "pickable" */
 #bank._padEditMode .bt{animation:_padEditPulse 1.2s ease-in-out infinite;border-color:rgba(168,85,247,0.75)!important;box-shadow:0 0 8px rgba(168,85,247,0.4)!important;cursor:pointer;}
@@ -158,6 +170,16 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 }
 /* Highlight the EDIT button itself when active */
 #padsBarEdit.active{background:#a855f7!important;color:#fff!important;box-shadow:0 0 8px rgba(168,85,247,0.7);}
+/* Hold-select mode — pulsing yellow outline on all pads to signal they're tappable for hold-tag toggling */
+#bank._holdSelectMode .bt{animation:_holdSelectPulse 1.2s ease-in-out infinite;border-color:rgba(251,191,36,0.7)!important;box-shadow:0 0 8px rgba(251,191,36,0.35)!important;cursor:pointer;}
+@keyframes _holdSelectPulse{
+  0%,100%{box-shadow:0 0 6px rgba(251,191,36,0.3);}
+  50%{box-shadow:0 0 12px rgba(251,191,36,0.65);}
+}
+/* Yellow hold-tag mark — small dot in upper-right of tagged pads. Mirrors
+   the .bt-mic position (upper-left) but on the opposite corner so the two
+   indicators don't collide. Stays visible at all times, not just in select mode. */
+.bt-holdtag{position:absolute;top:2px;right:2px;width:5px;height:5px;border-radius:50%;background:#fbbf24;box-shadow:0 0 4px rgba(251,191,36,0.9);pointer-events:none;z-index:3;}
 .bt._exprGrid{position:relative;overflow:hidden;}
 .bt._exprGrid::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;
   background:var(--expr-grid-bg, none);
@@ -188,6 +210,22 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
   0%{opacity:1;transform:translate(-50%,-50%) scale(0.6);}
   50%{opacity:0.8;transform:translate(-50%,-50%) scale(1.1);}
   100%{opacity:0;transform:translate(-50%,-50%) scale(1.3);}
+}
+@keyframes _hitPinpoint{
+  /* Pop to full size quickly, hold through most of the duration so the
+     snap point stays visible after finger-lift, then fade. */
+  0%  {opacity:0;transform:translate(-50%,-50%) scale(0.4);}
+  20% {opacity:1;transform:translate(-50%,-50%) scale(1);}
+  70% {opacity:1;transform:translate(-50%,-50%) scale(1);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.3);}
+}
+@keyframes _hitCrosshair{
+  /* Fade in quick, hold most of the time, then fade out. Same timing as the
+     pinpoint so crosshair + dot vanish in sync. */
+  0%  {opacity:0;}
+  20% {opacity:1;}
+  70% {opacity:1;}
+  100%{opacity:0;}
 }
 .bt.spinning{animation:bt-spin var(--spin-dur,380ms) cubic-bezier(0.25,0.46,0.45,0.94) forwards;}
 /* particles via canvas */
@@ -230,24 +268,17 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .seq-btn:active { box-shadow: 0 0 14px rgba(0,217,255,0.8); transform: translateY(1px); }
 
 #seqPuz  { box-shadow: 0 0 8px rgba(0,217,255,0.3); }
-#seqRec, .seq-rec-btn  { box-shadow: 0 0 8px rgba(196,0,255,0.3); border-color:var(--magenta);color:var(--magenta); }
-#seqRec.active, .seq-rec-btn.active { background:rgba(196,0,255,0.2); box-shadow: 0 0 18px rgba(196,0,255,0.9); border-color:var(--magenta-bright); }
-#seqPlay, .seq-play-btn { box-shadow: 0 0 10px rgba(0,217,255,0.4); }
-#seqPlay.playing, .seq-play-btn.playing { background:rgba(0,217,255,0.15); box-shadow: 0 0 18px rgba(0,217,255,0.9); border-color:var(--cyan-bright); }
+/* Play/Record transport look (matte black recessed discs with glowing rings)
+   is defined in the .seq-play-btn / .seq-rec-btn rules below. */
 #seqSave { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #seqLoad { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #seqClear { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #seqSndBtn { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
-#seqScrollLock { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
+#seqScrollLock { box-shadow: 0 0 6px rgba(0,217,255,0.2); border-radius:50%; border-color:rgba(0,217,255,0.45); }
 #seqScrollLock.active { background:rgba(196,0,255,0.15); border-color:var(--magenta); color:var(--magenta); box-shadow: 0 0 12px rgba(196,0,255,0.7); }
-/* Snap-to-dock hover state — applied to both docked slot and floating button
-   when the floating button is dragged over the docked slot. Bright cyan glow
-   signals "release here to dock". */
-#seqScrollLock._snapTarget,#_floatScrollLock._snapping {
-  background:rgba(0,217,255,0.28)!important;
-  border-color:#67e8f9!important;
-  box-shadow:0 0 16px 4px rgba(103,232,249,0.7)!important;
-}
+/* Snap-to-dock hover state — no extra outline/highlight needed. The pill's
+   SVG border glow is the visual feedback; the docked scroll-lock slot stays
+   neutral while the pill is hovered over it, avoiding double-outline artifacts. */
 #seqErase { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #seqErase.active { background:rgba(196,0,255,0.15); border-color:var(--magenta); color:var(--magenta); box-shadow: 0 0 14px rgba(196,0,255,0.8); }
 #colorTagBtn { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
@@ -260,6 +291,8 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 #btnPadPanToggle.active { background:rgba(34,197,94,0.15); border-color:#22c55e; box-shadow: 0 0 12px rgba(34,197,94,0.7); color:#22c55e; }
 #btnHoldMode { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #btnHoldMode.active { background:rgba(251,191,36,0.15); border-color:#fbbf24; box-shadow: 0 0 12px rgba(251,191,36,0.7); color:#fbbf24; }
+#btnExprCross { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
+#btnExprCross.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
 #btnPadExprToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #btnPadExprToggle.active { background:rgba(251,191,36,0.15); border-color:#fbbf24; box-shadow: 0 0 12px rgba(251,191,36,0.7); color:#fbbf24; }
 #btnExprGrid { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
@@ -344,10 +377,70 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .seq-bpm-input{width:42px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;border:1.5px solid var(--cyan);border-radius:4px;padding:2px 3px;background:var(--bg);color:var(--text-primary);text-align:center;flex-shrink:0;}
 .seq-tap-btn{height:24px;padding:0 10px;border-radius:12px;border:1.5px solid var(--magenta);background:transparent;color:var(--magenta);font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;cursor:pointer;letter-spacing:1px;flex-shrink:0;transition:all 0.12s;}
 .seq-tap-btn:hover{background:rgba(196,0,255,0.15);box-shadow:0 0 8px rgba(196,0,255,0.4);}
-.seq-play-btn{width:68px;height:68px;border-radius:50%;border:2.5px solid var(--cyan);background:transparent;color:var(--cyan);font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;box-shadow:0 0 14px rgba(0,217,255,0.4);flex-shrink:0;}
-.seq-play-btn.playing{background:rgba(0,217,255,0.15);box-shadow:0 0 28px rgba(0,217,255,0.8);border-color:var(--cyan-bright);}
-.seq-rec-btn{width:40px;height:40px;border-radius:50%;border:2px solid var(--magenta);background:transparent;color:var(--magenta);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;box-shadow:0 0 8px rgba(196,0,255,0.3);flex-shrink:0;}
-.seq-rec-btn.active{background:rgba(196,0,255,0.2);box-shadow:0 0 20px rgba(196,0,255,0.9);border-color:var(--magenta-bright);}
+.seq-play-btn{
+  width:68px;height:68px;border-radius:50%;
+  border:none;padding:0;
+  background:#0a0a0a;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+  flex-shrink:0;
+  box-shadow:
+    inset 0 0 0 2.5px rgba(90,255,180,1),
+    inset 0 0 8px 3px rgba(140,255,200,0.85),
+    0 0 0 1.5px rgba(42,252,138,0.95),
+    0 0 12px 3px rgba(60,255,160,0.8),
+    0 0 34px 10px rgba(42,252,138,0.5),
+    0 0 60px 16px rgba(42,252,138,0.22);
+}
+.seq-play-btn.playing{
+  background:#051a0c;
+  box-shadow:
+    inset 0 0 0 2.5px rgba(150,255,210,1),
+    inset 0 0 12px 4px rgba(180,255,220,1),
+    0 0 0 2.5px rgba(90,255,180,1),
+    0 0 20px 6px rgba(90,255,180,0.95),
+    0 0 48px 14px rgba(42,252,138,0.7),
+    0 0 90px 22px rgba(42,252,138,0.35);
+}
+/* SVG triangle inside the play button */
+.seq-play-btn svg{display:block;width:40%;height:40%;overflow:visible;transition:all 0.15s;}
+.seq-play-btn .play-tri-face{fill:url(#playTriGradient);stroke:rgba(180,255,210,0.85);stroke-width:1.2;stroke-linejoin:round;}
+.seq-play-btn .play-tri-highlight{fill:none;stroke:rgba(220,255,235,0.9);stroke-width:0.9;stroke-linejoin:round;stroke-linecap:round;}
+.seq-play-btn svg{filter:drop-shadow(0 0 3px rgba(90,255,180,0.8)) drop-shadow(0 0 6px rgba(42,252,138,0.45));}
+.seq-play-btn.playing .play-tri-face{fill:url(#playTriGradientBright);stroke:rgba(220,255,235,1);}
+.seq-play-btn.playing .play-tri-highlight{stroke:rgba(255,255,255,1);}
+.seq-play-btn.playing svg{filter:drop-shadow(0 0 5px rgba(150,255,210,1)) drop-shadow(0 0 12px rgba(90,255,180,0.7));}
+.seq-rec-btn{
+  width:40px;height:40px;border-radius:50%;
+  border:none;
+  background:#0a0a0a;
+  color:#8a1525;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:8.5px;font-weight:700;letter-spacing:0.5px;
+  text-shadow:0 0 1.5px rgba(255,60,90,0.5);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+  flex-shrink:0;
+  box-shadow:
+    inset 0 0 0 2px rgba(255,80,110,1),
+    inset 0 0 5px 2px rgba(255,140,160,0.85),
+    0 0 0 1.5px rgba(255,42,85,0.95),
+    0 0 8px 2px rgba(255,80,100,0.8),
+    0 0 22px 6px rgba(255,42,85,0.5),
+    0 0 40px 10px rgba(255,42,85,0.22);
+}
+.seq-rec-btn.active{
+  background:#1a0508;
+  color:#ff5577;
+  text-shadow:0 0 4px rgba(255,90,120,0.9);
+  box-shadow:
+    inset 0 0 0 2px rgba(255,120,150,1),
+    inset 0 0 7px 3px rgba(255,170,190,1),
+    0 0 0 2px rgba(255,80,110,1),
+    0 0 14px 4px rgba(255,80,110,0.95),
+    0 0 32px 10px rgba(255,42,85,0.7),
+    0 0 60px 16px rgba(255,42,85,0.35);
+}
 .seq-transport-btns-row{display:flex;gap:6px;align-items:center;}
 .seq-transport-micro-row{display:flex;gap:3px;align-items:center;}
 .seq-scroll-lock-wrap{display:flex;flex-direction:column;align-items:center;gap:1px;}
@@ -419,7 +512,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v5.60</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v5.91</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -499,7 +592,6 @@ window.onerror=function(msg,src,line,col,err){
             <button class="seq-btn" id="btnSensToggle" title="Tap sensitivity (hold for settings)" style="flex-shrink:0;font-size:10px;padding:2px 5px;">&#x1F44B;</button>
             <button class="seq-btn seq-btn-sq" id="btnPadPanToggle" title="Pad pan (tap position = L/R pan)" style="flex-shrink:0;font-size:9px;font-weight:700;padding:2px 4px;">L·R</button>
             <button class="seq-btn seq-btn-sq" id="btnPadExprToggle" title="Expression (X=volume, Y=pitch)" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 4px;">EXPR</button>
-            <button class="seq-btn seq-btn-sq" id="btnHoldMode" title="Hold mode — pads play only while held down" style="flex-shrink:0;font-size:7px;font-weight:700;padding:2px 3px;line-height:1;display:flex;flex-direction:column;justify-content:center;letter-spacing:0.5px;"><span>HLD</span><span style="margin-top:1px;">BTN</span></button>
             <button class="seq-btn seq-btn-sq" id="btnSpinToggle" title="Spin on/off" style="font-size:10px;flex-shrink:0;">&#x1F300;</button>
             <button class="seq-btn seq-btn-sq" id="btnParticleToggle" title="Particles on/off" style="font-size:10px;flex-shrink:0;">&#x2728;</button>
             <button class="seq-btn seq-btn-sq" id="btnGlowToggle" title="Tap glow on/off" style="font-size:10px;padding:0;overflow:hidden;flex-shrink:0;"><canvas id="glowIconCanvas" width="26" height="26" style="display:block;width:26px;height:26px;"></canvas></button>
@@ -508,18 +600,21 @@ window.onerror=function(msg,src,line,col,err){
           <div style="display:flex;gap:3px;flex-shrink:0;">
             <button class="seq-btn seq-btn-sq" id="colorTagBtnOld" title="Color tiles" style="flex-shrink:0;">🎨</button>
             <button class="seq-btn seq-btn-sq" id="seqSndBtn" title="Sound Style" style="flex-shrink:0;font-size:11px;">♪</button>
-            <button class="seq-btn seq-btn-sq" id="padLabelsBtn" title="Show sample names on pads" style="flex-shrink:0;font-size:9px;font-weight:700;letter-spacing:0.5px;">ABC</button>
             <button class="seq-btn seq-btn-sq" id="seqSettingsBtn" title="Settings" style="flex-shrink:0;font-size:12px;">⚙</button>
           </div>
         </div>
         <!-- Row 2: additional controls -->
         <div style="display:flex;flex-direction:row;align-items:center;gap:3px;padding:0 6px 4px;">
+          <button class="seq-btn" id="padLabelsBtn" title="Show sample names on pads" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 6px;letter-spacing:0.5px;">ABC</button>
           <button class="seq-btn" id="btnExprGrid" title="Show EXPR grid on pads" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 6px;letter-spacing:0.5px;">GRID</button>
           <button class="seq-btn" id="btnHideNums" title="Hide numbers on pads" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 6px;letter-spacing:0.5px;">123</button>
           <button class="seq-btn" id="btnSeqNums" title="Show sequential pad numbers (reading order)" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 6px;letter-spacing:0.5px;">1,2,3</button>
           <button class="seq-btn" id="btnSnapX" title="Snap volume to grid" style="flex-shrink:0;font-size:7px;font-weight:700;padding:2px 5px;">SX</button>
           <button class="seq-btn" id="btnSnapY" title="Snap pitch to grid" style="flex-shrink:0;font-size:7px;font-weight:700;padding:2px 5px;">SY</button>
+          <button class="seq-btn" id="btnExprCross" title="EXPR crosshair — horizontal/vertical lines through tap point" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 5px;letter-spacing:0.5px;">XHR</button>
+          <button class="seq-btn" id="btnHoldMode" title="Hold mode — tap to select which pads use hold behavior (pads pulse yellow, tap to tag/untag). Long-press to tag/untag all at once." style="flex-shrink:0;font-size:7px;font-weight:700;padding:2px 3px;line-height:1;display:flex;flex-direction:column;justify-content:center;letter-spacing:0.5px;"><span>HLD</span><span style="margin-top:1px;">BTN</span></button>
           <button class="seq-btn" id="btnGridEdit" title="Edit grid divisions" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 5px;">⊞#</button>
+          <button class="seq-btn" id="btnWaveToggle" title="Show waveforms on pads" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 5px;letter-spacing:0.5px;">WAV</button>
         </div>
       </div>
     </div>
@@ -612,13 +707,30 @@ window.onerror=function(msg,src,line,col,err){
         <input class="seq-bpm-input" id="tbBpmInput" type="number" min="40" max="300" value="120">
         <button class="seq-tap-btn" id="tbTapBtn">TAP</button>
       </div>
-      <button class="seq-play-btn" id="seqPlay" title="Play/Stop">▶</button>
+      <button class="seq-play-btn" id="seqPlay" title="Play/Stop">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="playTriGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#b6ffd4"/>
+              <stop offset="45%" stop-color="#5cffb0"/>
+              <stop offset="100%" stop-color="#1fb069"/>
+            </linearGradient>
+            <linearGradient id="playTriGradientBright" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="40%" stop-color="#c2ffdb"/>
+              <stop offset="100%" stop-color="#5cffb0"/>
+            </linearGradient>
+          </defs>
+          <polygon class="play-tri-face" points="22,18 22,82 86,50"/>
+          <path class="play-tri-highlight" d="M 26 22 L 64 42"/>
+        </svg>
+      </button>
       <div class="seq-transport-btns-row">
         <div class="seq-scroll-lock-wrap">
           <button class="seq-btn seq-btn-sq" id="seqScrollLock" title="Lock Scroll" style="font-size:11px;width:28px;height:28px;overflow:hidden;padding:0;"></button>
           <span class="seq-scroll-lock-lbl">Scroll<br>Lock</span>
         </div>
-        <button class="seq-rec-btn" id="seqRec" title="Record">⏺</button>
+        <button class="seq-rec-btn" id="seqRec" title="Record">REC</button>
       </div>
     </div>
   </div><!-- /seq-bank-panel --></div></div></div>
@@ -4170,6 +4282,8 @@ function playBankSound(idx, eventVol, notePan, notePanV){
       g.gain.value=sampleVol*evVol;
       src.connect(g); g.connect(getMasterDest());
       src.start(AC.currentTime);
+      // Kick off the visual waveform playhead if WAV toggle is visible
+      if(window._startPadWavePlay) window._startPadWavePlay(idx, userSamples[idx], false);
     }catch(e){}
     window._currentNotePan=null;
     window._currentNotePanV=null;
@@ -5377,7 +5491,17 @@ var GLOW_ON=true;
 var PARTICLES_ON=true;
 var PAD_PAN_ON=false; // per-tap panning based on hit position within pad
 var PAD_EXPR_ON=false; // per-tap expression: X=volume, Y=pitch
-var HOLD_MODE=false;   // pads must be held to play; release fades the sound
+// Hold mode is now per-pad. _holdTaggedPads is a Set of pad indices (using
+// an object as set — key = idx, value = true) that behave as hold-mode pads.
+// _holdSelectMode is true while the user is actively tagging/untagging pads
+// after tapping HLD BTN; tapping pads in this mode toggles their membership
+// in the set rather than playing them.
+var _holdTaggedPads = {};
+var _holdSelectMode = false;
+// Backwards-compat: any code path still reading this legacy flag will now see
+// false (we replace the sites below with per-pad checks). Leaving the var
+// declared so scripts that try to read it don't throw.
+var HOLD_MODE=false;
 
 // Per-pad held voices. When a pad is pressed in hold mode, we store
 // {src, gain, touchId} so release() can find and stop it. Keyed by sndIdx
@@ -5440,6 +5564,15 @@ function _playHeldFromBuffer(sndIdx, buf, vol, panH, panV){
     var src=AC.createBufferSource();
     src.buffer=buf;
     src.loop=true;
+    // Apply pitch — base pitch bend multiplied by EXPR pitch (if enabled).
+    // Mirrors the pitch math that playBankSound uses for synth voices, so
+    // hold mode + EXPR works for user samples AND stock samples alike.
+    var _basePR=(window._getPitchRatio)?window._getPitchRatio():1.0;
+    var _pr=_basePR;
+    if(window._exprPitch!==null && window._exprPitch!==undefined && PAD_EXPR_ON){
+      _pr=_basePR * Math.pow(2, window._exprPitch/12);
+    }
+    if(_pr!==1.0){ src.playbackRate.value=_pr; }
     var g=AC.createGain();
     var meta=sampleMeta[sndIdx]||{};
     var sampleVol=(meta.volume!==undefined)?meta.volume:1.0;
@@ -5448,6 +5581,8 @@ function _playHeldFromBuffer(sndIdx, buf, vol, panH, panV){
     src.connect(g); g.connect(getMasterDest());
     src.start(AC.currentTime);
     _heldVoices[sndIdx] = { src:src, gain:g };
+    // Kick off the visual waveform playhead in looped mode
+    if(window._startPadWavePlay) window._startPadWavePlay(sndIdx, buf, true);
     window._currentNotePan=null;
     window._currentNotePanV=null;
   }catch(e){}
@@ -5468,6 +5603,8 @@ function _releaseHeldVoice(sndIdx, instant){
   var voice=_heldVoices[sndIdx];
   if(!voice) return;
   delete _heldVoices[sndIdx];
+  // Stop the waveform playhead animation for this pad
+  if(window._stopPadWavePlay) window._stopPadWavePlay(sndIdx);
   try{
     if(instant){
       voice.src.stop(0);
@@ -5484,6 +5621,7 @@ function _releaseHeldVoice(sndIdx, instant){
 var EXPR_GRID_ON=false; // show grid overlay on pads during EXPR mode
 var EXPR_SNAP_X=false; // snap X (volume) to grid
 var EXPR_SNAP_Y=false; // snap Y (pitch) to grid
+var EXPR_CROSS_ON=false; // draw vertical + horizontal lines through tap point
 var EXPR_GRID_X=5; // number of vertical grid divisions (volume)
 var EXPR_GRID_Y=10; // number of horizontal grid divisions (pitch = semitones)
 var EXPR_PITCH_RANGE=5; // ±semitones
@@ -5626,18 +5764,29 @@ function dimColor(hex){
   return 'rgb('+r+','+g+','+b+')';
 }
 
+// Returns an rgba() string for a hex color at the given alpha. Used to paint
+// pad borders and sample-name text at the same opacity that the default cyan
+// pad uses (0.35 for borders, 0.85 for text) so colored pads read with the
+// same visual weight as the default cyan pad — just in their assigned hue.
+function alphaColor(hex, alpha){
+  if(!hex||hex.charAt(0)!=='#') return 'rgba(0,217,255,'+alpha+')';
+  var h=hex.replace('#','');
+  if(h.length===3) h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  var r=parseInt(h.substr(0,2),16)||0;
+  var g=parseInt(h.substr(2,2),16)||0;
+  var b=parseInt(h.substr(4,2),16)||0;
+  return 'rgba('+r+','+g+','+b+','+alpha+')';
+}
+
 function applyTileColor(tile, idx){
   var col = tileColors[idx];
-  var tileGap = Math.round(6 * TILE_SCALE * TILE_GAP_MULT);
-  var tight = (tileGap === 0);
   if(col){
-    if(tight){
-      tile.style.boxShadow = 'none';
-    } else {
-      tile.style.boxShadow = '0 0 6px 1px '+col;
-    }
-    // Use full border shorthand so inline style beats the CSS class border shorthand
-    tile.style.border = '1.5px solid '+dimColor(col);
+    // No glow / box-shadow — the colored pad should look structurally
+    // identical to the default cyan pad, just with its cyan accents swapped
+    // to the assigned color. Border uses the same 0.35 alpha as the default
+    // (see .bt rule: border:1.5px solid rgba(0,217,255,0.35)).
+    tile.style.boxShadow = 'none';
+    tile.style.border = '1.5px solid '+alphaColor(col, 0.35);
   } else {
     tile.style.boxShadow = '';
     tile.style.border = '';  // clears to CSS class default (dim cyan)
@@ -5965,7 +6114,7 @@ function renderBank(){
         // Remember this volume so any drag-over pads after this tap inherit the same level
         window._lastTapVol=vol;
         if(window._beatEditToggleTile&&window._beatEditToggleTile(sndIdx)) return;
-        if(HOLD_MODE){
+        if(_holdTaggedPads[idx]){
           // Hold mode: start a held voice that loops while the pad is held
           // and fades on touchend. Falls back to one-shot for non-sample pads.
           _startHeldVoice(sndIdx, vol, window._currentTapPan, window._currentTapPanV);
@@ -5975,6 +6124,11 @@ function renderBank(){
         window._lastActivePad=idx;
         window._lastTapPanVal=window._currentTapPan;
         if(window._seqNoteOn) _seqNoteOn(sndIdx,idx,vol);
+
+        // Use tile's color for tap glow and crosshair — compute before hit
+        // marker block so it can reference _tapCol too.
+        var _tc=tileColors[idx];
+        var _tapCol=_tc&&_tc!=='none'?_tc:'#00d9ff';
 
         // ── Hit marker glow ──
         // Show a radial glow at the exact tap position inside the pad.
@@ -5996,31 +6150,94 @@ function renderBank(){
           el.style.overflow='hidden';
           el.appendChild(_hm);
           setTimeout(function(){ if(_hm.parentNode) _hm.parentNode.removeChild(_hm); },300);
+
+          // Central pinpoint dot — small cyan marker at the exact (possibly
+          // snapped) tap position. Persists through finger-lift so you can see
+          // which grid point you snapped to. EXPR mode only, since that's
+          // where grid snapping matters.
+          if(PAD_EXPR_ON){
+            var _pd=document.createElement('div');
+            _pd.className='_hitPinpoint';
+            _pd.style.cssText='position:absolute;pointer-events:none;border-radius:50%;z-index:12;'+
+              'left:'+(_hmX*100)+'%;top:'+(_hmY*100)+'%;'+
+              'width:8px;height:8px;'+
+              'transform:translate(-50%,-50%);'+
+              'background:#00e5ff;'+
+              'box-shadow:0 0 6px rgba(0,229,255,1),0 0 12px rgba(0,229,255,0.8),0 0 20px rgba(0,217,255,0.5);'+
+              'animation:_hitPinpoint 400ms ease-out forwards;';
+            el.appendChild(_pd);
+            setTimeout(function(){ if(_pd.parentNode) _pd.parentNode.removeChild(_pd); },400);
+
+            // Crosshair — vertical and horizontal neon lines through the
+            // tap point, colored to match the pad's tile color. Same duration
+            // and hold-then-fade curve as the pinpoint dot so everything
+            // vanishes together after the grid point has been clearly shown.
+            if(EXPR_CROSS_ON){
+              var _vLine=document.createElement('div');
+              _vLine.className='_hitCrosshairV';
+              _vLine.style.cssText='position:absolute;pointer-events:none;z-index:11;'+
+                'left:'+(_hmX*100)+'%;top:0;bottom:0;'+
+                'width:2px;'+
+                'transform:translateX(-50%);'+
+                'background:'+_tapCol+';'+
+                'box-shadow:0 0 4px '+hexToRgba(_tapCol,0.9)+',0 0 10px '+hexToRgba(_tapCol,0.6)+';'+
+                'animation:_hitCrosshair 400ms ease-out forwards;';
+              el.appendChild(_vLine);
+              setTimeout(function(){ if(_vLine.parentNode) _vLine.parentNode.removeChild(_vLine); },400);
+              var _hLine=document.createElement('div');
+              _hLine.className='_hitCrosshairH';
+              _hLine.style.cssText='position:absolute;pointer-events:none;z-index:11;'+
+                'top:'+(_hmY*100)+'%;left:0;right:0;'+
+                'height:2px;'+
+                'transform:translateY(-50%);'+
+                'background:'+_tapCol+';'+
+                'box-shadow:0 0 4px '+hexToRgba(_tapCol,0.9)+',0 0 10px '+hexToRgba(_tapCol,0.6)+';'+
+                'animation:_hitCrosshair 400ms ease-out forwards;';
+              el.appendChild(_hLine);
+              setTimeout(function(){ if(_hLine.parentNode) _hLine.parentNode.removeChild(_hLine); },400);
+            }
+          }
         }
         // Pulse a random equation if nothing is selected in puzzle
         if(!SEL && window._pulseRandomEq) window._pulseRandomEq();
-        // Use tile's color for tap glow, complement for playback flash
-        var _tc=tileColors[idx];
-        var _tapCol=_tc&&_tc!=='none'?_tc:'#00d9ff';
         el.style.setProperty('--flash-bg', 'transparent');
         if(GLOW_ON){ el.style.setProperty('--tap-glow', hexToRgba(_tapCol,0.7)); el.style.setProperty('--tap-glow-soft', hexToRgba(_tapCol,0.25)); } else { el.style.removeProperty('--tap-glow'); el.style.removeProperty('--tap-glow-soft'); }
-        if(SPIN_ON){
-          el.style.setProperty('--spin-dur',Math.round(800-pressure*650)+'ms');
+        // Hold-tagged pads get a persistent glow (no auto-cleanup) that stays
+        // lit for the full hold duration. Cleared manually in touchend/cancel.
+        // Spin is skipped for held pads because the transient rotation doesn't
+        // pair well with a sustained held voice — a steady pressed glow reads
+        // more cleanly as "this pad is active".
+        if(_holdTaggedPads[idx]){
+          el.classList.add('pressed','active-flash');
+          el.style.border='1.5px solid '+_tapCol;
+          if(GLOW_ON){ el.style.boxShadow='0 0 28px 8px '+hexToRgba(_tapCol,0.7)+',0 0 50px 12px '+hexToRgba(_tapCol,0.25); } else { el.style.boxShadow='none'; }
+          spawnParticles(el);
+          // No cleanup timeout — touchend/touchcancel will clear the glow.
+        } else if(SPIN_ON){
+          // Clamp pressure for the duration math — raw `pressure` can go above
+          // 1.0 (comment at top of doSound notes "slightly above 1 for extreme
+          // touches"). Without clamping, pressure>1.23 gives a negative spin
+          // duration, the cleanup timeout fires at 0ms, and the spinning class
+          // gets removed before the CSS animation can even start → no spin.
+          var _spP=Math.max(0,Math.min(1,pressure));
+          var _spinDur=Math.round(800-_spP*650);
+          el.style.setProperty('--spin-dur',_spinDur+'ms');
           el.classList.remove('spinning');
           void el.offsetWidth;
           el.classList.add('spinning','active-flash');
           el.style.border='1.5px solid '+_tapCol; if(GLOW_ON){ el.style.boxShadow='0 0 28px 8px '+hexToRgba(_tapCol,0.7)+',0 0 50px 12px '+hexToRgba(_tapCol,0.25); } else { el.style.boxShadow='none'; }
           spawnParticles(el);
-          setTimeout(function(){ el.classList.remove('spinning','active-flash'); el.style.background=''; el.style.removeProperty('--tap-glow'); el.style.removeProperty('--tap-glow-soft'); applyTileColor(el,idx); },Math.round(800-pressure*650));
+          setTimeout(function(){ el.classList.remove('spinning','active-flash'); el.style.background=''; el.style.removeProperty('--tap-glow'); el.style.removeProperty('--tap-glow-soft'); applyTileColor(el,idx); },_spinDur);
         } else {
           el.classList.add('pressed','active-flash');
           el.style.border='1.5px solid '+_tapCol; if(GLOW_ON){ el.style.boxShadow='0 0 28px 8px '+hexToRgba(_tapCol,0.7)+',0 0 50px 12px '+hexToRgba(_tapCol,0.25); } else { el.style.boxShadow='none'; }
           spawnParticles(el);
-          var _fbd=window._flashBaseDur||180; setTimeout(function(){ el.classList.remove('pressed','active-flash'); el.style.background=''; el.style.removeProperty('--tap-glow'); el.style.removeProperty('--tap-glow-soft'); applyTileColor(el,idx); },Math.round(_fbd*(0.5+pressure)));
+          var _spPf=Math.max(0,Math.min(1,pressure));
+          var _fbd=window._flashBaseDur||180; setTimeout(function(){ el.classList.remove('pressed','active-flash'); el.style.background=''; el.style.removeProperty('--tap-glow'); el.style.removeProperty('--tap-glow-soft'); applyTileColor(el,idx); },Math.round(_fbd*(0.5+_spPf)));
         }
       }
       // Long-press for sample recording — measured on touchend
-      var _holdStartX=0, _holdStartY=0, _holdTimer=null, _holdFired=false;
+      var _holdStartX=0, _holdStartY=0, _holdTimer=null, _holdFired=false, _holdTouchId=null;
       el._spawn = spawnParticles;
       el.addEventListener('touchstart',function(e){
         if(window._eraseIsActive && window._eraseIsActive()){
@@ -6034,6 +6251,17 @@ function renderBank(){
         // Color tag mode — paint tile and begin drag-paint
         if(window._colorModeActive && window._colorModeActive()){
           if(window._colorModeStart) window._colorModeStart(idx, e.touches[0].identifier, e.touches[0].clientX, e.touches[0].clientY);
+          return;
+        }
+        // Hold-select mode — tap to toggle whether this pad uses hold behavior.
+        // The yellow upper-right mark appears/disappears, nothing plays.
+        if(_holdSelectMode){
+          if(_holdTaggedPads[idx]){ delete _holdTaggedPads[idx]; }
+          else{ _holdTaggedPads[idx]=true; }
+          if(window._saveHoldTags) window._saveHoldTags();
+          if(window._updateHoldMarks) window._updateHoldMarks();
+          if(window._tapHaptic) window._tapHaptic();
+          if(window._btnFx) window._btnFx(_holdTaggedPads[idx]?'tool_on':'tool_off');
           return;
         }
         // Pad edit mode — tapping any pad opens its sample editor, then exits
@@ -6052,6 +6280,7 @@ function renderBank(){
         var _ct=e.changedTouches[0];
         _holdStartX=_ct.clientX;
         _holdStartY=_ct.clientY;
+        _holdTouchId=_ct.identifier;
         _holdFired=false;
         // Long-press-to-open-editor removed — use the EDIT button on the
         // PADS bar instead. The _holdTimer / _holdFired variables are left in
@@ -6137,29 +6366,72 @@ function renderBank(){
           doSound(_p);
         }
       },{passive:true});
-      el.addEventListener('touchend',function(){
+      el.addEventListener('touchend',function(e){
+        // Only react if our tracked finger is among the ending touches
+        if(_holdTouchId!==null && e.changedTouches){
+          var _found=false;
+          for(var _i=0;_i<e.changedTouches.length;_i++){
+            if(e.changedTouches[_i].identifier===_holdTouchId){ _found=true; break; }
+          }
+          if(!_found) return;
+        }
         if(_holdTimer){ clearTimeout(_holdTimer); _holdTimer=null; }
         // Hold mode: release the voice for this pad when the finger lifts.
         // 20ms fade prevents click/pop from instant cutoff.
-        if(HOLD_MODE) _releaseHeldVoice(sndIdx, false);
+        if(_holdTaggedPads[idx]){
+          _releaseHeldVoice(sndIdx, false);
+          // Manually clear the persistent pressed glow (no auto-cleanup timeout
+          // was scheduled for hold-tagged pads).
+          el.classList.remove('pressed','active-flash');
+          el.style.background='';
+          el.style.removeProperty('--tap-glow');
+          el.style.removeProperty('--tap-glow-soft');
+          el.style.boxShadow='';
+          applyTileColor(el, idx);
+        }
         // Don't clear styles here — active-flash class handles visual state
         // Only clear if not currently flashing
         if(!_holdFired && !el.classList.contains('active-flash')){
           el.style.background=''; el.style.color=''; applyTileColor(el,idx);
         }
         _holdFired=false;
+        _holdTouchId=null;
       },{passive:true});
       // Touchcancel — OS interrupted the touch (incoming call, etc). Also
       // release any held voice so samples don't keep looping forever.
-      el.addEventListener('touchcancel',function(){
+      el.addEventListener('touchcancel',function(e){
+        // Only react if our tracked finger is among the canceling touches
+        if(_holdTouchId!==null && e.changedTouches){
+          var _found2=false;
+          for(var _i2=0;_i2<e.changedTouches.length;_i2++){
+            if(e.changedTouches[_i2].identifier===_holdTouchId){ _found2=true; break; }
+          }
+          if(!_found2) return;
+        }
         if(_holdTimer){ clearTimeout(_holdTimer); _holdTimer=null; }
-        if(HOLD_MODE) _releaseHeldVoice(sndIdx, false);
+        if(_holdTaggedPads[idx]){
+          _releaseHeldVoice(sndIdx, false);
+          // Clear the persistent pressed glow same as touchend
+          el.classList.remove('pressed','active-flash');
+          el.style.background='';
+          el.style.removeProperty('--tap-glow');
+          el.style.removeProperty('--tap-glow-soft');
+          el.style.boxShadow='';
+          applyTileColor(el, idx);
+        }
         _holdFired=false;
+        _holdTouchId=null;
       },{passive:true});
       el.addEventListener('touchmove',function(e){
-        // Only cancel hold for the finger that started on this tile
+        // Only cancel hold for the finger that started on this tile — filter
+        // changedTouches by the identifier we recorded at touchstart. Without
+        // this, a second finger landing on a different pad would be compared
+        // to THIS tile's start position, produce a large distance, and wipe
+        // the tile's pressed/flash state (including hold-tagged glow).
+        if(_holdTouchId===null) return;
         for(var _mi=0;_mi<e.changedTouches.length;_mi++){
           var _mt=e.changedTouches[_mi];
+          if(_mt.identifier !== _holdTouchId) continue;
           var dx=_mt.clientX-_holdStartX;
           var dy=_mt.clientY-_holdStartY;
           if(Math.sqrt(dx*dx+dy*dy)>12){
@@ -6227,9 +6499,185 @@ function renderBank(){
 
 // Re-render bank tile mic icons after sample load
 window._padLabelsOn=false; // toggled by ABC button in toolbar
+window._padWavesOn=false;  // toggled by WAV button in toolbar
+
+// Draw a sample's waveform onto a canvas covering the pad tile. Uses the
+// classic "filled" waveform look — for each pixel column, finds the min/max
+// sample value in that range and draws a vertical line between them, giving
+// the familiar DAW filled-in shape. When `progress` is provided (0..1), the
+// columns to the left of progress*width are drawn in a brighter "lit" color
+// to create a moving playhead effect showing what's already played.
+function _drawPadWaveform(canvas, buffer, strokeCol, progress, litCol){
+  if(!canvas||!buffer) return;
+  var dpr=window.devicePixelRatio||1;
+  var cssW=canvas.clientWidth||canvas.offsetWidth||40;
+  var cssH=canvas.clientHeight||canvas.offsetHeight||40;
+  if(canvas.width!==Math.round(cssW*dpr)) canvas.width=Math.round(cssW*dpr);
+  if(canvas.height!==Math.round(cssH*dpr)) canvas.height=Math.round(cssH*dpr);
+  var w=canvas.width, h=canvas.height;
+  var ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,w,h);
+  var data=buffer.getChannelData(0);
+  var step=Math.max(1, Math.floor(data.length/w));
+  var mid=h/2;
+  var lw=Math.max(1, dpr);
+  var hasProgress = (typeof progress === 'number') && progress >= 0 && litCol;
+  var playheadX = hasProgress ? Math.max(0, Math.min(w, progress*w)) : 0;
+
+  // First pass: dim stroke for the unplayed (or full) portion
+  ctx.strokeStyle=strokeCol;
+  ctx.lineWidth=lw;
+  ctx.beginPath();
+  var startX = hasProgress ? Math.floor(playheadX) : 0;
+  for(var x=startX;x<w;x++){
+    var mn=1, mx=-1;
+    var s=x*step, e=Math.min(s+step, data.length);
+    for(var i=s;i<e;i++){
+      var v=data[i];
+      if(v<mn) mn=v;
+      if(v>mx) mx=v;
+    }
+    var yMin=mid - mx*mid;
+    var yMax=mid - mn*mid;
+    ctx.moveTo(x+0.5, yMin);
+    ctx.lineTo(x+0.5, yMax);
+  }
+  ctx.stroke();
+
+  // Second pass: bright stroke for the played portion (if progress set)
+  if(hasProgress){
+    ctx.strokeStyle=litCol;
+    ctx.lineWidth=lw;
+    ctx.beginPath();
+    for(var x2=0;x2<playheadX;x2++){
+      var mn2=1, mx2=-1;
+      var s2=x2*step, e2=Math.min(s2+step, data.length);
+      for(var i2=s2;i2<e2;i2++){
+        var v2=data[i2];
+        if(v2<mn2) mn2=v2;
+        if(v2>mx2) mx2=v2;
+      }
+      var yMin2=mid - mx2*mid;
+      var yMax2=mid - mn2*mid;
+      ctx.moveTo(x2+0.5, yMin2);
+      ctx.lineTo(x2+0.5, yMax2);
+    }
+    ctx.stroke();
+  }
+}
+
+// ── Waveform playhead animation ──
+// When a user sample plays on a pad with WAV toggle visible, animate a
+// "playhead" sweeping left-to-right across the waveform: columns to the
+// left of the playhead render in a brighter lit color, columns to the right
+// stay in the dim base color. Driven by requestAnimationFrame for smoothness.
+//
+// _padWavePlays: idx -> { canvas, buffer, startTs, durationMs, looped,
+//                         padCol, stopped, rafId }
+// One animation per bankIdx. If the same pad is retriggered while already
+// playing, the existing animation's timing resets to the new startTs.
+var _padWavePlays = {};
+
+function _padWaveLitColor(padCol){
+  // Brighter variant of the pad color for the played portion. If the pad
+  // has no assigned color, use bright cyan. Otherwise, return the pad's
+  // color at near-full alpha (the dim base already sits at 0.9 at 0.55
+  // canvas opacity; the lit version paints at full alpha so it reads as
+  // noticeably brighter on top of the same canvas).
+  if(!padCol) return 'rgba(160,240,255,1)';
+  // Push toward white slightly by mixing with white 35%
+  var h=padCol.replace('#','');
+  if(h.length===3) h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  var r=parseInt(h.substr(0,2),16)||0;
+  var g=parseInt(h.substr(2,2),16)||0;
+  var b=parseInt(h.substr(4,2),16)||0;
+  r=Math.min(255, Math.round(r+(255-r)*0.35));
+  g=Math.min(255, Math.round(g+(255-g)*0.35));
+  b=Math.min(255, Math.round(b+(255-b)*0.35));
+  return 'rgba('+r+','+g+','+b+',1)';
+}
+
+window._startPadWavePlay = function(bankIdx, buffer, looped){
+  if(!window._padWavesOn) return; // waveforms not visible — nothing to animate
+  if(bankIdx===undefined || bankIdx===null) return;
+  if(!buffer) return;
+  // Find the tile and its canvas
+  var tile=null;
+  document.querySelectorAll('.bt').forEach(function(t){
+    if(parseInt(t.dataset.bankIdx)===bankIdx) tile=t;
+  });
+  if(!tile) return;
+  var canvas=tile.querySelector('.bt-wave');
+  if(!canvas) return;
+  var padCol=tileColors[bankIdx];
+  var baseCol = padCol ? alphaColor(padCol, 0.9) : 'rgba(0,217,255,0.9)';
+  var litCol = _padWaveLitColor(padCol);
+  var durationMs = (buffer.duration||0) * 1000;
+  if(durationMs<=0) return;
+
+  // Cancel any existing animation for this pad
+  if(_padWavePlays[bankIdx] && _padWavePlays[bankIdx].rafId){
+    cancelAnimationFrame(_padWavePlays[bankIdx].rafId);
+  }
+  var state = {
+    canvas: canvas,
+    buffer: buffer,
+    startTs: performance.now(),
+    durationMs: durationMs,
+    looped: !!looped,
+    baseCol: baseCol,
+    litCol: litCol,
+    stopped: false,
+    rafId: 0
+  };
+  _padWavePlays[bankIdx] = state;
+
+  function tick(){
+    if(state.stopped) return;
+    // If WAV toggle got turned off mid-play, also stop
+    if(!window._padWavesOn){
+      _drawPadWaveform(state.canvas, state.buffer, state.baseCol);
+      state.stopped=true;
+      delete _padWavePlays[bankIdx];
+      return;
+    }
+    var elapsed = performance.now() - state.startTs;
+    var progress;
+    if(state.looped){
+      // Loop the playhead back to 0 at the buffer's end
+      progress = (elapsed % state.durationMs) / state.durationMs;
+    } else {
+      progress = elapsed / state.durationMs;
+      if(progress >= 1){
+        // One-shot finished — redraw dim only, clean up
+        _drawPadWaveform(state.canvas, state.buffer, state.baseCol);
+        state.stopped=true;
+        delete _padWavePlays[bankIdx];
+        return;
+      }
+    }
+    _drawPadWaveform(state.canvas, state.buffer, state.baseCol, progress, state.litCol);
+    state.rafId = requestAnimationFrame(tick);
+  }
+  state.rafId = requestAnimationFrame(tick);
+};
+
+window._stopPadWavePlay = function(bankIdx){
+  var state = _padWavePlays[bankIdx];
+  if(!state) return;
+  state.stopped = true;
+  if(state.rafId) cancelAnimationFrame(state.rafId);
+  // Redraw dim only so any lit columns from the final frame are cleared
+  if(state.canvas && state.buffer){
+    _drawPadWaveform(state.canvas, state.buffer, state.baseCol);
+  }
+  delete _padWavePlays[bankIdx];
+};
+
 window._updateSampleIcons=function(){
   var tiles=document.querySelectorAll('.bt');
   var showLabels=!!window._padLabelsOn;
+  var showWaves=!!window._padWavesOn;
   tiles.forEach(function(t){
     var idx=parseInt(t.dataset.bankIdx);
     var existing=t.querySelector('.bt-mic');
@@ -6263,11 +6711,17 @@ window._updateSampleIcons=function(){
       if(!existingLbl){
         existingLbl=document.createElement('span');
         existingLbl.className='bt-name';
-        existingLbl.style.cssText='position:absolute;left:2px;right:2px;bottom:1px;font-family:monospace;text-align:center;color:rgba(255,255,255,0.85);text-shadow:0 1px 2px rgba(0,0,0,0.8);pointer-events:none;white-space:nowrap;overflow:hidden;line-height:1;';
+        existingLbl.style.cssText="position:absolute;left:2px;right:2px;bottom:1px;font-family:'IBM Plex Mono',monospace;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,0.85),0 0 4px rgba(0,0,0,0.6);pointer-events:none;white-space:nowrap;overflow:hidden;line-height:1;";
         t.style.position='relative';
         t.appendChild(existingLbl);
       }
       existingLbl.textContent=name;
+      // Color the label to match the pad's assigned color (or cyan default).
+      // Uses the same 0.85 alpha as the default cyan label so colored pads
+      // read with the same visual weight as the default cyan pad — just in
+      // their assigned hue.
+      var padCol=tileColors[idx];
+      existingLbl.style.color = padCol ? alphaColor(padCol, 0.85) : 'rgba(0,217,255,0.85)';
       // Scale font size to fit the tile width.
       // Start large, measure, shrink until it fits (cap at ~7px min).
       // Available width = tileW - 4px (the 2px L/R inset).
@@ -6283,6 +6737,50 @@ window._updateSampleIcons=function(){
       }
     } else if(existingLbl){
       t.removeChild(existingLbl);
+    }
+
+    // ── Pad waveform background ──
+    // When WAV toggle is on, draw the pad's sample waveform as a faint
+    // background behind everything else (number, label, mic dot). Only user
+    // samples (userSamples[idx]) have a viewable buffer — unmodified stock
+    // synth sounds aren't pre-rendered to a buffer, so they don't draw.
+    var existingWave=t.querySelector('.bt-wave');
+    var buf=userSamples[idx]||(sampleMeta[idx]&&sampleMeta[idx]._stockSourceBuffer)||null;
+    var showWaveForThisPad = showWaves && buf;
+    if(showWaveForThisPad){
+      if(!existingWave){
+        existingWave=document.createElement('canvas');
+        existingWave.className='bt-wave';
+        t.style.position='relative';
+        // Insert as first child so DOM order matches stacking intent
+        t.insertBefore(existingWave, t.firstChild);
+      }
+      // Color matches the pad's assigned color (cyan default) — waveforms
+      // read as "belonging" to their tile rather than a uniform overlay.
+      var padCol=tileColors[idx];
+      var waveCol = padCol ? alphaColor(padCol, 0.9) : 'rgba(0,217,255,0.9)';
+      // Defer draw to next frame so the canvas has laid out its size first
+      (function(cv, b, c){
+        requestAnimationFrame(function(){ _drawPadWaveform(cv, b, c); });
+      })(existingWave, buf, waveCol);
+    } else if(existingWave){
+      t.removeChild(existingWave);
+    }
+
+    // ── Hold-mode tag mark ──
+    // Small yellow dot in the upper-right corner if this pad is tagged for
+    // hold behavior. Visible at all times (not just in select mode) so the
+    // user can always see which pads will behave as hold-mode pads.
+    var existingHold=t.querySelector('.bt-holdtag');
+    if(_holdTaggedPads[idx]){
+      if(!existingHold){
+        existingHold=document.createElement('span');
+        existingHold.className='bt-holdtag';
+        t.style.position='relative';
+        t.appendChild(existingHold);
+      }
+    } else if(existingHold){
+      t.removeChild(existingHold);
     }
 
     // ── Sequential pad number (reading-order, 1-indexed) ──
@@ -8254,6 +8752,32 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     refresh();
   })();
 
+  // ── Pad waveform toggle (WAV) ──
+  // Reads/writes window._padWavesOn; persisted in localStorage. Draws each
+  // pad's sample waveform as a faint background when enabled. Only pads
+  // that have a user sample (userSamples[idx]) show a waveform — unmodified
+  // stock synth sounds don't have a pre-rendered buffer to visualize.
+  (function(){
+    var btn=document.getElementById('btnWaveToggle');
+    if(!btn) return;
+    try{
+      var saved=localStorage.getItem('padWavesOn');
+      window._padWavesOn=(saved==='1');
+    }catch(e){}
+    function refresh(){
+      btn.classList.toggle('active', window._padWavesOn);
+      btn.style.opacity=window._padWavesOn?'1':'0.55';
+      if(window._updateSampleIcons) window._updateSampleIcons();
+    }
+    btn.addEventListener('click',function(){
+      window._padWavesOn=!window._padWavesOn;
+      try{ localStorage.setItem('padWavesOn', window._padWavesOn?'1':'0'); }catch(e){}
+      refresh();
+      if(window._btnFx) window._btnFx(window._padWavesOn?'tool_on':'tool_off');
+    });
+    refresh();
+  })();
+
   // ── Toolbar button click sounds ───────────────────────────
   // Attach a capture-phase listener to each TOOLBAR button that plays a sound
   // before/alongside the button's own handler. Toggle buttons get an on/off
@@ -8306,7 +8830,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var DUR_MS=600; // matches existing long-press duration
     var state=null;
 
-    function _audioStart(){
+    function _audioStart(descending){
       if(!AC) return null;
       if(!window._sfxSettings||!window._sfxSettings.buttonFx) return null;
       try{
@@ -8317,8 +8841,17 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         g.gain.exponentialRampToValueAtTime(0.03, t+DUR_MS/1000);
         var o=AC.createOscillator();
         o.type='triangle';
-        o.frequency.setValueAtTime(180,t);
-        o.frequency.exponentialRampToValueAtTime(520,t+DUR_MS/1000);
+        // Ascending (520 Hz target) = energy building outward — undock.
+        // Descending (180 Hz target) = gravity well pulling home — recall.
+        // Matches the dock proximity tone's descending sweep for audio parity
+        // between "dragging pill to dock" and "long-pressing to recall pill".
+        if(descending){
+          o.frequency.setValueAtTime(520,t);
+          o.frequency.exponentialRampToValueAtTime(180,t+DUR_MS/1000);
+        } else {
+          o.frequency.setValueAtTime(180,t);
+          o.frequency.exponentialRampToValueAtTime(520,t+DUR_MS/1000);
+        }
         o.connect(g); g.connect(dest);
         o.start(t);
         return {osc:o, gainNode:g};
@@ -8336,7 +8869,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       }catch(e){}
     }
 
-    function _audioPop(){
+    function _audioPop(descending){
       if(!AC) return;
       if(!window._sfxSettings||!window._sfxSettings.buttonFx) return;
       try{
@@ -8348,8 +8881,16 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         g.gain.exponentialRampToValueAtTime(0.001,t+0.06);
         var o=AC.createOscillator();
         o.type='sine';
-        o.frequency.setValueAtTime(900,t);
-        o.frequency.exponentialRampToValueAtTime(380,t+0.05);
+        // Undock (ascending): bright click 900→380 Hz.
+        // Recall (descending): softer landing 380→160 Hz to match the dock
+        // proximity pop's "arrived home" feel.
+        if(descending){
+          o.frequency.setValueAtTime(380,t);
+          o.frequency.exponentialRampToValueAtTime(160,t+0.05);
+        } else {
+          o.frequency.setValueAtTime(900,t);
+          o.frequency.exponentialRampToValueAtTime(380,t+0.05);
+        }
         o.connect(g); o.start(t); o.stop(t+0.08);
       }catch(e){}
     }
@@ -8370,65 +8911,60 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       try{ navigator.vibrate(35); }catch(e){}
     }
 
-    function _makeRing(cx, cy, startDiameter){
-      var ring=document.createElement('div');
-      ring.style.cssText=
-        'position:fixed;z-index:900;pointer-events:none;'+
-        'left:'+(cx-startDiameter/2)+'px;top:'+(cy-startDiameter/2)+'px;'+
-        'width:'+startDiameter+'px;height:'+startDiameter+'px;'+
-        'border-radius:50%;'+
-        'border:2px solid rgba(0,217,255,0.85);'+
-        'box-shadow:0 0 16px rgba(0,217,255,0.55),inset 0 0 8px rgba(0,217,255,0.35);'+
-        'opacity:0.9;'+
-        'transition:none;';
-      document.body.appendChild(ring);
-      return ring;
+    // Apply a growing cyan glow directly to the target element instead of
+    // spawning a separate ring div. We save the element's original box-shadow
+    // and border style so we can restore them on cancel. The glow intensifies
+    // and spreads outward as the charge progresses.
+    function _applyGlow(targetEl, pct){
+      if(!targetEl) return;
+      // Ease with smoothstep for visible acceleration
+      var eased=pct*pct*(3-2*pct);
+      // Glow spread grows from 4px → 28px, blur grows from 10px → 40px
+      var spread=4 + eased*24;
+      var blur=10 + eased*30;
+      var innerAlpha=0.25 + eased*0.5;
+      var outerAlpha=0.35 + eased*0.5;
+      targetEl.style.boxShadow=
+        '0 0 '+blur+'px '+spread+'px rgba(0,217,255,'+outerAlpha.toFixed(3)+'),'+
+        'inset 0 0 '+(6+eased*10)+'px rgba(0,217,255,'+innerAlpha.toFixed(3)+')';
+      targetEl.style.borderColor='rgba(0,217,255,'+(0.6+eased*0.4).toFixed(3)+')';
+    }
+
+    function _restoreElement(targetEl, saved){
+      if(!targetEl) return;
+      targetEl.style.boxShadow=saved.boxShadow||'';
+      targetEl.style.borderColor=saved.borderColor||'';
     }
 
     function _tick(){
       if(!state) return;
       var elapsed=performance.now()-state.startTs;
       var pct=Math.min(1, elapsed/DUR_MS);
-      // Ease with smoothstep so the ring visibly accelerates into completion
-      var eased=pct*pct*(3-2*pct);
-      var startD=state.startDiameter;
-      var endD=state.endDiameter;
-      var curD=startD + (endD-startD)*eased;
-      var ring=state.ring;
-      if(ring){
-        ring.style.left=(state.cx-curD/2)+'px';
-        ring.style.top=(state.cy-curD/2)+'px';
-        ring.style.width=curD+'px';
-        ring.style.height=curD+'px';
-        // Slight opacity boost as it grows
-        ring.style.opacity=(0.5+eased*0.45).toFixed(3);
-      }
+      _applyGlow(state.target, pct);
       if(pct<1){
         state.rafId=requestAnimationFrame(_tick);
       }
     }
 
-    // Called with a target DOM element. Computes center + target ring size
-    // from the element's bounding rect. The finished ring will be ~3.5x the
-    // element's longest side, big enough to be clearly visible under a
-    // finger resting on the button.
-    function start(targetEl){
+    // Called with a target DOM element. Applies a progressively expanding
+    // cyan glow to the element itself (no separate ring div) so the effect
+    // stays anchored to the button even if the user slightly moves during
+    // the long-press.
+    function start(targetEl, opts){
       cancel(false);
       if(!targetEl || !targetEl.getBoundingClientRect) return;
-      var r=targetEl.getBoundingClientRect();
-      var cx=r.left + r.width/2;
-      var cy=r.top + r.height/2;
-      var size=Math.max(r.width, r.height);
-      var startDiameter=size*1.15; // start slightly bigger than button
-      var endDiameter=size*3.5;    // grow well past finger size
+      var descending = !!(opts && opts.descending);
+      var saved={
+        boxShadow: targetEl.style.boxShadow||'',
+        borderColor: targetEl.style.borderColor||''
+      };
       state={
-        cx:cx, cy:cy,
-        startDiameter:startDiameter,
-        endDiameter:endDiameter,
-        ring:_makeRing(cx, cy, startDiameter),
+        target:targetEl,
+        saved:saved,
+        descending:descending,
         startTs:performance.now(),
         rafId:0,
-        audio:_audioStart(),
+        audio:_audioStart(descending),
         hapticTimers:[]
       };
       _scheduleHaptics(state.hapticTimers);
@@ -8441,34 +8977,35 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       if(s.rafId) cancelAnimationFrame(s.rafId);
       s.hapticTimers.forEach(function(h){ clearTimeout(h); });
       if(completed){
-        // Burst to full size + brightness, then fade out
-        if(s.ring){
-          var finalD=s.endDiameter*1.15;
-          s.ring.style.transition='opacity 0.25s ease, width 0.12s ease-out, height 0.12s ease-out, left 0.12s ease-out, top 0.12s ease-out';
-          s.ring.style.left=(s.cx-finalD/2)+'px';
-          s.ring.style.top=(s.cy-finalD/2)+'px';
-          s.ring.style.width=finalD+'px';
-          s.ring.style.height=finalD+'px';
-          s.ring.style.opacity='1';
-          s.ring.style.borderColor='rgba(0,217,255,1)';
+        // Subtle completion burst — just nudge the glow slightly brighter than
+        // the final _tick state, then restore. Used to have a huge 50px/20px
+        // box-shadow explosion, but that read as an asymmetric artifact
+        // because the bank panel clips the glow on some sides, and it visually
+        // competed with the pill launch + border trace that follow. A modest
+        // bump here lets the pill take center stage.
+        if(s.target){
+          var tgt=s.target;
+          tgt.style.transition='box-shadow 0.12s ease-out, border-color 0.12s ease-out';
+          tgt.style.boxShadow=
+            '0 0 14px 6px rgba(0,217,255,0.75),'+
+            'inset 0 0 8px rgba(0,217,255,0.45)';
+          tgt.style.borderColor='rgba(0,217,255,0.95)';
           setTimeout(function(){
-            if(s.ring){ s.ring.style.opacity='0'; }
-            setTimeout(function(){
-              if(s.ring && s.ring.parentNode) s.ring.parentNode.removeChild(s.ring);
-            }, 260);
-          }, 60);
+            tgt.style.transition='box-shadow 0.2s ease-out, border-color 0.2s ease-out';
+            _restoreElement(tgt, s.saved);
+            setTimeout(function(){ tgt.style.transition=''; }, 220);
+          }, 100);
         }
         _audioCancel(s.audio);
-        _audioPop();
+        _audioPop(s.descending);
         _hapticPop();
       } else {
-        // Aborted: quick fade out, no pop
-        if(s.ring){
-          s.ring.style.transition='opacity 0.12s ease';
-          s.ring.style.opacity='0';
-          setTimeout(function(){
-            if(s.ring && s.ring.parentNode) s.ring.parentNode.removeChild(s.ring);
-          }, 140);
+        // Aborted: quick fade back to original style, no pop
+        if(s.target){
+          var tgt2=s.target;
+          tgt2.style.transition='box-shadow 0.14s ease, border-color 0.14s ease';
+          _restoreElement(tgt2, s.saved);
+          setTimeout(function(){ tgt2.style.transition=''; }, 160);
         }
         _audioCancel(s.audio);
       }
@@ -8761,9 +9298,38 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         flBtn.style.borderColor=on?'#00d9ff':'rgba(0,217,255,0.45)';
       }
     }
+    // Refresh pill border glow — turns off when either button is active,
+    // back on when both deactivate.
+    if(window._pillGlowRefresh) window._pillGlowRefresh();
   }
 
   function _blockScroll(e){ e.preventDefault(); }
+
+  // Lazily-created cyan border frame shown around the viewport when scroll
+  // lock is active. 1px solid cyan at inset:0 (right at the very edge), with
+  // pointer-events:none so it doesn't interfere with any touches. Fades in/out
+  // with a short transition for a less jarring on/off.
+  var _scrollLockFrame=null;
+  function _ensureScrollLockFrame(){
+    if(_scrollLockFrame) return _scrollLockFrame;
+    var f=document.createElement('div');
+    f.id='_scrollLockFrame';
+    f.style.cssText=
+      'position:fixed;left:0;top:0;right:0;bottom:0;'+
+      'border:1px solid rgba(0,217,255,0.85);'+
+      'pointer-events:none;'+
+      'z-index:100000;'+
+      'opacity:0;'+
+      'transition:opacity 160ms ease-out;'+
+      'box-sizing:border-box;';
+    document.body.appendChild(f);
+    _scrollLockFrame=f;
+    return f;
+  }
+  function _updateScrollLockFrame(on){
+    var f=_ensureScrollLockFrame();
+    f.style.opacity = on ? '1' : '0';
+  }
 
   function setScrollLock(on){
     // During dock cooldown, block activating scroll lock (dock calls with false,
@@ -8787,6 +9353,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     }
     // Update both toolbar and floating button with canvas padlock
     _updateScrollLockIcons(on);
+    // Show/hide the viewport-edge cyan border.
+    _updateScrollLockFrame(on);
   }
 
   // Shared size constant used by makeFloatingLock and _updateScrollLockIcons
@@ -8837,13 +9405,15 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         fb.style.background=on?'rgba(0,217,255,0.15)':'transparent';
       }
     }
+    // Refresh pill border glow — off when either button is active.
+    if(window._pillGlowRefresh) window._pillGlowRefresh();
   }
 
   function makeFloatingLock(){
     if(_floatLock) return;
     var dockEl=document.getElementById('seqScrollLock');
     var startLeft, startTop;
-    var SHOOT_DX=-50;
+    var SHOOT_DX=-100;
     var PILL_GAP=4, PILL_PAD=3;
     var PILL_W=FLOAT_SIZE*2 + PILL_GAP + PILL_PAD*2;
     var PILL_H=FLOAT_SIZE + PILL_PAD*2;
@@ -8959,7 +9529,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       if(dt<DTAP_MS && Math.sqrt(ddx*ddx+ddy2*ddy2)<DTAP_DIST){
         _setFreeze(false);
         if(window._tapHaptic) window._tapHaptic();
-        _doDock();
+        _doDock({mode:'fly', sound:'recall'});
         _lastTapTs=0;
       } else {
         _setFreeze(!_freezeActive);
@@ -9022,7 +9592,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         // whatever UI was under the pill.
         _setFreeze(false);
         if(window._tapHaptic) window._tapHaptic();
-        _doDock();
+        _doDock({mode:'fly', sound:'recall'});
         _lastTapTs=0;
       } else {
         _lastTapTs=now; _lastTapX=tx; _lastTapY=ty;
@@ -9084,9 +9654,45 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       setTimeout(function(){ window._dockCooldown=false; }, 500);
     }
 
-    function _doDock(){
+    // Plays a short descending "coming home" tone across the flight duration,
+    // matching the tonal character of the long-press recall charge tone but
+    // scaled to the flight time. Used for double-tap redock so the audio
+    // matches the long-press recall experience (both are "pill returning to
+    // dock" gestures, just different triggers).
+    function _playRecallFlightTone(durationMs){
+      if(!AC) return;
+      if(!window._sfxSettings||!window._sfxSettings.buttonFx) return;
+      try{
+        var dest=window._sfxGain||AC.destination;
+        var t=AC.currentTime;
+        var durS=durationMs/1000;
+        var g=AC.createGain();
+        g.gain.setValueAtTime(0.0001,t);
+        // Gain envelope: rises briefly then sustains through the flight,
+        // fades at the end so it blends into the landing pop cleanly.
+        g.gain.exponentialRampToValueAtTime(0.03, t+0.04);
+        g.gain.setValueAtTime(0.03, t+durS-0.06);
+        g.gain.exponentialRampToValueAtTime(0.0001, t+durS);
+        var o=AC.createOscillator();
+        o.type='triangle';
+        // Descending 520 → 180 Hz, same range as the long-press recall charge
+        o.frequency.setValueAtTime(520,t);
+        o.frequency.exponentialRampToValueAtTime(180,t+durS);
+        o.connect(g); g.connect(dest);
+        o.start(t); o.stop(t+durS+0.02);
+      }catch(e){}
+    }
+
+    function _doDock(options){
       if(_autoDockTimer){clearTimeout(_autoDockTimer);_autoDockTimer=null;}
       if(!_floatLock) return;
+      options = options || {};
+      var mode = options.mode || 'fade';      // 'fly' or 'fade'
+      // sound: true (default) = landing pop only, false = silent,
+      //        'recall' = descending flight tone + landing pop
+      var soundMode = options.sound;
+      if(soundMode === undefined) soundMode = true;
+
       _startDockCooldown();
       // Swallow the next synthesized click after touchend. When the pill is
       // removed, the browser's click event hit-tests at the finger position —
@@ -9101,19 +9707,83 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       if(_scrollLocked) setScrollLock(false);
       _exitSnap();
       _dragWind.stop();
-      _dockProximity.pop();
       _dockProximity.stop();
-      if(window._tapHaptic) window._tapHaptic();
-      if(_floatLock.parentNode) _floatLock.parentNode.removeChild(_floatLock);
-      _floatLock=null;
-      _dragging=false; _dragMoved=false;
-      var lb=document.getElementById('seqScrollLock');
-      if(lb) lb.style.display='';
-      // Bulletproof cleanup — scan DOM for any freeze overlay that might have
-      // been orphaned (e.g. stale reference, race condition, old leftover) and
-      // remove them. Guarantees the user is NEVER trapped after a dock.
-      _forceClearAllBlockers();
+
+      // Compute the dock slot target position so the pill can fly home.
+      var dockEl=document.getElementById('seqScrollLock');
+      var targetLeft=0, targetTop=0;
+      if(dockEl){
+        var dr=dockEl.getBoundingClientRect();
+        targetLeft = dr.left + dr.width/2 - PILL_PAD - FLOAT_SIZE/2;
+        targetTop  = dr.top  + dr.height/2 - PILL_H/2;
+      }
+
+      var DUR_FLY = 320;   // flight duration
+      var DUR_FADE = 140;  // fade duration for pre-snapped cases
+      var totalDur = mode === 'fly' ? DUR_FLY : DUR_FADE;
+
+      // Kick off the descending flight tone RIGHT AWAY (before the flight
+      // animation visibly starts) when 'recall' sound is requested. The tone
+      // runs the full duration of the flight and naturally blends into the
+      // landing pop at the end.
+      if(soundMode === 'recall'){
+        _playRecallFlightTone(totalDur);
+      }
+
+      // Snapshot the pill & related refs so the cleanup setTimeout can still
+      // operate on them even if _floatLock gets reassigned before the anim
+      // completes (it shouldn't, but safe).
+      var pill=_floatLock;
+
+      if(mode === 'fly' && dockEl){
+        // Animate position to dock slot + fade + scale down. Ease-out so the
+        // pill accelerates out of its rest position then decelerates into the
+        // dock — "fast start, gentle landing".
+        pill.style.transition =
+          'left '+DUR_FLY+'ms cubic-bezier(.25,.1,.25,1),'+
+          'top '+DUR_FLY+'ms cubic-bezier(.25,.1,.25,1),'+
+          'opacity '+DUR_FLY+'ms ease-in,'+
+          'transform '+DUR_FLY+'ms cubic-bezier(.25,.1,.25,1)';
+        requestAnimationFrame(function(){
+          if(!pill.parentNode) return;
+          pill.style.left = targetLeft+'px';
+          pill.style.top  = targetTop+'px';
+          pill.style.opacity = '0';
+          pill.style.transform = 'scale(0.7)';
+        });
+      } else {
+        // Fade mode — pill is already at dock (snap) or we have no target
+        pill.style.transition = 'opacity '+DUR_FADE+'ms ease-out';
+        requestAnimationFrame(function(){
+          if(!pill.parentNode) return;
+          pill.style.opacity = '0';
+        });
+      }
+
+      // Audio + haptic — landing pop fires at the end so it syncs with the
+      // pill's visual disappearance. Played for both 'true' and 'recall'
+      // modes; only suppressed when explicitly 'false'.
+      var popDelay = Math.max(0, totalDur - 30);
+      setTimeout(function(){
+        if(soundMode !== false) _dockProximity.pop();
+        if(window._tapHaptic) window._tapHaptic();
+      }, popDelay);
+
+      // Finalize cleanup once the animation has completed.
+      setTimeout(function(){
+        if(pill && pill.parentNode) pill.parentNode.removeChild(pill);
+        if(pill === _floatLock) _floatLock = null;
+        _pillGlowSVG=null; _pillGlowRect=null;
+        _dragging=false; _dragMoved=false;
+        var lb=document.getElementById('seqScrollLock');
+        if(lb) lb.style.display='';
+        _forceClearAllBlockers();
+        window._recallPill = null;
+      }, totalDur + 20);
     }
+    // Expose so the docked scroll-lock button's long-press handler can
+    // recall the floating pill back into the dock slot.
+    window._recallPill = function(){ _doDock({mode:'fly', sound:false}); };
 
     // Nuclear cleanup: walks the DOM and removes any element that could be
     // blocking input (freeze overlays, orphan pills, scroll lock state). Safe
@@ -9169,23 +9839,26 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var dcx=dockRect.left + dockRect.width/2;
       var dcy=dockRect.top  + dockRect.height/2;
       var cx=dcx - _dx, cy=dcy - _dy;
+      // Smooth the snap — animate position into place rather than jumping.
+      // Clear the transition after 180ms so any subsequent drag-away is
+      // immediately responsive (no lag from lingering transition).
+      _floatLock.style.transition='left 160ms cubic-bezier(.2,.7,.3,1), top 160ms cubic-bezier(.2,.7,.3,1)';
       _floatLock.style.left=cx+'px'; _floatLock.style.top=cy+'px';
       _floatLock.style.right=''; _floatLock.style.bottom='';
+      setTimeout(function(){
+        if(_floatLock) _floatLock.style.transition='';
+      }, 180);
       _floatLock.classList.add('_snapping');
-      var de=document.getElementById('seqScrollLock');
-      if(de) de.classList.add('_snapTarget');
       _dragWind.setVelocity(0);
       // Proximity tone stays at full volume while snapped — it flows into
       // the landing pop in _doDock on release (or auto-dock after 600ms).
       _dockProximity.setProximity(1);
       if(_autoDockTimer) clearTimeout(_autoDockTimer);
-      _autoDockTimer=setTimeout(function(){_autoDockTimer=null;_doDock();},AUTO_DOCK_MS);
+      _autoDockTimer=setTimeout(function(){_autoDockTimer=null;_doDock({mode:'fade', sound:true});},AUTO_DOCK_MS);
     }
     function _exitSnap(){
       if(!_snapped) return; _snapped=false;
       if(_floatLock) _floatLock.classList.remove('_snapping');
-      var de=document.getElementById('seqScrollLock');
-      if(de) de.classList.remove('_snapTarget');
       if(_autoDockTimer){clearTimeout(_autoDockTimer);_autoDockTimer=null;}
     }
 
@@ -9251,7 +9924,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       // If snapped (scroll-lock button positioned over the dock slot),
       // dock immediately — plays landing pop and removes the pill.
       if(_snapped){
-        _doDock();
+        _doDock({mode:'fade', sound:true});
         _dragMoved=false;
         return;
       }
@@ -9282,6 +9955,141 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
     document.body.appendChild(_floatLock);
 
+    // Animate a cyan glow tracing once around the border of the given element.
+    // Implementation: a square overlay div positioned exactly over the element,
+    // with a conic-gradient background that has a bright cyan arc and a
+    // transparent remainder. Rotating the overlay makes the glow sweep around
+    // the edge. ~200ms rotation + quick fade.
+    function _animateBorderTrace(targetEl){
+      if(!targetEl || !targetEl.getBoundingClientRect) return;
+      var r=targetEl.getBoundingClientRect();
+      if(r.width===0 && r.height===0) return;
+      var wrap=document.createElement('div');
+      // Oversize by 4px all around so the glow appears outside the button edge
+      var pad=4;
+      wrap.style.cssText=
+        'position:fixed;pointer-events:none;z-index:999;'+
+        'left:'+(r.left-pad)+'px;'+
+        'top:'+(r.top-pad)+'px;'+
+        'width:'+(r.width+pad*2)+'px;'+
+        'height:'+(r.height+pad*2)+'px;'+
+        'border-radius:8px;'+
+        'overflow:hidden;'+
+        'opacity:0.9;';
+      var ring=document.createElement('div');
+      ring.style.cssText=
+        'position:absolute;inset:0;border-radius:8px;'+
+        'background:conic-gradient(from 0deg,'+
+          'transparent 0deg,'+
+          'transparent 290deg,'+
+          'rgba(0,217,255,0.4) 310deg,'+
+          'rgba(0,217,255,1) 345deg,'+
+          'rgba(0,217,255,0.4) 20deg,'+
+          'transparent 40deg,'+
+          'transparent 360deg);'+
+        'filter:blur(3px);'+
+        'transition:transform 200ms cubic-bezier(.2,.7,.3,1);';
+      // Mask out the center so only the border area glows — creates the
+      // "light chasing around the edge" effect.
+      var mask='radial-gradient(transparent 55%, #000 65%)';
+      ring.style.webkitMaskImage=mask;
+      ring.style.maskImage=mask;
+      wrap.appendChild(ring);
+      document.body.appendChild(wrap);
+      // Kick off the rotation on the next frame so the transition applies
+      requestAnimationFrame(function(){
+        ring.style.transform='rotate(360deg)';
+      });
+      // After rotation completes, fade and remove
+      setTimeout(function(){
+        wrap.style.transition='opacity 120ms ease-out';
+        wrap.style.opacity='0';
+        setTimeout(function(){
+          if(wrap.parentNode) wrap.parentNode.removeChild(wrap);
+        }, 140);
+      }, 210);
+    }
+
+    // Pill border glow — single SVG rounded-rect stroke that uses the classic
+    // "draw-in" technique: stroke-dasharray matches the perimeter so the
+    // entire path is dashable, and stroke-dashoffset animates from perim to 0,
+    // which makes the stroke visually draw itself around the path. When the
+    // animation completes, the full outline is present as the steady glow.
+    // No fade handoff — the trace IS the steady glow, just finishing its path.
+    var _pillGlowSVG=null;
+    var _pillGlowRect=null;
+
+    function _buildPillGlow(){
+      if(!_floatLock || _pillGlowSVG) return;
+      var W=PILL_W, H=PILL_H, R=H/2;
+      var OUT=2;
+      var vbW=W+OUT*2, vbH=H+OUT*2;
+      var svgNS='http://www.w3.org/2000/svg';
+      var svg=document.createElementNS(svgNS,'svg');
+      svg.setAttribute('width', vbW);
+      svg.setAttribute('height', vbH);
+      svg.setAttribute('viewBox','0 0 '+vbW+' '+vbH);
+      svg.style.cssText='position:absolute;left:'+(-OUT)+'px;top:'+(-OUT)+'px;pointer-events:none;overflow:visible;z-index:2;';
+
+      // Perimeter of the rounded rect (pill: H = 2R)
+      var perim = 2*(W - H) + Math.PI*H;
+
+      var rect=document.createElementNS(svgNS,'rect');
+      rect.setAttribute('x', OUT);
+      rect.setAttribute('y', OUT);
+      rect.setAttribute('width', W);
+      rect.setAttribute('height', H);
+      rect.setAttribute('rx', R);
+      rect.setAttribute('ry', R);
+      rect.setAttribute('fill','none');
+      rect.setAttribute('stroke','#00d9ff');
+      rect.setAttribute('stroke-width','2');
+      rect.setAttribute('stroke-linecap','round');
+      rect.style.filter='drop-shadow(0 0 2px rgba(0,217,255,0.9)) drop-shadow(0 0 5px rgba(0,217,255,0.55))';
+      // Dasharray = one perimeter solid + one perimeter gap. Start fully offset
+      // so nothing is visible yet. We'll animate offset to 0 to "draw it in".
+      rect.setAttribute('stroke-dasharray', perim + ' ' + perim);
+      rect.setAttribute('stroke-dashoffset', perim);
+      svg.appendChild(rect);
+
+      _floatLock.appendChild(svg);
+      _pillGlowSVG=svg;
+      _pillGlowRect=rect;
+      _pillGlowRect._perim=perim;
+    }
+
+    // Runs the one-time draw-in animation. 500ms — paced so the sweep is
+    // clearly readable without feeling sluggish. Combined with the early
+    // 180ms start after shoot-out begins, the trace completes only slightly
+    // after the pill itself has come to rest.
+    function _runPillBorderTrace(){
+      if(!_pillGlowRect) return;
+      var perim=_pillGlowRect._perim;
+      var r=_pillGlowRect;
+      r.style.transition='stroke-dashoffset 500ms cubic-bezier(.2,.7,.3,1)';
+      requestAnimationFrame(function(){
+        r.setAttribute('stroke-dashoffset', 0);
+      });
+      setTimeout(function(){
+        if(_pillGlowRect) _pillGlowRect.style.transition='';
+        _updatePillBorderGlow();
+      }, 510);
+    }
+
+    // Glow visibility logic: ON when BOTH scroll-lock and freeze are inactive.
+    // Toggles the whole SVG's opacity with a 160ms fade.
+    function _updatePillBorderGlow(){
+      if(!_pillGlowSVG) return;
+      var shouldGlow = !_scrollLocked && !_freezeActive;
+      _pillGlowSVG.style.transition='opacity 160ms ease-out';
+      _pillGlowSVG.style.opacity = shouldGlow ? '1' : '0';
+    }
+    window._pillGlowRefresh = _updatePillBorderGlow;
+
+    // Build the pill-border glow SVG before the shoot-out so it's ready to
+    // travel with the pill.
+    _buildPillGlow();
+
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
         if(!_floatLock) return;
@@ -9289,7 +10097,24 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         _floatLock.style.left=(startLeft+SHOOT_DX)+'px';
         _floatLock.style.opacity='1';
         _floatLock.style.transform='scale(1)';
-        setTimeout(function(){ if(_floatLock) _floatLock.style.transition=''; }, 360);
+        // Kick off the pill border trace early (at 180ms) — pill is fully
+        // opaque and mostly through its scale-up by then, so the trace is
+        // already clearly visible. Running it concurrently with the tail of
+        // the shoot-out adds energy — the light sweep keeps pace with the
+        // pill's motion rather than waiting for it to settle.
+        setTimeout(function(){
+          _runPillBorderTrace();
+        }, 180);
+        setTimeout(function(){
+          if(_floatLock) _floatLock.style.transition='';
+          // (Previously fired a rotating border trace on the dock button here.
+          // Removed in v5.78 — the conic-gradient ring read as an asymmetric
+          // glow artifact popping off the button's edge because the radial
+          // mask on a small circular target exposes a narrow ring where the
+          // gradient's bright wedge jumps unevenly around the perimeter. The
+          // pill's own launch and border trace carry the visual weight fine
+          // without needing a companion animation on the empty dock slot.)
+        }, 360);
       });
     });
     requestAnimationFrame(function(){
@@ -9321,11 +10146,19 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var t=e.touches&&e.touches[0];
       if(t){ _lockHoldStartX=t.clientX; _lockHoldStartY=t.clientY; }
       _cancelLockHold();
-      _pulseRingCharge.start(seqScrollLockBtn);
+      // If a floating pill exists, this long-press will RECALL it. Use the
+      // descending charge tone (520→180 Hz) to match the dock proximity tone
+      // and signal "coming home". Undock uses the ascending tone (180→520 Hz).
+      var isRecall = !!window._recallPill;
+      _pulseRingCharge.start(seqScrollLockBtn, {descending:isRecall});
       _lockLongTimer=setTimeout(function(){
         _lockLongTimer=null;
         _pulseRingCharge.cancel(true); // plays pop + confirms with vibrate
-        makeFloatingLock();
+        if(window._recallPill){
+          window._recallPill();
+        } else {
+          makeFloatingLock();
+        }
       },600);
     },{passive:true});
     seqScrollLockBtn.addEventListener('touchmove',function(e){
@@ -15675,25 +16508,111 @@ window._clampScrollTransition=function(anchorEl){
     updatePadExprBtn();
   }
 
-  // Hold mode toggle — when active, pads only play while held, release fades
+  // Hold mode — per-pad tagging. Tap HLD BTN to enter SELECT MODE (pads pulse
+  // yellow, tap each one to toggle its hold tag). Tap HLD BTN again to exit
+  // select mode. Long-press HLD BTN for "all on"/"all off" shortcut: if any
+  // pads are tagged → clears all; if none are tagged → tags all.
   var holdModeBtn=document.getElementById('btnHoldMode');
-  function updateHoldModeBtn(){
-    if(holdModeBtn){
-      holdModeBtn.classList.toggle('active', HOLD_MODE);
-      holdModeBtn.style.opacity=HOLD_MODE?'1':'0.5';
+
+  // Restore persisted tag set
+  try{
+    var _ht=localStorage.getItem('holdTaggedPads');
+    if(_ht){
+      var arr=JSON.parse(_ht);
+      if(Array.isArray(arr)) arr.forEach(function(i){ _holdTaggedPads[parseInt(i)]=true; });
     }
+  }catch(e){}
+  window._saveHoldTags=function(){
+    try{
+      var keys=Object.keys(_holdTaggedPads).filter(function(k){return _holdTaggedPads[k];});
+      localStorage.setItem('holdTaggedPads', JSON.stringify(keys));
+    }catch(e){}
+  };
+  // Re-render the yellow upper-right marks on all pads. Called when tags
+  // change or after bank re-render (where _updateSampleIcons covers it too).
+  window._updateHoldMarks=function(){
+    if(window._updateSampleIcons) window._updateSampleIcons();
+  };
+
+  function _countTaggedPads(){
+    var n=0;
+    for(var k in _holdTaggedPads){ if(_holdTaggedPads[k]) n++; }
+    return n;
   }
+  function updateHoldModeBtn(){
+    if(!holdModeBtn) return;
+    var hasAny=_countTaggedPads()>0;
+    // Button is "active" (yellow) if pads are tagged OR we're in select mode.
+    var shouldShowActive = _holdSelectMode || hasAny;
+    holdModeBtn.classList.toggle('active', shouldShowActive);
+    holdModeBtn.style.opacity = shouldShowActive ? '1' : '0.5';
+    // Pulse the bank area when in select mode
+    var bankEl=document.getElementById('bank');
+    if(bankEl) bankEl.classList.toggle('_holdSelectMode', _holdSelectMode);
+  }
+  function _enterHoldSelect(){
+    _holdSelectMode=true;
+    updateHoldModeBtn();
+    if(window._btnFx) window._btnFx('tool_on');
+  }
+  function _exitHoldSelect(){
+    _holdSelectMode=false;
+    updateHoldModeBtn();
+    if(window._btnFx) window._btnFx('tool_off');
+  }
+  function _toggleAllHoldTags(){
+    // If any pad is tagged, clear all. If none, tag all pads that currently exist.
+    var hasAny=_countTaggedPads()>0;
+    if(hasAny){
+      // Turning off all held voices is still important so nothing keeps looping
+      Object.keys(_heldVoices).forEach(function(k){ _releaseHeldVoice(parseInt(k), false); });
+      _holdTaggedPads={};
+    } else {
+      var tiles=document.querySelectorAll('.bt');
+      tiles.forEach(function(t){
+        var i=parseInt(t.dataset.bankIdx);
+        if(!isNaN(i)) _holdTaggedPads[i]=true;
+      });
+    }
+    window._saveHoldTags();
+    updateHoldModeBtn();
+    if(window._updateHoldMarks) window._updateHoldMarks();
+    if(window._btnFx) window._btnFx(hasAny?'tool_off':'tool_on');
+    if(window._tapHaptic) window._tapHaptic();
+  }
+
   if(holdModeBtn){
-    holdModeBtn.addEventListener('click',function(){
-      HOLD_MODE=!HOLD_MODE;
-      if(!HOLD_MODE){
-        // Turning off while voices are held — release them all cleanly with fade
-        Object.keys(_heldVoices).forEach(function(k){ _releaseHeldVoice(parseInt(k), false); });
+    // Long-press detection — 500ms hold triggers "all on / all off" shortcut
+    // and cancels the normal tap action.
+    var _hmHoldTimer=null;
+    var _hmLongFired=false;
+    holdModeBtn.addEventListener('touchstart',function(e){
+      _hmLongFired=false;
+      if(_hmHoldTimer) clearTimeout(_hmHoldTimer);
+      _hmHoldTimer=setTimeout(function(){
+        _hmHoldTimer=null;
+        _hmLongFired=true;
+        _toggleAllHoldTags();
+      }, 500);
+    },{passive:true});
+    holdModeBtn.addEventListener('touchend',function(e){
+      if(_hmHoldTimer){ clearTimeout(_hmHoldTimer); _hmHoldTimer=null; }
+      if(_hmLongFired){
+        // Long-press already handled; prevent the trailing click
+        e.preventDefault();
       }
-      updateHoldModeBtn();
-      if(window._btnFx) window._btnFx(HOLD_MODE?'tool_on':'tool_off');
+    },{passive:false});
+    holdModeBtn.addEventListener('touchcancel',function(){
+      if(_hmHoldTimer){ clearTimeout(_hmHoldTimer); _hmHoldTimer=null; }
+    },{passive:true});
+    holdModeBtn.addEventListener('click',function(e){
+      if(_hmLongFired){ _hmLongFired=false; return; } // swallow synthetic click after long-press
+      if(_holdSelectMode) _exitHoldSelect();
+      else _enterHoldSelect();
     });
     updateHoldModeBtn();
+    // Also render marks on startup in case tags were restored from localStorage
+    if(window._updateHoldMarks) setTimeout(window._updateHoldMarks, 0);
   }
 
   // GRID toggle
@@ -15708,6 +16627,20 @@ window._clampScrollTransition=function(anchorEl){
       window._updateExprGrid();
     });
     updateGridBtn();
+  }
+
+  // EXPR crosshair (XHR) toggle — draws vertical + horizontal neon lines
+  // through the tap point in EXPR mode, colored to match the pad.
+  var crossBtn=document.getElementById('btnExprCross');
+  function updateCrossBtn(){
+    if(crossBtn){ crossBtn.classList.toggle('active', EXPR_CROSS_ON); crossBtn.style.opacity=EXPR_CROSS_ON?'1':'0.5'; }
+  }
+  if(crossBtn){
+    crossBtn.addEventListener('click',function(){
+      EXPR_CROSS_ON=!EXPR_CROSS_ON;
+      updateCrossBtn();
+    });
+    updateCrossBtn();
   }
 
   // Apply/remove grid and hide-nums classes on all bank tiles
