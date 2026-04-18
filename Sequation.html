@@ -1,4 +1,4 @@
-<!-- Sequation v5.43 | Built: 2026-04-17 CT | github.com/Spamboni/Sequation -->
+<!-- Sequation v5.56 | Built: 2026-04-17 CT | github.com/Spamboni/Sequation -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -258,6 +258,8 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 #btnSensToggle.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
 #btnPadPanToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #btnPadPanToggle.active { background:rgba(34,197,94,0.15); border-color:#22c55e; box-shadow: 0 0 12px rgba(34,197,94,0.7); color:#22c55e; }
+#btnHoldMode { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
+#btnHoldMode.active { background:rgba(251,191,36,0.15); border-color:#fbbf24; box-shadow: 0 0 12px rgba(251,191,36,0.7); color:#fbbf24; }
 #btnPadExprToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #btnPadExprToggle.active { background:rgba(251,191,36,0.15); border-color:#fbbf24; box-shadow: 0 0 12px rgba(251,191,36,0.7); color:#fbbf24; }
 #btnExprGrid { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
@@ -417,7 +419,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v5.43</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v5.56</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -497,6 +499,7 @@ window.onerror=function(msg,src,line,col,err){
             <button class="seq-btn" id="btnSensToggle" title="Tap sensitivity (hold for settings)" style="flex-shrink:0;font-size:10px;padding:2px 5px;">&#x1F44B;</button>
             <button class="seq-btn seq-btn-sq" id="btnPadPanToggle" title="Pad pan (tap position = L/R pan)" style="flex-shrink:0;font-size:9px;font-weight:700;padding:2px 4px;">L·R</button>
             <button class="seq-btn seq-btn-sq" id="btnPadExprToggle" title="Expression (X=volume, Y=pitch)" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 4px;">EXPR</button>
+            <button class="seq-btn seq-btn-sq" id="btnHoldMode" title="Hold mode — pads play only while held down" style="flex-shrink:0;font-size:7px;font-weight:700;padding:2px 3px;line-height:1;display:flex;flex-direction:column;justify-content:center;letter-spacing:0.5px;"><span>HLD</span><span style="margin-top:1px;">BTN</span></button>
             <button class="seq-btn seq-btn-sq" id="btnSpinToggle" title="Spin on/off" style="font-size:10px;flex-shrink:0;">&#x1F300;</button>
             <button class="seq-btn seq-btn-sq" id="btnParticleToggle" title="Particles on/off" style="font-size:10px;flex-shrink:0;">&#x2728;</button>
             <button class="seq-btn seq-btn-sq" id="btnGlowToggle" title="Tap glow on/off" style="font-size:10px;padding:0;overflow:hidden;flex-shrink:0;"><canvas id="glowIconCanvas" width="26" height="26" style="display:block;width:26px;height:26px;"></canvas></button>
@@ -2341,7 +2344,7 @@ function winCheck(pz){
 // ═══════════════════════════════════════════════════════════
 // SOUNDS
 // ═══════════════════════════════════════════════════════════
-var AC=(function(){try{return new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}})();
+var AC=(function(){try{return new(window.AudioContext||window.webkitAudioContext)({sampleRate:48000});}catch(e){try{return new(window.AudioContext||window.webkitAudioContext)();}catch(e2){return null;}}})();
 var _greetingPlayed=false;
 
 // ── Master audio chain — EQ → Saturation → Widener → Reverb Bus → Limiter → destination ──
@@ -5374,6 +5377,73 @@ var GLOW_ON=true;
 var PARTICLES_ON=true;
 var PAD_PAN_ON=false; // per-tap panning based on hit position within pad
 var PAD_EXPR_ON=false; // per-tap expression: X=volume, Y=pitch
+var HOLD_MODE=false;   // pads must be held to play; release fades the sound
+
+// Per-pad held voices. When a pad is pressed in hold mode, we store
+// {src, gain, touchId} so release() can find and stop it. Keyed by sndIdx
+// so if multiple fingers hit the same pad, the second touch retriggers
+// and replaces the first (same as a monophonic voice).
+var _heldVoices = {};
+
+// Play a sample as a held voice — loops the buffer so holding the pad
+// keeps the sustain going indefinitely. Release fades 20ms to silence.
+// Falls back to a one-shot playBankSound for non-sample (synth) pads
+// because synth sounds have their own envelopes and wouldn't respect hold.
+function _startHeldVoice(sndIdx, vol, panH, panV){
+  if(!AC) return;
+  // Resolve alias (stock sound aliases may point at another idx)
+  var realIdx = sndIdx;
+  if(!userSamples[realIdx]){
+    var _metaA=sampleMeta[realIdx]||{};
+    if(_metaA._aliasIdx!==undefined) realIdx=_metaA._aliasIdx;
+  }
+  // If there's no sample buffer (pure synth pad), fall back to normal one-shot.
+  if(!userSamples[realIdx]){
+    playBankSound(sndIdx, vol, panH, panV);
+    return;
+  }
+  // Stop any existing voice on this sndIdx first (retrigger).
+  _releaseHeldVoice(sndIdx, true);
+  try{
+    // Set pan for getMasterDest to pick up
+    window._currentNotePan = (panH!==undefined && panH!==null) ? panH : null;
+    window._currentNotePanV = (panV!==undefined && panV!==null) ? panV : null;
+    var src=AC.createBufferSource();
+    src.buffer=userSamples[realIdx];
+    src.loop=true; // sustain while held
+    var g=AC.createGain();
+    var meta=sampleMeta[realIdx]||{};
+    var sampleVol=(meta.volume!==undefined)?meta.volume:1.0;
+    var evVol=(vol!==undefined)?vol:1.0;
+    g.gain.value=sampleVol*evVol;
+    src.connect(g); g.connect(getMasterDest());
+    src.start(AC.currentTime);
+    _heldVoices[sndIdx] = { src:src, gain:g };
+    // Clear pan globals so they don't leak to other sounds
+    window._currentNotePan=null;
+    window._currentNotePanV=null;
+  }catch(e){}
+}
+
+// Release a held voice — 20ms fade to silence, then stop source. If `instant`
+// is true (used for retrigger cleanup), cuts immediately with no fade.
+function _releaseHeldVoice(sndIdx, instant){
+  var voice=_heldVoices[sndIdx];
+  if(!voice) return;
+  delete _heldVoices[sndIdx];
+  try{
+    if(instant){
+      voice.src.stop(0);
+      return;
+    }
+    var t=AC.currentTime;
+    var curGain=voice.gain.gain.value;
+    voice.gain.gain.cancelScheduledValues(t);
+    voice.gain.gain.setValueAtTime(curGain, t);
+    voice.gain.gain.linearRampToValueAtTime(0.0001, t+0.02);
+    voice.src.stop(t+0.025);
+  }catch(e){}
+}
 var EXPR_GRID_ON=false; // show grid overlay on pads during EXPR mode
 var EXPR_SNAP_X=false; // snap X (volume) to grid
 var EXPR_SNAP_Y=false; // snap Y (pitch) to grid
@@ -5858,7 +5928,13 @@ function renderBank(){
         // Remember this volume so any drag-over pads after this tap inherit the same level
         window._lastTapVol=vol;
         if(window._beatEditToggleTile&&window._beatEditToggleTile(sndIdx)) return;
-        playBankSound(sndIdx,vol,window._currentTapPan,window._currentTapPanV);
+        if(HOLD_MODE){
+          // Hold mode: start a held voice that loops while the pad is held
+          // and fades on touchend. Falls back to one-shot for non-sample pads.
+          _startHeldVoice(sndIdx, vol, window._currentTapPan, window._currentTapPanV);
+        } else {
+          playBankSound(sndIdx,vol,window._currentTapPan,window._currentTapPanV);
+        }
         window._lastActivePad=idx;
         window._lastTapPanVal=window._currentTapPan;
         if(window._seqNoteOn) _seqNoteOn(sndIdx,idx,vol);
@@ -6026,11 +6102,21 @@ function renderBank(){
       },{passive:true});
       el.addEventListener('touchend',function(){
         if(_holdTimer){ clearTimeout(_holdTimer); _holdTimer=null; }
+        // Hold mode: release the voice for this pad when the finger lifts.
+        // 20ms fade prevents click/pop from instant cutoff.
+        if(HOLD_MODE) _releaseHeldVoice(sndIdx, false);
         // Don't clear styles here — active-flash class handles visual state
         // Only clear if not currently flashing
         if(!_holdFired && !el.classList.contains('active-flash')){
           el.style.background=''; el.style.color=''; applyTileColor(el,idx);
         }
+        _holdFired=false;
+      },{passive:true});
+      // Touchcancel — OS interrupted the touch (incoming call, etc). Also
+      // release any held voice so samples don't keep looping forever.
+      el.addEventListener('touchcancel',function(){
+        if(_holdTimer){ clearTimeout(_holdTimer); _holdTimer=null; }
+        if(HOLD_MODE) _releaseHeldVoice(sndIdx, false);
         _holdFired=false;
       },{passive:true});
       el.addEventListener('touchmove',function(e){
@@ -8474,7 +8560,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   var _dockProximity=(function(){
     var nodes=null;
     var targetGain=0;
-    var MAX_GAIN=0.04; // matches the undock charge tone's 0.03 peak, ±
+    var _startTime=0; // performance.now() when start() was called
+    var MAX_GAIN=0.04;
     function start(){
       if(!AC) return;
       if(!window._sfxSettings||!window._sfxSettings.buttonFx) return;
@@ -8487,17 +8574,14 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         g.connect(dest);
         var o=AC.createOscillator();
         o.type='triangle';
-        // Start at the top of the undock's frequency range, sit there until
-        // proximity pulls us in toward the slot; the actual perceived
-        // frequency sweep happens via proximity % → pitch interpolation.
         o.frequency.value=520;
         o.connect(g);
         o.start(t);
         nodes={osc:o, gainNode:g};
         targetGain=0;
+        _startTime=performance.now();
       }catch(e){ nodes=null; }
     }
-    // pct is 0..1 where 0 = far/out-of-range and 1 = right on top of the dock
     function setProximity(pct){
       if(!nodes||!AC) return;
       pct=Math.max(0, Math.min(1, pct));
@@ -8505,9 +8589,6 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       try{
         var t=AC.currentTime;
         nodes.gainNode.gain.setTargetAtTime(targetGain, t, 0.04);
-        // As we get closer, pitch descends from 520 Hz → 180 Hz (inverse of
-        // the undock charge which rose 180 → 520). Makes dock feel like a
-        // gravity-well pulling the sound down.
         var freq = 520 - pct*(520-180);
         nodes.osc.frequency.setTargetAtTime(freq, t, 0.05);
       }catch(e){}
@@ -8523,9 +8604,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         s.osc.stop(t+0.08);
       }catch(e){}
     }
-    // Completion pop — the "landed" sound when dock finalizes. A descending
-    // sine (inverse of the undock pop which was 900 → 380 Hz rising-ish).
-    // Quick and soft, just a confirmation.
+    // How long the proximity tone has been active (ms). 0 if not running.
+    function age(){ return nodes ? (performance.now()-_startTime) : 0; }
+    // Completion pop — full landing sound
     function pop(){
       if(!AC) return;
       if(!window._sfxSettings||!window._sfxSettings.buttonFx) return;
@@ -8542,7 +8623,26 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         o.connect(g); o.start(t); o.stop(t+0.08);
       }catch(e){}
     }
-    return { start:start, stop:stop, setProximity:setProximity, pop:pop };
+    // Quick early-release pop — lighter version for when the user drops the
+    // pill near the dock before the full approach animation completes.
+    // Slightly higher pitch and shorter decay than the full pop.
+    function quickPop(){
+      if(!AC) return;
+      if(!window._sfxSettings||!window._sfxSettings.buttonFx) return;
+      try{
+        var dest=window._sfxGain||AC.destination;
+        var t=AC.currentTime;
+        var g=AC.createGain(); g.connect(dest);
+        g.gain.setValueAtTime(0.09,t);
+        g.gain.exponentialRampToValueAtTime(0.001,t+0.04);
+        var o=AC.createOscillator();
+        o.type='sine';
+        o.frequency.setValueAtTime(480,t);
+        o.frequency.exponentialRampToValueAtTime(200,t+0.04);
+        o.connect(g); o.start(t); o.stop(t+0.05);
+      }catch(e){}
+    }
+    return { start:start, stop:stop, setProximity:setProximity, pop:pop, quickPop:quickPop, age:age };
   })();
 
   // Draw custom padlock icon — shackle swings left when unlocked
@@ -8614,10 +8714,15 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       _drawPadlock(cv,on);
       btn.style.background=on?'rgba(0,217,255,0.2)':'';
     }
+    // In the floating pill, the scroll-lock button is a child with class _flScrollBtn
     if(_floatLock){
-      var fcv=_floatLock.querySelector('canvas')||_initLockCanvas(_floatLock);
-      _drawPadlock(fcv,on,Math.min(_floatLock.offsetWidth||32,_floatLock.offsetHeight||32));
-      _floatLock.style.background=on?'rgba(0,217,255,0.2)':'#1a1a1a';
+      var flBtn=_floatLock.querySelector('._flScrollBtn');
+      if(flBtn){
+        var fcv=flBtn.querySelector('canvas')||_initLockCanvas(flBtn);
+        _drawPadlock(fcv,on,FLOAT_SIZE);
+        flBtn.style.background=on?'rgba(0,217,255,0.2)':'transparent';
+        flBtn.style.borderColor=on?'#00d9ff':'rgba(0,217,255,0.45)';
+      }
     }
   }
 
@@ -8625,6 +8730,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   function setScrollLock(on){
     _scrollLocked=on;
+    // Scroll lock + freeze simultaneously is pointless. If scroll lock is
+    // being turned ON and freeze is active, cancel freeze first.
+    if(on && _freezeActive) _setFreeze(false);
     var gs=document.getElementById('gameScreen');
     var body=document.body;
     if(on){
@@ -8640,281 +8748,438 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     _updateScrollLockIcons(on);
   }
 
+  // Shared size constant used by makeFloatingLock and _updateScrollLockIcons
+  var FLOAT_SIZE=36;
+
+  // Freeze mode — blocks all UI interaction with a full-screen haze overlay
+  // while still allowing native page scroll. The pill sits above the overlay
+  // (z-index 10001 vs overlay 10000) so both buttons stay reachable.
+  var _freezeActive=false;
+  var _freezeOverlay=null;
+
+  function _setFreeze(on, immediate){
+    if(on===_freezeActive) return;
+    _freezeActive=on;
+    // Skip the redundant haptic if this is being called during a dock —
+    // the dock sequence plays its own haptic and stacking them feels double-beat.
+    if(!immediate && window._tapHaptic) window._tapHaptic();
+    if(on){
+      // Scroll lock + freeze simultaneously is pointless — can't scroll AND
+      // can't touch anything. Turn scroll lock off when freeze activates.
+      if(_scrollLocked) setScrollLock(false);
+      _freezeOverlay=document.createElement('div');
+      _freezeOverlay.style.cssText='position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.38);touch-action:pan-y;pointer-events:all;transition:opacity 150ms ease;opacity:0;';
+      document.body.appendChild(_freezeOverlay);
+      requestAnimationFrame(function(){ if(_freezeOverlay) _freezeOverlay.style.opacity='1'; });
+    } else {
+      if(_freezeOverlay){
+        var ov=_freezeOverlay; _freezeOverlay=null;
+        if(immediate){
+          // Instant removal — no fade. Used when docking so the user isn't
+          // left with a 160ms window where the overlay is still blocking input
+          // with no floating pill around to turn freeze off.
+          if(ov.parentNode) ov.parentNode.removeChild(ov);
+        } else {
+          ov.style.opacity='0';
+          setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 160);
+        }
+      }
+    }
+    if(_floatLock){
+      var fb=_floatLock.querySelector('._flFreezeBtn');
+      if(fb){
+        fb.style.color=on?'#00d9ff':'rgba(160,160,160,0.6)';
+        fb.style.borderColor=on?'#00d9ff':'rgba(100,100,100,0.4)';
+        fb.style.background=on?'rgba(0,217,255,0.15)':'transparent';
+      }
+    }
+  }
+
   function makeFloatingLock(){
     if(_floatLock) return;
-    // Capture the docked button's position so the floating lock can emerge
-    // from the exact spot the user long-pressed, rather than teleporting
-    // down to the bottom-right corner. We then animate a ~50px leftward
-    // shift so the user can see it leave the toolbar.
-    var FLOAT_SIZE=36;
-    var SHOOT_DX=-50; // pixels to move left on spawn
     var dockEl=document.getElementById('seqScrollLock');
     var startLeft, startTop;
+    var SHOOT_DX=-50;
+    var PILL_GAP=4, PILL_PAD=3;
+    var PILL_W=FLOAT_SIZE*2 + PILL_GAP + PILL_PAD*2;
+    var PILL_H=FLOAT_SIZE + PILL_PAD*2;
+
     if(dockEl){
       var dr=dockEl.getBoundingClientRect();
-      // Center the 36px floating button over the ~28px docked button
-      startLeft = dr.left + dr.width/2 - FLOAT_SIZE/2;
-      startTop  = dr.top  + dr.height/2 - FLOAT_SIZE/2;
+      startLeft = dr.left + dr.width/2 - PILL_PAD - FLOAT_SIZE/2;
+      startTop  = dr.top  + dr.height/2 - PILL_H/2;
     } else {
-      // Fallback — bottom right corner if the docked button can't be found
-      startLeft = window.innerWidth - FLOAT_SIZE - 12;
-      startTop  = window.innerHeight - FLOAT_SIZE - 80;
+      startLeft = window.innerWidth - PILL_W - 12;
+      startTop  = window.innerHeight - PILL_H - 80;
     }
-    _floatLock=document.createElement('button');
+
+    // ── Pill container ──
+    _floatLock=document.createElement('div');
     _floatLock.id='_floatScrollLock';
-    _floatLock.textContent='';
-    _floatLock.style.cssText='position:fixed;z-index:500;width:'+FLOAT_SIZE+'px;height:'+FLOAT_SIZE+'px;border-radius:50%;font-size:14px;border:2px solid #00d9ff;background:#1a1a1a;color:#00d9ff;cursor:pointer;box-shadow:0 0 12px rgba(0,217,255,0.5);display:flex;align-items:center;justify-content:center;padding:0;touch-action:none;user-select:none;left:'+startLeft+'px;top:'+startTop+'px;overflow:hidden;opacity:0;transform:scale(0.6);';
-    // Drag logic + double-tap-to-redock + snap-to-dock-on-hover.
-    // A short tap toggles lock. Two taps within DOUBLE_TAP_MS redock the
-    // floating button. Dragging the button over the original docked slot
-    // snaps it into place and lights up both; releasing there redocks.
-    var _dx=0,_dy=0,_startX=0,_startY=0,_dragging=false,_dragMoved=false,_flTouched=false;
-    var _lastTapTs=0, _lastTapX=0, _lastTapY=0;
-    var DOUBLE_TAP_MS=400;
-    var DOUBLE_TAP_DIST=30;
-    // Velocity tracking for wind sound
-    var _lastMoveX=0, _lastMoveY=0, _lastMoveT=0;
-    // Snap state — true when floating button is hovering over docked slot
-    var _snapped=false;
-    // Auto-dock after holding-while-snapped for this long
-    var AUTO_DOCK_MS=600;
-    var _autoDockTimer=null;
-    // Range at which the proximity tone becomes audible. Distance is measured
-    // from the floating button's center to the docked slot's center. The
-    // docked button is ~28px wide, so 40px center-to-center means the tone
-    // starts to rise when the floating button's edge is ~25px from the
-    // docked slot's edge — a tight window so it only fires when actually
-    // close to landing.
-    var PROXIMITY_RANGE=40;
-    // Check whether a point is inside the docked scroll-lock slot's rect.
-    // We expand the hit rect a bit so it feels forgiving.
-    function _pointOverDock(x,y){
-      var dockEl=document.getElementById('seqScrollLock');
-      if(!dockEl) return null;
-      var r=dockEl.getBoundingClientRect();
-      if(r.width===0 && r.height===0) return null; // not laid out / hidden
-      var pad=6;
-      if(x>=r.left-pad && x<=r.right+pad && y>=r.top-pad && y<=r.bottom+pad){
-        return r;
+    _floatLock.style.cssText=[
+      'position:fixed',
+      'z-index:10001',
+      'left:'+startLeft+'px',
+      'top:'+startTop+'px',
+      'width:'+PILL_W+'px',
+      'height:'+PILL_H+'px',
+      'border-radius:'+(PILL_H/2)+'px',
+      'background:rgba(18,18,18,0.72)',
+      'border:1.5px solid rgba(0,217,255,0.18)',
+      'box-shadow:0 2px 12px rgba(0,0,0,0.55)',
+      'display:flex',
+      'align-items:center',
+      'justify-content:center',
+      'gap:'+PILL_GAP+'px',
+      'padding:'+PILL_PAD+'px',
+      'touch-action:none',
+      'user-select:none',
+      'opacity:0',
+      'transform:scale(0.6)',
+      'box-sizing:border-box',
+    ].join(';');
+
+    // ── Scroll lock button (left) ──
+    var _flScrollBtn=document.createElement('button');
+    _flScrollBtn.className='_flScrollBtn';
+    _flScrollBtn.style.cssText=[
+      'width:'+FLOAT_SIZE+'px',
+      'height:'+FLOAT_SIZE+'px',
+      'border-radius:50%',
+      'border:1.5px solid rgba(0,217,255,0.45)',
+      'background:transparent',
+      'color:#00d9ff',
+      'cursor:pointer',
+      'display:flex',
+      'align-items:center',
+      'justify-content:center',
+      'padding:0',
+      'flex-shrink:0',
+      'touch-action:manipulation',
+      'overflow:hidden',
+    ].join(';');
+    _floatLock.appendChild(_flScrollBtn);
+
+    // ── Freeze button (right) ──
+    var _flFreezeBtn=document.createElement('button');
+    _flFreezeBtn.className='_flFreezeBtn';
+    _flFreezeBtn.textContent='\u2298'; // ⊘ block/freeze icon
+    _flFreezeBtn.style.cssText=[
+      'width:'+FLOAT_SIZE+'px',
+      'height:'+FLOAT_SIZE+'px',
+      'border-radius:50%',
+      'border:1.5px solid rgba(100,100,100,0.4)',
+      'background:transparent',
+      'color:rgba(160,160,160,0.6)',
+      'font-size:16px',
+      'cursor:pointer',
+      'display:flex',
+      'align-items:center',
+      'justify-content:center',
+      'padding:0',
+      'flex-shrink:0',
+      'touch-action:manipulation',
+      'line-height:1',
+      'font-family:monospace',
+      'transition:color 120ms,border-color 120ms,background 120ms',
+    ].join(';');
+    _floatLock.appendChild(_flFreezeBtn);
+
+    // Declared early so the button tap handlers below can check it.
+    // The pill drag logic further down also writes to this.
+    var _dragMoved=false;
+
+    // ── Freeze button tap ──
+    var _freezeTouched=false;
+    _flFreezeBtn.addEventListener('touchstart',function(e){
+      e.stopPropagation();
+      _freezeTouched=true;
+    },{passive:true});
+    _flFreezeBtn.addEventListener('touchend',function(e){
+      e.stopPropagation();
+      if(!_freezeTouched) return; _freezeTouched=false;
+      // If the pill was dragged, don't activate — the finger just happened
+      // to lift over this button at the end of a drag.
+      if(_dragMoved) return;
+      var endT=e.changedTouches&&e.changedTouches[0];
+      var tx=endT?endT.clientX:0, ty=endT?endT.clientY:0;
+      // Double-tap check — two taps anywhere on the pill within DTAP_MS redocks.
+      // _doTap is declared below in the drag logic block; JS var hoisting means
+      // _lastTapTs is accessible here even though it's declared later.
+      var now=performance.now();
+      var dt=now-_lastTapTs, ddx=tx-_lastTapX, ddy2=ty-_lastTapY;
+      if(dt<DTAP_MS && Math.sqrt(ddx*ddx+ddy2*ddy2)<DTAP_DIST){
+        _setFreeze(false);
+        if(window._tapHaptic) window._tapHaptic();
+        _doDock();
+        _lastTapTs=0;
+      } else {
+        _setFreeze(!_freezeActive);
+        _lastTapTs=now; _lastTapX=tx; _lastTapY=ty;
       }
+    },{passive:true});
+    _flFreezeBtn.addEventListener('click',function(e){ e.stopPropagation(); });
+
+    // ── Scroll lock button tap ──
+    // Short tap toggles lock. Double-tap redocks.
+    var _slTouched=false;
+    _flScrollBtn.addEventListener('touchstart',function(e){
+      e.stopPropagation();
+      _slTouched=true;
+    },{passive:true});
+    _flScrollBtn.addEventListener('touchend',function(e){
+      e.stopPropagation();
+      if(!_slTouched) return; _slTouched=false;
+      // If the pill was dragged, don't activate the scroll lock toggle.
+      if(_dragMoved) return;
+      var endT=e.changedTouches&&e.changedTouches[0];
+      var tx=endT?endT.clientX:0, ty=endT?endT.clientY:0;
+      // Single tap → toggle scroll lock, update shared tap tracker.
+      // _doTap handles double-tap detection and will fire _doDock if hit.
+      if(window._tapHaptic) window._tapHaptic();
+      setScrollLock(!_scrollLocked);
+      _doTap(tx,ty);
+    },{passive:true});
+    _flScrollBtn.addEventListener('click',function(e){ e.stopPropagation(); });
+
+    // ── Pill drag logic ──
+    // Shared double-tap state — any tap on any part of the pill (scroll btn,
+    // freeze btn, or pill body) updates this. Two taps within DTAP_MS and
+    // DTAP_DIST px of each other trigger a redock, regardless of which part
+    // was tapped each time.
+    var _lastTapTs=0, _lastTapX=0, _lastTapY=0;
+    var DTAP_MS=400, DTAP_DIST=60; // generous distance — whole pill width
+
+    function _doTap(tx,ty){
+      var now=performance.now();
+      var dt=now-_lastTapTs;
+      var ddx=tx-_lastTapX, ddy=ty-_lastTapY;
+      if(dt<DTAP_MS && Math.sqrt(ddx*ddx+ddy*ddy)<DTAP_DIST){
+        // Double-tap anywhere on pill → redock
+        _setFreeze(false);
+        if(window._tapHaptic) window._tapHaptic();
+        _doDock();
+        _lastTapTs=0;
+      } else {
+        _lastTapTs=now; _lastTapX=tx; _lastTapY=ty;
+      }
+    }
+
+    var _dx=0,_dy=0,_startX=0,_startY=0,_dragging=false;
+    // _dragMoved declared above buttons so they can read it
+    var _lastMoveX=0,_lastMoveY=0,_lastMoveT=0;
+    var _snapped=false;
+    var AUTO_DOCK_MS=600, _autoDockTimer=null;
+    var PROXIMITY_RANGE=40;
+
+    function _pointOverDock(x,y){
+      var de=document.getElementById('seqScrollLock'); if(!de) return null;
+      var r=de.getBoundingClientRect();
+      if(r.width===0&&r.height===0) return null;
+      var pad=6;
+      if(x>=r.left-pad&&x<=r.right+pad&&y>=r.top-pad&&y<=r.bottom+pad) return r;
       return null;
     }
-    // Distance from floating button's current center to docked slot's center.
-    // Used to compute proximity tone volume. Returns Infinity if dock not laid
-    // out.
-    function _distanceToDock(){
-      if(!_floatLock) return Infinity;
-      var dockEl=document.getElementById('seqScrollLock');
-      if(!dockEl) return Infinity;
-      var dr=dockEl.getBoundingClientRect();
-      if(dr.width===0 && dr.height===0) return Infinity;
-      var fr=_floatLock.getBoundingClientRect();
-      var fcx=fr.left+fr.width/2, fcy=fr.top+fr.height/2;
+    // Distance from the given point to the dock slot's center. Used for the
+    // proximity tone volume. The calling code now passes the current finger
+    // position so the snap/proximity behavior is driven by where the finger
+    // is, not where the pill happens to sit.
+    function _distanceToDock(x,y){
+      var de=document.getElementById('seqScrollLock'); if(!de) return Infinity;
+      var dr=de.getBoundingClientRect();
+      if(dr.width===0&&dr.height===0) return Infinity;
       var dcx=dr.left+dr.width/2, dcy=dr.top+dr.height/2;
-      var dx=fcx-dcx, dy=fcy-dcy;
-      return Math.sqrt(dx*dx+dy*dy);
+      var ddx=x-dcx, ddy=y-dcy;
+      return Math.sqrt(ddx*ddx+ddy*ddy);
     }
-    // Shared dock-finalizer: remove floating, re-show docked, play pop,
-    // haptic. Safe to call from release-while-snapped OR auto-dock timer.
-    // Idempotent — if _floatLock is already null (already docked), bail.
+    function _floatGone(){ return !_floatLock||!_floatLock.parentNode; }
     function _doDock(){
-      if(_autoDockTimer){ clearTimeout(_autoDockTimer); _autoDockTimer=null; }
-      if(!_floatLock) return; // already docked — nothing to do
+      if(_autoDockTimer){clearTimeout(_autoDockTimer);_autoDockTimer=null;}
+      if(!_floatLock) return;
+      // Immediate freeze-off — no fade. If the fade lingered, the user would
+      // be blocked by the overlay for 160ms with no floating pill to disable
+      // freeze via the ⊘ button, effectively trapping them.
+      _setFreeze(false, true);
+      if(_scrollLocked) setScrollLock(false);
       _exitSnap();
       _dragWind.stop();
       _dockProximity.pop();
       _dockProximity.stop();
-      _tapHaptic();
+      if(window._tapHaptic) window._tapHaptic();
       if(_floatLock.parentNode) _floatLock.parentNode.removeChild(_floatLock);
       _floatLock=null;
-      // CRITICAL: stop the drag state so any in-flight touchmove events
-      // after this point bail at the top of their handler instead of
-      // dereferencing the now-null _floatLock.
-      _dragging=false;
-      _dragMoved=false;
-      var lockBtn=document.getElementById('seqScrollLock');
-      if(lockBtn) lockBtn.style.display='';
+      _dragging=false; _dragMoved=false;
+      var lb=document.getElementById('seqScrollLock');
+      if(lb) lb.style.display='';
+      // Bulletproof cleanup — scan DOM for any freeze overlay that might have
+      // been orphaned (e.g. stale reference, race condition, old leftover) and
+      // remove them. Guarantees the user is NEVER trapped after a dock.
+      _forceClearAllBlockers();
     }
-    function _enterSnap(dockRect){
-      if(_snapped) return;
-      if(!_floatLock) return; // element already removed (auto-dock fired)
+
+    // Nuclear cleanup: walks the DOM and removes any element that could be
+    // blocking input (freeze overlays, orphan pills, scroll lock state). Safe
+    // to call any time — only removes elements matching our specific patterns.
+    function _forceClearAllBlockers(){
+      // Remove any div directly on body that looks like a freeze overlay
+      // (position:fixed, full-screen, touch-action:pan-y, pointer-events:all
+      // with the specific dark haze color).
+      try{
+        var all=document.body.children;
+        for(var i=all.length-1;i>=0;i--){
+          var el=all[i];
+          if(el && el.style){
+            var s=el.style;
+            // Identify by the exact cssText signature we set in _setFreeze
+            if(s.position==='fixed' && s.zIndex==='10000' &&
+               s.touchAction==='pan-y' && s.pointerEvents==='all' &&
+               (s.background||'').indexOf('rgba(0, 0, 0, 0.38')===0){
+              el.parentNode.removeChild(el);
+            }
+          }
+        }
+      }catch(e){}
+      _freezeOverlay=null;
+      _freezeActive=false;
+      // Reset freeze button visuals if a pill somehow still exists
+      if(_floatLock){
+        var fb=_floatLock.querySelector('._flFreezeBtn');
+        if(fb){
+          fb.style.color='rgba(160,160,160,0.6)';
+          fb.style.borderColor='rgba(100,100,100,0.4)';
+          fb.style.background='transparent';
+        }
+      }
+      // Reset body/document scroll state in case scroll lock didn't clear
+      document.body.style.overflow='';
+      document.body.style.touchAction='';
+      var gs=document.getElementById('gameScreen');
+      if(gs){ gs.style.overflow=''; gs.style.touchAction=''; }
+    }
+
+    // Also expose this so it can be called from elsewhere if needed
+    window._forceClearAllBlockers=_forceClearAllBlockers;
+    function _enterSnap(dockRect, fingerX, fingerY){
+      if(_snapped||!_floatLock) return;
       _snapped=true;
-      // Center floating button exactly over the docked slot
-      var fr=_floatLock.getBoundingClientRect();
-      var cx=dockRect.left + dockRect.width/2 - fr.width/2;
-      var cy=dockRect.top + dockRect.height/2 - fr.height/2;
+      // Position the pill so that the finger's grab offset (recorded at
+      // touchstart as _dx/_dy) stays put — the pill "follows the finger" into
+      // the snap position rather than jumping its left button to the slot.
+      // We want: finger clientX/Y remains at (pill.left + _dx, pill.top + _dy)
+      // and we want the finger to be over the dock slot's center.
+      // So: pill.left = dockCenter.x - _dx, pill.top = dockCenter.y - _dy.
+      var dcx=dockRect.left + dockRect.width/2;
+      var dcy=dockRect.top  + dockRect.height/2;
+      var cx=dcx - _dx, cy=dcy - _dy;
       _floatLock.style.left=cx+'px'; _floatLock.style.top=cy+'px';
       _floatLock.style.right=''; _floatLock.style.bottom='';
       _floatLock.classList.add('_snapping');
-      var dockEl=document.getElementById('seqScrollLock');
-      if(dockEl) dockEl.classList.add('_snapTarget');
-      // Wind should be silent while snapped (finger isn't "wind-dragging")
+      var de=document.getElementById('seqScrollLock');
+      if(de) de.classList.add('_snapTarget');
       _dragWind.setVelocity(0);
-      // Kick off the auto-dock timer — if the user holds here for AUTO_DOCK_MS
-      // the dock finalizes on its own, even without releasing the finger.
-      if(_autoDockTimer){ clearTimeout(_autoDockTimer); }
-      _autoDockTimer=setTimeout(function(){
-        _autoDockTimer=null;
-        _doDock();
-      }, AUTO_DOCK_MS);
+      // Proximity tone stays at full volume while snapped — it flows into
+      // the landing pop in _doDock on release (or auto-dock after 600ms).
+      _dockProximity.setProximity(1);
+      if(_autoDockTimer) clearTimeout(_autoDockTimer);
+      _autoDockTimer=setTimeout(function(){_autoDockTimer=null;_doDock();},AUTO_DOCK_MS);
     }
     function _exitSnap(){
-      if(!_snapped) return;
-      _snapped=false;
+      if(!_snapped) return; _snapped=false;
       if(_floatLock) _floatLock.classList.remove('_snapping');
-      var dockEl=document.getElementById('seqScrollLock');
-      if(dockEl) dockEl.classList.remove('_snapTarget');
-      // Any pull-away from the slot cancels the auto-dock countdown.
-      if(_autoDockTimer){ clearTimeout(_autoDockTimer); _autoDockTimer=null; }
+      var de=document.getElementById('seqScrollLock');
+      if(de) de.classList.remove('_snapTarget');
+      if(_autoDockTimer){clearTimeout(_autoDockTimer);_autoDockTimer=null;}
     }
-    // Helper — returns true if floating button is no longer usable (null or
-    // removed from DOM). Used as a guard at the top of touch event handlers
-    // so auto-dock-mid-touch doesn't leave dangling handlers running against
-    // a null element.
-    function _floatGone(){
-      return !_floatLock || !_floatLock.parentNode;
-    }
+
     _floatLock.addEventListener('touchstart',function(e){
       if(_floatGone()) return;
-      e.preventDefault();
+      // NOTE: passive:false + capture:true so this fires BEFORE child button
+      // handlers and cannot be blocked by their stopPropagation calls.
+      // We don't preventDefault here — child buttons need their touchstart
+      // to fire normally for their own tracking. We just record the drag
+      // start position so touchmove can follow the finger.
       var t=e.touches[0];
       var r=_floatLock.getBoundingClientRect();
       _dx=t.clientX-r.left; _dy=t.clientY-r.top;
       _startX=r.left; _startY=r.top;
-      _dragging=true; _dragMoved=false; _flTouched=true;
-      _lastMoveX=t.clientX; _lastMoveY=t.clientY;
-      _lastMoveT=performance.now();
-      // Fire up the proximity tone engine. It stays silent (gain 0) until
-      // the first touchmove calls setProximity(). Starting it here just
-      // avoids a startup delay at the moment we want the sound to appear.
-      _dockProximity.start();
-      _dockProximity.setProximity(0);
-    },{passive:false});
+      _dragging=true; _dragMoved=false;
+      _lastMoveX=t.clientX; _lastMoveY=t.clientY; _lastMoveT=performance.now();
+      _dockProximity.start(); _dockProximity.setProximity(0);
+    },{passive:true, capture:true});
+
     _floatLock.addEventListener('touchmove',function(e){
       if(_floatGone()) return;
       e.preventDefault();
       if(!_dragging) return;
       var t=e.touches[0];
-      // Always update proximity volume based on current distance to dock.
-      // Mapping: distance 0 → pct 1 (full), distance PROXIMITY_RANGE → pct 0
-      // (silent), with a smooth linear ramp in between. The pct derived from
-      // the UNSNAPPED position would be hard to measure when snapped (we
-      // forcibly centered it); during snap we just clamp pct to 1.
+      // Check drag threshold — same logic in both snap/no-snap paths
+      if(!_dragMoved&&(Math.abs(t.clientX-_dx-_startX)>6||Math.abs(t.clientY-_dy-_startY)>6)){
+        _dragMoved=true; _dragWind.start();
+      }
+      // Snap detection and proximity are driven by the FINGER position, not
+      // the pill's position. This lets the user slide their finger over the
+      // dock slot regardless of which button/gap they grabbed the pill on.
       var dockRect=_pointOverDock(t.clientX, t.clientY);
       if(dockRect){
-        if(!_dragMoved){
-          if(Math.abs(t.clientX-_dx-_startX)>6||Math.abs(t.clientY-_dy-_startY)>6){
-            _dragMoved=true;
-            _dragWind.start();
-          }
-        }
-        _enterSnap(dockRect);
-        _dockProximity.setProximity(1); // snapped = full
+        _enterSnap(dockRect, t.clientX, t.clientY);
       } else {
         _exitSnap();
         var x=t.clientX-_dx, y=t.clientY-_dy;
-        x=Math.max(0,Math.min(window.innerWidth-36,x));
-        y=Math.max(0,Math.min(window.innerHeight-36,y));
+        x=Math.max(0,Math.min(window.innerWidth-PILL_W,x));
+        y=Math.max(0,Math.min(window.innerHeight-PILL_H,y));
         _floatLock.style.left=x+'px'; _floatLock.style.right='';
-        _floatLock.style.top=y+'px'; _floatLock.style.bottom='';
-        // Only count as drag if moved more than 6px. Start the wind sound
-        // the moment a drag threshold is crossed so it doesn't fire on jitter.
-        if(!_dragMoved){
-          if(Math.abs(t.clientX-_dx-_startX)>6||Math.abs(t.clientY-_dy-_startY)>6){
-            _dragMoved=true;
-            _dragWind.start();
-          }
-        }
+        _floatLock.style.top=y+'px';  _floatLock.style.bottom='';
         if(_dragMoved){
-          // Compute finger velocity in px/sec for the wind volume
-          var now=performance.now();
-          var mdt=now-_lastMoveT;
+          var now=performance.now(), mdt=now-_lastMoveT;
           if(mdt>0){
             var vdx=t.clientX-_lastMoveX, vdy=t.clientY-_lastMoveY;
-            var vel=Math.sqrt(vdx*vdx+vdy*vdy) / (mdt/1000); // px per second
-            _dragWind.setVelocity(vel);
+            _dragWind.setVelocity(Math.sqrt(vdx*vdx+vdy*vdy)/(mdt/1000));
           }
           _lastMoveX=t.clientX; _lastMoveY=t.clientY; _lastMoveT=now;
         }
-        // Distance-based proximity tone — fades in as we approach the dock
-        var dist=_distanceToDock();
-        var pct=0;
-        if(dist<=PROXIMITY_RANGE){
-          pct = 1 - (dist/PROXIMITY_RANGE); // 1 at dist=0, 0 at range edge
-        }
-        _dockProximity.setProximity(pct);
+        var dist=_distanceToDock(t.clientX, t.clientY);
+        _dockProximity.setProximity(dist<=PROXIMITY_RANGE?1-(dist/PROXIMITY_RANGE):0);
       }
     },{passive:false});
+
     _floatLock.addEventListener('touchend',function(e){
-      if(_floatGone()){
-        // Auto-dock already consumed this touch — still clean up audio state
-        // so proximity tone / wind don't linger.
-        _dragWind.stop();
-        _dockProximity.stop();
-        return;
-      }
-      e.preventDefault();
-      _dragging=false;
-      _dragWind.stop(); // always stop wind on release
-      // If we released while snapped over the dock slot, redock now
-      // (with the landing pop + haptic via _doDock).
+      if(_floatGone()){_dragWind.stop();_dockProximity.stop();return;}
+      // Capture phase — fires before child buttons, can't be blocked by their
+      // stopPropagation. Without this, releasing the finger on the scroll-lock
+      // or freeze button would leave the proximity tone playing because the
+      // pill's touchend never ran.
+      _dragging=false; _dragWind.stop();
+
+      // If snapped (scroll-lock button positioned over the dock slot),
+      // dock immediately — plays landing pop and removes the pill.
       if(_snapped){
         _doDock();
         _dragMoved=false;
         return;
       }
-      // Not docking — stop the proximity tone silently (no pop). If the user
-      // was approaching the dock and pulled away at the last moment, this is
-      // the graceful fade-out.
+
+      // Not snapped — user released elsewhere. Silently fade out the
+      // proximity tone (if it was playing) and leave the pill where they
+      // dropped it. No pop, no dock.
       _dockProximity.stop();
+
+      // Tap-on-pill-body (no drag) → feed into shared double-tap tracker.
       if(!_dragMoved){
-        // Non-drag tap — check for double-tap dock, else toggle lock.
-        var now=performance.now();
         var endT=e.changedTouches&&e.changedTouches[0];
-        var tx=endT?endT.clientX:0;
-        var ty=endT?endT.clientY:0;
-        var dt=now-_lastTapTs;
-        var ddx=tx-_lastTapX, ddy=ty-_lastTapY;
-        if(dt<DOUBLE_TAP_MS && Math.sqrt(ddx*ddx+ddy*ddy)<DOUBLE_TAP_DIST){
-          // Double-tap → redock. Undo the first tap's toggle so net state
-          // is unchanged.
-          setScrollLock(!_scrollLocked);
-          _tapHaptic();
-          if(_floatLock&&_floatLock.parentNode) _floatLock.parentNode.removeChild(_floatLock);
-          _floatLock=null;
-          var lockBtn2=document.getElementById('seqScrollLock');
-          if(lockBtn2) lockBtn2.style.display='';
-          _lastTapTs=0;
-        } else {
-          _tapHaptic();
-          setScrollLock(!_scrollLocked);
-          _lastTapTs=now; _lastTapX=tx; _lastTapY=ty;
-        }
+        var tx=endT?endT.clientX:0, ty=endT?endT.clientY:0;
+        _doTap(tx,ty);
       }
       _dragMoved=false;
-    },{passive:false});
-    // Touchcancel cleans up drag state if the OS interrupts the touch
+    },{passive:true, capture:true});
+
     _floatLock.addEventListener('touchcancel',function(){
       _dragging=false; _dragMoved=false;
-      _dragWind.stop();
-      _dockProximity.stop();
-      if(_floatGone()) return;
-      _exitSnap();
+      _dragWind.stop(); _dockProximity.stop();
+      if(!_floatGone()) _exitSnap();
     },{passive:true});
-    // click fires after touchend on desktop only — suppress on touch
-    _floatLock.addEventListener('click',function(){
-      if(!_flTouched){
-        _tapHaptic();
-        setScrollLock(!_scrollLocked);
-      }
-      _flTouched=false;
-    });
+
     document.body.appendChild(_floatLock);
-    // Spawn animation — shoots the floating button ~50px leftward from the
-    // docked position while fading in and scaling up. Two RAFs so the initial
-    // style (opacity:0, scale 0.6, at docked x/y) is committed before the
-    // transition kicks in, otherwise the browser may coalesce the two frames
-    // and skip the animation entirely.
+
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
         if(!_floatLock) return;
@@ -8922,17 +9187,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         _floatLock.style.left=(startLeft+SHOOT_DX)+'px';
         _floatLock.style.opacity='1';
         _floatLock.style.transform='scale(1)';
-        // Clear the transition after it finishes so subsequent drag moves
-        // are instant (no easing applied to finger-follow positioning).
-        setTimeout(function(){
-          if(_floatLock) _floatLock.style.transition='';
-        }, 360);
+        setTimeout(function(){ if(_floatLock) _floatLock.style.transition=''; }, 360);
       });
     });
-    // Init canvas icon after it's in the DOM
     requestAnimationFrame(function(){
-      var fcv=_initLockCanvas(_floatLock);
-      _drawPadlock(fcv,_scrollLocked,30);
+      var fcv=_initLockCanvas(_flScrollBtn);
+      _drawPadlock(fcv,_scrollLocked,FLOAT_SIZE);
     });
   }
 
@@ -8951,6 +9211,11 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
     seqScrollLockBtn.addEventListener('touchstart',function(e){
       e.stopPropagation();
+      // Safety net: if any freeze overlay got orphaned (e.g. from a prior
+      // interaction that went wrong), clear it proactively on every tap of
+      // the docked scroll lock button. This guarantees the user can always
+      // escape a stuck state by tapping the little padlock icon.
+      if(window._forceClearAllBlockers) window._forceClearAllBlockers();
       var t=e.touches&&e.touches[0];
       if(t){ _lockHoldStartX=t.clientX; _lockHoldStartY=t.clientY; }
       _cancelLockHold();
@@ -15306,6 +15571,27 @@ window._clampScrollTransition=function(anchorEl){
       if(window._updateExprGrid) window._updateExprGrid();
     });
     updatePadExprBtn();
+  }
+
+  // Hold mode toggle — when active, pads only play while held, release fades
+  var holdModeBtn=document.getElementById('btnHoldMode');
+  function updateHoldModeBtn(){
+    if(holdModeBtn){
+      holdModeBtn.classList.toggle('active', HOLD_MODE);
+      holdModeBtn.style.opacity=HOLD_MODE?'1':'0.5';
+    }
+  }
+  if(holdModeBtn){
+    holdModeBtn.addEventListener('click',function(){
+      HOLD_MODE=!HOLD_MODE;
+      if(!HOLD_MODE){
+        // Turning off while voices are held — release them all cleanly with fade
+        Object.keys(_heldVoices).forEach(function(k){ _releaseHeldVoice(parseInt(k), false); });
+      }
+      updateHoldModeBtn();
+      if(window._btnFx) window._btnFx(HOLD_MODE?'tool_on':'tool_off');
+    });
+    updateHoldModeBtn();
   }
 
   // GRID toggle
