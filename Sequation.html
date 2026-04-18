@@ -1,4 +1,4 @@
-<!-- Sequation v5.56 | Built: 2026-04-17 CT | github.com/Spamboni/Sequation -->
+<!-- Sequation v5.60 | Built: 2026-04-17 CT | github.com/Spamboni/Sequation -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -419,7 +419,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v5.56</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v5.60</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -5387,8 +5387,9 @@ var _heldVoices = {};
 
 // Play a sample as a held voice — loops the buffer so holding the pad
 // keeps the sustain going indefinitely. Release fades 20ms to silence.
-// Falls back to a one-shot playBankSound for non-sample (synth) pads
-// because synth sounds have their own envelopes and wouldn't respect hold.
+// For stock (synth) sounds, renders them to a buffer on first use and
+// caches the result — after that, holding the pad loops the rendered
+// audio just like a user sample.
 function _startHeldVoice(sndIdx, vol, panH, panV){
   if(!AC) return;
   // Resolve alias (stock sound aliases may point at another idx)
@@ -5397,37 +5398,73 @@ function _startHeldVoice(sndIdx, vol, panH, panV){
     var _metaA=sampleMeta[realIdx]||{};
     if(_metaA._aliasIdx!==undefined) realIdx=_metaA._aliasIdx;
   }
-  // If there's no sample buffer (pure synth pad), fall back to normal one-shot.
-  if(!userSamples[realIdx]){
-    playBankSound(sndIdx, vol, panH, panV);
+  // Figure out which buffer to play: user sample > cached stock > render-on-demand
+  var buf = userSamples[realIdx]
+          || (sampleMeta[realIdx] && sampleMeta[realIdx]._stockSourceBuffer)
+          || null;
+  if(buf){
+    _playHeldFromBuffer(sndIdx, buf, vol, panH, panV);
     return;
   }
-  // Stop any existing voice on this sndIdx first (retrigger).
+  // No cached buffer — render the stock sound to a buffer, cache it, and
+  // start the held voice once rendering completes. On the first press of a
+  // stock pad in hold mode there's a tiny render latency (~1 render frame)
+  // before the sustain kicks in. Subsequent presses use the cache and are
+  // instant. Play the one-shot now so the user hears the attack immediately
+  // while we're caching — then when render completes, start the looping
+  // voice for whatever hold time remains.
+  playBankSound(sndIdx, vol, panH, panV);
+  renderStockToBuffer(realIdx, function(rendered){
+    if(!rendered) return;
+    if(!sampleMeta[realIdx]) sampleMeta[realIdx]={};
+    sampleMeta[realIdx]._stockSourceBuffer=rendered;
+    // If the user is still holding (voice wasn't released in the meantime),
+    // start the sustain now. If they already released, do nothing.
+    if(_heldVoicePending[sndIdx]){
+      var p=_heldVoicePending[sndIdx];
+      delete _heldVoicePending[sndIdx];
+      _playHeldFromBuffer(sndIdx, rendered, p.vol, p.panH, p.panV);
+    }
+  });
+  // Mark that we're waiting for render — if release comes before render
+  // completes, this flag gets cleared and the sustain never starts.
+  _heldVoicePending[sndIdx] = { vol:vol, panH:panH, panV:panV };
+}
+
+// Actually start a held voice from an already-decoded buffer.
+function _playHeldFromBuffer(sndIdx, buf, vol, panH, panV){
   _releaseHeldVoice(sndIdx, true);
   try{
-    // Set pan for getMasterDest to pick up
     window._currentNotePan = (panH!==undefined && panH!==null) ? panH : null;
     window._currentNotePanV = (panV!==undefined && panV!==null) ? panV : null;
     var src=AC.createBufferSource();
-    src.buffer=userSamples[realIdx];
-    src.loop=true; // sustain while held
+    src.buffer=buf;
+    src.loop=true;
     var g=AC.createGain();
-    var meta=sampleMeta[realIdx]||{};
+    var meta=sampleMeta[sndIdx]||{};
     var sampleVol=(meta.volume!==undefined)?meta.volume:1.0;
     var evVol=(vol!==undefined)?vol:1.0;
     g.gain.value=sampleVol*evVol;
     src.connect(g); g.connect(getMasterDest());
     src.start(AC.currentTime);
     _heldVoices[sndIdx] = { src:src, gain:g };
-    // Clear pan globals so they don't leak to other sounds
     window._currentNotePan=null;
     window._currentNotePanV=null;
   }catch(e){}
 }
 
+// Pending render tracker — holds parameters for pads where a stock render
+// is in flight. If user releases before render completes, entry is deleted.
+var _heldVoicePending = {};
+
 // Release a held voice — 20ms fade to silence, then stop source. If `instant`
 // is true (used for retrigger cleanup), cuts immediately with no fade.
 function _releaseHeldVoice(sndIdx, instant){
+  // Clear any pending stock render — prevents the sustain from starting up
+  // after the user has already released.
+  if(_heldVoicePending && _heldVoicePending[sndIdx]){
+    delete _heldVoicePending[sndIdx];
+  }
   var voice=_heldVoices[sndIdx];
   if(!voice) return;
   delete _heldVoices[sndIdx];
@@ -8729,6 +8766,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   function _blockScroll(e){ e.preventDefault(); }
 
   function setScrollLock(on){
+    // During dock cooldown, block activating scroll lock (dock calls with false,
+    // which is allowed — we only block ON). Prevents stray child button events
+    // from locking state right after the pill disappears.
+    if(on && window._dockCooldown) return;
     _scrollLocked=on;
     // Scroll lock + freeze simultaneously is pointless. If scroll lock is
     // being turned ON and freeze is active, cancel freeze first.
@@ -8759,6 +8800,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   function _setFreeze(on, immediate){
     if(on===_freezeActive) return;
+    // During dock cooldown, block any request to turn freeze ON. Turning it
+    // OFF is still allowed (that's what the dock itself does via immediate=true).
+    if(on && window._dockCooldown) return;
     _freezeActive=on;
     // Skip the redundant haptic if this is being called during a dock —
     // the dock sequence plays its own haptic and stacking them feels double-beat.
@@ -8898,9 +8942,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     _flFreezeBtn.addEventListener('touchend',function(e){
       e.stopPropagation();
       if(!_freezeTouched) return; _freezeTouched=false;
-      // If the pill was dragged, don't activate — the finger just happened
-      // to lift over this button at the end of a drag.
-      if(_dragMoved) return;
+      // If the pill has already been removed by this point, the dock happened
+      // in a capture-phase handler that ran before this bubble-phase handler.
+      // Do nothing — don't re-activate freeze, don't register a tap.
+      if(_floatGone()) return;
+      // If the pill was dragged (threshold fired OR pill moved from start),
+      // don't activate — the finger just happened to lift over this button.
+      if(_dragMoved || _pillMovedSinceStart()) return;
       var endT=e.changedTouches&&e.changedTouches[0];
       var tx=endT?endT.clientX:0, ty=endT?endT.clientY:0;
       // Double-tap check — two taps anywhere on the pill within DTAP_MS redocks.
@@ -8930,12 +8978,16 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     _flScrollBtn.addEventListener('touchend',function(e){
       e.stopPropagation();
       if(!_slTouched) return; _slTouched=false;
-      // If the pill was dragged, don't activate the scroll lock toggle.
-      if(_dragMoved) return;
+      // Bail if the pill has been removed (dock already completed in a
+      // capture-phase handler that fired before this bubble-phase handler).
+      if(_floatGone()) return;
+      // If the pill was dragged (either the threshold fired, or the pill's
+      // current position differs from its touchstart position), don't
+      // activate. Checking pill position catches slow drags that didn't
+      // cross the 6px threshold but definitely weren't intended as taps.
+      if(_dragMoved || _pillMovedSinceStart()) return;
       var endT=e.changedTouches&&e.changedTouches[0];
       var tx=endT?endT.clientX:0, ty=endT?endT.clientY:0;
-      // Single tap → toggle scroll lock, update shared tap tracker.
-      // _doTap handles double-tap detection and will fire _doDock if hit.
       if(window._tapHaptic) window._tapHaptic();
       setScrollLock(!_scrollLocked);
       _doTap(tx,ty);
@@ -8950,12 +9002,24 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var _lastTapTs=0, _lastTapX=0, _lastTapY=0;
     var DTAP_MS=400, DTAP_DIST=60; // generous distance — whole pill width
 
+    // Returns true if the pill has moved from where it was at touchstart.
+    // Used as a fallback drag detector for slow drags that didn't trip the
+    // 6px touchmove threshold but did physically relocate the pill.
+    function _pillMovedSinceStart(){
+      if(!_floatLock) return false;
+      var r=_floatLock.getBoundingClientRect();
+      var dx=r.left-_startX, dy=r.top-_startY;
+      return (dx*dx+dy*dy) > 4; // 2px² threshold, very forgiving
+    }
+
     function _doTap(tx,ty){
       var now=performance.now();
       var dt=now-_lastTapTs;
       var ddx=tx-_lastTapX, ddy=ty-_lastTapY;
       if(dt<DTAP_MS && Math.sqrt(ddx*ddx+ddy*ddy)<DTAP_DIST){
-        // Double-tap anywhere on pill → redock
+        // Double-tap anywhere on pill → redock. _doDock installs the click
+        // swallower so the synthesized click after touchend doesn't activate
+        // whatever UI was under the pill.
         _setFreeze(false);
         if(window._tapHaptic) window._tapHaptic();
         _doDock();
@@ -8963,6 +9027,22 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       } else {
         _lastTapTs=now; _lastTapX=tx; _lastTapY=ty;
       }
+    }
+
+    // Install a one-shot click eater that suppresses the very next click
+    // event dispatched in the document. Used after dock-via-tap gestures so
+    // the synthesized click from touchend doesn't activate elements that were
+    // previously hidden behind the pill. Also swallows the next touchstart
+    // in case that's what's activating underlying buttons.
+    function _swallowNextClick(){
+      var killer=function(e){
+        e.stopPropagation();
+        e.preventDefault();
+        document.removeEventListener('click', killer, true);
+      };
+      document.addEventListener('click', killer, true);
+      // Safety net — remove the listener after 400ms even if no click fires.
+      setTimeout(function(){ document.removeEventListener('click', killer, true); }, 400);
     }
 
     var _dx=0,_dy=0,_startX=0,_startY=0,_dragging=false;
@@ -8993,9 +9073,27 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       return Math.sqrt(ddx*ddx+ddy*ddy);
     }
     function _floatGone(){ return !_floatLock||!_floatLock.parentNode; }
+    // Cooldown flag set during/just after a dock. While true, any attempt to
+    // activate freeze or scroll lock is blocked. This is a last-line defense
+    // against stray child button touchend events that fire after the pill has
+    // been removed (e.g. iOS sometimes dispatches touchend on detached nodes
+    // with unexpected timing). Exposed on window so _setFreeze (outer scope)
+    // can check it too.
+    function _startDockCooldown(){
+      window._dockCooldown=true;
+      setTimeout(function(){ window._dockCooldown=false; }, 500);
+    }
+
     function _doDock(){
       if(_autoDockTimer){clearTimeout(_autoDockTimer);_autoDockTimer=null;}
       if(!_floatLock) return;
+      _startDockCooldown();
+      // Swallow the next synthesized click after touchend. When the pill is
+      // removed, the browser's click event hit-tests at the finger position —
+      // which now resolves to whatever was previously hidden behind the pill.
+      // Without this, redocking via tap-on-a-panel-header would also toggle
+      // that panel.
+      _swallowNextClick();
       // Immediate freeze-off — no fade. If the fade lingered, the user would
       // be blocked by the overlay for 160ms with no floating pill to disable
       // freeze via the ⊘ button, effectively trapping them.
@@ -9163,8 +9261,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       // dropped it. No pop, no dock.
       _dockProximity.stop();
 
-      // Tap-on-pill-body (no drag) → feed into shared double-tap tracker.
-      if(!_dragMoved){
+      // Tap-on-pill-BODY (not on a child button) → feed into shared double-tap
+      // tracker. Taps on child buttons are handled by those buttons' own
+      // touchend handlers, which also call _doTap; so if we also called it
+      // here, every button tap would count as two taps and immediately trigger
+      // the double-tap redock.
+      if(!_dragMoved && e.target === _floatLock){
         var endT=e.changedTouches&&e.changedTouches[0];
         var tx=endT?endT.clientX:0, ty=endT?endT.clientY:0;
         _doTap(tx,ty);
