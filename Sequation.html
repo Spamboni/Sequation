@@ -1,4 +1,4 @@
-<!-- Sequation v6.08 | Built: 2026-04-18 CT | github.com/Spamboni/Sequation -->
+<!-- Sequation v6.15 | Built: 2026-04-18 CT | github.com/Spamboni/Sequation -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -523,7 +523,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v6.08</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v6.15</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -9306,13 +9306,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     }
 
     function _scheduleHaptics(timers){
-      if(!window._sfxSettings||!window._sfxSettings.sliderHaptic) return;
-      if(!navigator.vibrate) return;
-      [180,330,460,550].forEach(function(delay){
-        timers.push(setTimeout(function(){
-          try{ navigator.vibrate(8); }catch(e){}
-        }, delay));
-      });
+      // Intentionally a no-op. Previous implementation buzzed 4 times
+      // during the 600ms long-press charge to simulate a rising rumble,
+      // but it read as extra random pulses rather than charge feedback.
+      // Haptic feel is now just: one pulse on initial tap (fired at
+      // touchstart in the button handler) + one pop on long-press
+      // completion (fired by _hapticPop via cancel(true)).
     }
 
     function _hapticPop(){
@@ -9785,11 +9784,21 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   // (they anchor to the nearest transformed ancestor instead of the
   // viewport) and makes the viewport coordinate math exact: the wrapper's
   // top-left IS viewport (0,0).
+  //
+  // Scroll handling: at scale=1 with one finger, native page scroll is
+  // preserved — the browser scrolls body and the wrapper moves with it.
+  // When pinching or panning-while-zoomed, we preventDefault, freezing
+  // scroll for the duration of the gesture. We capture scrollY at
+  // touchstart and use it throughout so the math stays consistent.
   var _fzScale = 1;
   var _fzTX = 0;
   var _fzTY = 0;
   var _fzLastTap = 0;
   var _fzWrapper = null;
+  // Scroll snapshot — captured at gesture start, stable for the whole
+  // gesture since we preventDefault on touchmove (no scroll can happen).
+  var _fzGestureScrollX = 0;
+  var _fzGestureScrollY = 0;
   // Pinch state — anchor is LOCKED to the initial midpoint in viewport
   // coords. The content point that was under that anchor at touchstart
   // stays under that anchor point in viewport coords throughout the
@@ -9807,6 +9816,18 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   var _fzPanStartX = 0;
   var _fzPanStartY = 0;
   var _fzPanTouchId = null;
+  // Two-finger pan/pinch tracking (used by doc-level gestures when freeze
+  // is off). Mid-start + starting TX/TY let us separate pan (midpoint
+  // drift) from pinch (distance change) and apply them simultaneously.
+  var _fzWrapperPanStartMidX = 0;
+  var _fzWrapperPanStartMidY = 0;
+  var _fzWrapperPanStartTX = 0;
+  var _fzWrapperPanStartTY = 0;
+
+  function _fzCaptureScroll(){
+    _fzGestureScrollX = window.pageXOffset || document.documentElement.scrollLeft || 0;
+    _fzGestureScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+  }
 
   // Move all current body children (except the freeze overlay) into a
   // wrapper div. Called when freeze activates. Stores a reference so we
@@ -9833,6 +9854,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // stays on top.
     document.body.insertBefore(wrap, _freezeOverlay);
     _fzWrapper = wrap;
+    // Install document-level gesture listeners once. They guard against
+    // firing when _fzWrapper is null, so they're safe to leave around.
+    _fzInstallDocGestures();
     return wrap;
   }
 
@@ -9853,64 +9877,143 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       _fzWrapper.style.transform = '';
       _fzWrapper.style.transformOrigin = '';
       _fzWrapper.style.willChange = '';
+      _fzWrapper.style.transition = '';
     } else {
       _fzWrapper.style.transform = 'translate('+_fzTX+'px,'+_fzTY+'px) scale('+_fzScale+')';
       _fzWrapper.style.transformOrigin = '0 0';
       _fzWrapper.style.willChange = 'transform';
+      _fzWrapper.style.transition = 'transform 60ms linear';
     }
   }
   function _fzResetTransform(){
     _fzScale = 1; _fzTX = 0; _fzTY = 0;
     _fzApplyTransform();
   }
-  // Clamp translate so scaled content can't be panned completely off-screen.
-  // Uses the wrapper's actual content dimensions (not just viewport) so
-  // scrollable content that extends beyond the viewport can still be
-  // reached when zoomed. Generous margins so edge UI is easily reachable.
+  // Get touch coordinates normalized to the freeze overlay's own
+  // coordinate system. The overlay is position:fixed with inset:0, so
+  // its bounding rect represents the actual visual viewport as rendered.
+  // Subtracting rect.left/rect.top from clientX/Y produces overlay-local
+  // coords that stay aligned with what the user sees — regardless of
+  // iframe nesting (Claude app), URL-bar retraction, or browser-specific
+  // viewport quirks. More reliable than window.visualViewport, which can
+  // report stale or zeroed offsets inside iframes.
+  function _fzTouchXY(t){
+    if(!_freezeOverlay) return { x: t.clientX, y: t.clientY };
+    var r = _freezeOverlay.getBoundingClientRect();
+    return { x: t.clientX - r.left, y: t.clientY - r.top };
+  }
+  // Clamp translate STRICTLY to the content bounds — no margin. Once
+  // zoomed, the user can pan around within the scaled content but can't
+  // go past any edge. If the content is shorter/narrower than viewport
+  // at scale=1 (rare), fall back to viewport dimensions.
   function _fzClampTranslate(){
-    if(_fzScale <= 1){ _fzTX = 0; _fzTY = 0; return; }
+    if(_fzScale <= 1){ _fzScale = 1; _fzTX = 0; _fzTY = 0; return; }
     var w = window.innerWidth, h = window.innerHeight;
-    // Use the wrapper's natural (untransformed) content dimensions. The
-    // wrapper's scrollHeight measures total content extent, not just the
-    // visible area, so zoomed content below the fold is reachable.
     var contentW = w;
     var contentH = h;
     if(_fzWrapper){
-      // Temporarily clear transform to measure untransformed size, but only
-      // if we happen to need it. Since we're called from hot paths, cache
-      // would be better — but the measurement is cheap and called at most
-      // 60fps during gestures.
       contentW = Math.max(w, _fzWrapper.scrollWidth || w);
       contentH = Math.max(h, _fzWrapper.scrollHeight || h);
     }
-    // After scaling, content occupies (contentW*scale, contentH*scale).
-    // Pan range: tx can be as negative as -(contentW*scale - w) so the
-    // right edge touches the viewport right, and can be as positive as
-    // (some margin) so the left edge can be pulled past the viewport left.
-    var marginX = w * 0.5;
-    var marginY = h * 0.5;
-    var minX = w - contentW * _fzScale - marginX;
-    var maxX = 0 + marginX;
-    var minY = h - contentH * _fzScale - marginY;
-    var maxY = 0 + marginY;
+    // Strict clamp: content can slide from (right edge hits viewport right)
+    // to (left edge hits viewport left). No overshoot.
+    var minX = w - contentW * _fzScale;
+    var maxX = 0;
+    var minY = h - contentH * _fzScale;
+    var maxY = 0;
     if(_fzTX > maxX) _fzTX = maxX;
     if(_fzTX < minX) _fzTX = minX;
     if(_fzTY > maxY) _fzTY = maxY;
     if(_fzTY < minY) _fzTY = minY;
   }
   function _fzTouchDist(t1, t2){
-    var dx = t1.clientX - t2.clientX;
-    var dy = t1.clientY - t2.clientY;
+    var p1 = _fzTouchXY(t1), p2 = _fzTouchXY(t2);
+    var dx = p1.x - p2.x;
+    var dy = p1.y - p2.y;
     return Math.sqrt(dx*dx + dy*dy);
   }
   function _fzTouchMid(t1, t2){
-    return { x:(t1.clientX + t2.clientX)/2, y:(t1.clientY + t2.clientY)/2 };
+    var p1 = _fzTouchXY(t1), p2 = _fzTouchXY(t2);
+    return { x:(p1.x + p2.x)/2, y:(p1.y + p2.y)/2 };
   }
-  // Convert a viewport-space point to content-space (the coordinate system
-  // of the untransformed wrapper, which spans the viewport so viewport
-  // coords and wrapper-local coords are identical when untransformed).
+  // Convert a viewport-space point to content-space (wrapper-local,
+  // untransformed coords). Includes the captured scroll offset so the
+  // math is correct even when the page has been scrolled down before
+  // the pinch started. At transform identity with scroll Y0: rendered
+  // Y on screen = contentY - scrollY0, so contentY = viewportY + scrollY0.
+  // With an existing transform: viewportY = contentY * scale + tx - scrollY0
+  // → contentY = (viewportY - tx + scrollY0) / scale.
   function _fzViewportToContent(x, y){
-    return { x: (x - _fzTX) / _fzScale, y: (y - _fzTY) / _fzScale };
+    return {
+      x: (x - _fzTX + _fzGestureScrollX) / _fzScale,
+      y: (y - _fzTY + _fzGestureScrollY) / _fzScale
+    };
+  }
+
+  // Document-level capture-phase gesture tracking. Fires for ANY 2-finger
+  // touch on the page, regardless of which element the fingers hit. Used
+  // to provide pan/zoom when freeze is OFF — single-finger touches are
+  // always left alone so the user can tap pads and drag sliders normally.
+  // Installed once on page load; guards internally against running when
+  // the wrapper doesn't exist or when the freeze overlay is the target.
+  function _fzInstallDocGestures(){
+    if(window._fzDocGesturesInstalled) return;
+    window._fzDocGesturesInstalled = true;
+
+    document.addEventListener('touchstart', function(e){
+      if(!_fzWrapper) return;
+      // Freeze overlay has its own gesture handlers attached — skip to
+      // avoid double-applying transforms.
+      if(_freezeActive) return;
+      if(e.touches.length !== 2) return;
+      _fzPinchActive = true;
+      _fzPanActive = false;
+      _fzCaptureScroll();
+      var t1 = e.touches[0], t2 = e.touches[1];
+      _fzPinchStartDist = _fzTouchDist(t1, t2);
+      _fzPinchStartScale = _fzScale;
+      var mid = _fzTouchMid(t1, t2);
+      _fzAnchorViewportX = mid.x;
+      _fzAnchorViewportY = mid.y;
+      var content = _fzViewportToContent(mid.x, mid.y);
+      _fzAnchorContentX = content.x;
+      _fzAnchorContentY = content.y;
+      _fzWrapperPanStartMidX = mid.x;
+      _fzWrapperPanStartMidY = mid.y;
+      _fzWrapperPanStartTX = _fzTX;
+      _fzWrapperPanStartTY = _fzTY;
+      e.preventDefault();
+    }, {passive:false, capture:true});
+
+    document.addEventListener('touchmove', function(e){
+      if(!_fzWrapper) return;
+      if(_freezeActive) return; // overlay handles this
+      if(!_fzPinchActive) return;
+      if(e.touches.length < 2) return;
+      var t1 = e.touches[0], t2 = e.touches[1];
+      var dist = _fzTouchDist(t1, t2);
+      var newMid = _fzTouchMid(t1, t2);
+      if(_fzPinchStartDist > 0){
+        var newScale = _fzPinchStartScale * (dist / _fzPinchStartDist);
+        newScale = Math.max(1, Math.min(5, newScale));
+        var pinchTX = _fzAnchorViewportX - _fzAnchorContentX * newScale + _fzGestureScrollX;
+        var pinchTY = _fzAnchorViewportY - _fzAnchorContentY * newScale + _fzGestureScrollY;
+        var panDX = newMid.x - _fzWrapperPanStartMidX;
+        var panDY = newMid.y - _fzWrapperPanStartMidY;
+        _fzTX = pinchTX + panDX;
+        _fzTY = pinchTY + panDY;
+        _fzScale = newScale;
+        _fzClampTranslate();
+        _fzApplyTransform();
+      }
+      e.preventDefault();
+    }, {passive:false, capture:true});
+
+    function endDocGesture(e){
+      if(e.touches.length < 2) _fzPinchActive = false;
+    }
+    document.addEventListener('touchend', endDocGesture, {passive:true, capture:true});
+    document.addEventListener('touchcancel', endDocGesture, {passive:true, capture:true});
   }
 
   function _fzAttachGestures(ov){
@@ -9923,6 +10026,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         // to maintain that binding. Finger drift does not move the anchor.
         _fzPinchActive = true;
         _fzPanActive = false;
+        // Capture scroll position FIRST so _fzViewportToContent uses a
+        // consistent offset. Scroll is frozen during the gesture because
+        // we preventDefault on touchmove, so this value stays valid.
+        _fzCaptureScroll();
         var t1 = e.touches[0], t2 = e.touches[1];
         _fzPinchStartDist = _fzTouchDist(t1, t2);
         _fzPinchStartScale = _fzScale;
@@ -9937,10 +10044,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         // Single-finger pan while zoomed
         _fzPanActive = true;
         _fzPinchActive = false;
+        _fzCaptureScroll();
         var t = e.touches[0];
         _fzPanTouchId = t.identifier;
-        _fzPanStartX = t.clientX - _fzTX;
-        _fzPanStartY = t.clientY - _fzTY;
+        var tp = _fzTouchXY(t);
+        _fzPanStartX = tp.x - _fzTX;
+        _fzPanStartY = tp.y - _fzTY;
         e.preventDefault();
       } else if(e.touches.length === 1 && _fzScale === 1){
         // At scale 1 with one finger — don't preventDefault. The browser
@@ -9949,12 +10058,17 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         var now = Date.now();
         if(now - _fzLastTap < 300){
           // Double-tap → zoom 2x on tap point
+          _fzCaptureScroll();
           var t0 = e.touches[0];
+          var t0p = _fzTouchXY(t0);
           var targetScale = 2;
           _fzScale = targetScale;
-          // Center on tap point
-          _fzTX = t0.clientX - t0.clientX * targetScale;
-          _fzTY = t0.clientY - t0.clientY * targetScale;
+          // Compute content point under the tap (accounting for scroll)
+          // then position it back under the tap viewport coord.
+          var tapContentX = t0p.x + _fzGestureScrollX;
+          var tapContentY = t0p.y + _fzGestureScrollY;
+          _fzTX = t0p.x - tapContentX * targetScale + _fzGestureScrollX;
+          _fzTY = t0p.y - tapContentY * targetScale + _fzGestureScrollY;
           _fzClampTranslate();
           _fzApplyTransform();
           _fzLastTap = 0;
@@ -9981,13 +10095,12 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         if(_fzPinchStartDist > 0){
           var newScale = _fzPinchStartScale * (dist / _fzPinchStartDist);
           newScale = Math.max(1, Math.min(5, newScale));
-          // Pivot around the LOCKED viewport anchor. The content point at
-          // (anchorContentX, anchorContentY) must stay under viewport point
-          // (anchorViewportX, anchorViewportY):
-          //   anchorViewport = anchorContent * newScale + newTX
-          //   newTX = anchorViewport - anchorContent * newScale
-          _fzTX = _fzAnchorViewportX - _fzAnchorContentX * newScale;
-          _fzTY = _fzAnchorViewportY - _fzAnchorContentY * newScale;
+          // Pivot around the LOCKED viewport anchor. Reversing the
+          // viewport-to-content formula:
+          //   viewportY = contentY * scale + tx - scrollY
+          //   → tx = viewportY - contentY * scale + scrollY
+          _fzTX = _fzAnchorViewportX - _fzAnchorContentX * newScale + _fzGestureScrollX;
+          _fzTY = _fzAnchorViewportY - _fzAnchorContentY * newScale + _fzGestureScrollY;
           _fzScale = newScale;
           _fzClampTranslate();
           _fzApplyTransform();
@@ -9999,8 +10112,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
           if(e.touches[i].identifier === _fzPanTouchId){ tch = e.touches[i]; break; }
         }
         if(tch){
-          _fzTX = tch.clientX - _fzPanStartX;
-          _fzTY = tch.clientY - _fzPanStartY;
+          var tchp = _fzTouchXY(tch);
+          _fzTX = tchp.x - _fzPanStartX;
+          _fzTY = tchp.y - _fzPanStartY;
           _fzClampTranslate();
           _fzApplyTransform();
           e.preventDefault();
@@ -10031,6 +10145,21 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       // Scroll lock + freeze simultaneously is pointless — can't scroll AND
       // can't touch anything. Turn scroll lock off when freeze activates.
       if(_scrollLocked) setScrollLock(false);
+      // Save current scroll position so we can restore it on freeze exit,
+      // then scroll to top and lock body. This ensures the wrapper's
+      // natural flow position equals viewport top, so position:fixed
+      // elements inside the wrapper (when transform is applied) render
+      // at the same position they would render scoped to the viewport
+      // (when transform is cleared). Without this, any non-zero scroll
+      // at the moment of transform-clear would cause fixed elements to
+      // snap by the scroll amount — the "zoom-out jump" bug.
+      window._fzSavedScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+      window._fzSavedScrollX = window.pageXOffset || document.documentElement.scrollLeft || 0;
+      window._fzSavedBodyOverflow = document.body.style.overflow || '';
+      window._fzSavedDocOverflow = document.documentElement.style.overflow || '';
+      window.scrollTo(0, 0);
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
       _freezeOverlay=document.createElement('div');
       // touch-action:pan-y allows native vertical page scroll when we don't
       // preventDefault. The gesture handlers preventDefault only when they
@@ -10049,12 +10178,23 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       // so body layout returns to exactly how it was before freeze.
       _fzResetTransform();
       _fzDestroyWrapper();
+      // Restore scroll position
+      if(window._fzSavedBodyOverflow !== undefined){
+        document.body.style.overflow = window._fzSavedBodyOverflow;
+        delete window._fzSavedBodyOverflow;
+      }
+      if(window._fzSavedDocOverflow !== undefined){
+        document.documentElement.style.overflow = window._fzSavedDocOverflow;
+        delete window._fzSavedDocOverflow;
+      }
+      if(window._fzSavedScrollY !== undefined){
+        window.scrollTo(window._fzSavedScrollX || 0, window._fzSavedScrollY || 0);
+        delete window._fzSavedScrollX;
+        delete window._fzSavedScrollY;
+      }
       if(_freezeOverlay){
         var ov=_freezeOverlay; _freezeOverlay=null;
         if(immediate){
-          // Instant removal — no fade. Used when docking so the user isn't
-          // left with a 160ms window where the overlay is still blocking input
-          // with no floating pill around to turn freeze off.
           if(ov.parentNode) ov.parentNode.removeChild(ov);
         } else {
           ov.style.opacity='0';
@@ -10078,15 +10218,24 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(_floatLock) return;
     var dockEl=document.getElementById('seqScrollLock');
     var startLeft, startTop;
-    var SHOOT_DX=-100;
+    var SHOOT_DY=-100;
     var PILL_GAP=4, PILL_PAD=3;
     var PILL_W=FLOAT_SIZE*2 + PILL_GAP + PILL_PAD*2;
     var PILL_H=FLOAT_SIZE + PILL_PAD*2;
 
     if(dockEl){
       var dr=dockEl.getBoundingClientRect();
-      startLeft = dr.left + dr.width/2 - PILL_PAD - FLOAT_SIZE/2;
-      startTop  = dr.top  + dr.height/2 - PILL_H/2;
+      // If the dock rect reports zero or near-zero size, layout hasn't
+      // settled (common inside iframes / Claude app) or the dock is in a
+      // collapsed panel. Fall back to the default position rather than
+      // placing the pill at (~-19, ~-19) where it gets clipped off-screen.
+      if(dr.width > 4 && dr.height > 4){
+        startLeft = dr.left + dr.width/2 - PILL_PAD - FLOAT_SIZE/2;
+        startTop  = dr.top  + dr.height/2 - PILL_H/2;
+      } else {
+        startLeft = window.innerWidth - PILL_W - 12;
+        startTop  = window.innerHeight - PILL_H - 80;
+      }
     } else {
       startLeft = window.innerWidth - PILL_W - 12;
       startTop  = window.innerHeight - PILL_H - 80;
@@ -10759,7 +10908,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       requestAnimationFrame(function(){
         if(!_floatLock) return;
         _floatLock.style.transition='left 320ms cubic-bezier(.2,.7,.3,1), top 320ms cubic-bezier(.2,.7,.3,1), opacity 200ms ease-out, transform 280ms cubic-bezier(.2,.7,.3,1)';
-        _floatLock.style.left=(startLeft+SHOOT_DX)+'px';
+        _floatLock.style.top=(startTop+SHOOT_DY)+'px';
         _floatLock.style.opacity='1';
         _floatLock.style.transform='scale(1)';
         // Kick off the pill border trace early (at 180ms) — pill is fully
@@ -10811,6 +10960,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var t=e.touches&&e.touches[0];
       if(t){ _lockHoldStartX=t.clientX; _lockHoldStartY=t.clientY; }
       _cancelLockHold();
+      // Single haptic pulse at touch-start so every tap — short or held —
+      // feels responsive immediately. No buildup buzzes during the hold;
+      // the second pulse only fires if the hold completes (via pop).
+      _tapHaptic();
       // If a floating pill exists, this long-press will RECALL it. Use the
       // descending charge tone (520→180 Hz) to match the dock proximity tone
       // and signal "coming home". Undock uses the ascending tone (180→520 Hz).
@@ -10837,10 +10990,11 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     seqScrollLockBtn.addEventListener('touchend',function(e){
       e.stopPropagation(); e.preventDefault();
       if(_lockLongTimer){
-        // Short tap — cancel pulse charge, toggle lock, vibrate
+        // Short tap — cancel pulse charge, toggle lock. Haptic for the
+        // initial tap already fired at touchstart; no additional pulse
+        // on release.
         clearTimeout(_lockLongTimer); _lockLongTimer=null;
         _pulseRingCharge.cancel(false);
-        _tapHaptic();
         setScrollLock(!_scrollLocked);
       }
       // else: long-press already fired; completion pop/vibrate already played
@@ -11906,6 +12060,39 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // where the actual work happens. Only kicks in when WAV is on.
     if(window._padWavesOn && window.prewarmStockWaveforms){
       window.prewarmStockWaveforms(false);
+    }
+    // Auto-undock the scroll-lock pill on entry to SEQ mode so it's
+    // floating and visible by default, rather than requiring the user to
+    // long-press the toolbar dock button to pop it out. Skip if already
+    // floating (e.g., returning to SEQ from puzzle mode mid-session).
+    // Delayed by ~100ms (not just one frame) because iframe-nested
+    // environments like the Claude app can still be computing layout
+    // on the first animation frame — getBoundingClientRect returns zeros
+    // and the pill gets positioned off-screen. If the first attempt
+    // didn't produce a visible pill, retry once more after a longer
+    // delay.
+    if(!_floatLock && typeof makeFloatingLock === 'function'){
+      setTimeout(function(){
+        if(_floatLock) return;
+        makeFloatingLock();
+        // If that didn't work, retry. "Didn't work" means the pill is
+        // either missing, has zero size, or is positioned outside the
+        // viewport (which happens if the dock rect was zero and we
+        // placed the pill at ~(-19, -19) in an older code path).
+        setTimeout(function(){
+          if(_floatLock){
+            var r=_floatLock.getBoundingClientRect();
+            var onScreen = r.width>0 && r.height>0 &&
+              r.right > 8 && r.bottom > 8 &&
+              r.left < window.innerWidth - 8 && r.top < window.innerHeight - 8;
+            if(onScreen) return;
+            // Pill is missing, sized wrong, or positioned off-screen.
+            if(_floatLock.parentNode) _floatLock.parentNode.removeChild(_floatLock);
+            _floatLock = null;
+          }
+          if(!_floatLock) makeFloatingLock();
+        }, 300);
+      }, 100);
     }
   }
 
