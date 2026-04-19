@@ -1,4 +1,4 @@
-<!-- Sequation v6.19 | Built: 2026-04-18 CT | github.com/Spamboni/sequation -->
+<!-- Sequation v6.60 | Built: 2026-04-18 CT | github.com/Spamboni/sequation -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -298,10 +298,19 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 #btnGlowToggle.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
 #btnSensToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #btnSensToggle.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
+#btnHapticToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
+#btnHapticToggle.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
+#btnPadDsply { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
+#btnPadDsply.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
+#btnPadFx { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
+#btnPadFx.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
 #btnPadPanToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #btnPadPanToggle.active { background:rgba(34,197,94,0.15); border-color:#22c55e; box-shadow: 0 0 12px rgba(34,197,94,0.7); color:#22c55e; }
 #btnHoldMode { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #btnHoldMode.active { background:rgba(251,191,36,0.15); border-color:#fbbf24; box-shadow: 0 0 12px rgba(251,191,36,0.7); color:#fbbf24; }
+#padsBarHoldMode { box-shadow: 0 0 4px rgba(0,217,255,0.15); }
+#padsBarHoldMode.active { background:rgba(251,191,36,0.15); border-color:#fbbf24; box-shadow: 0 0 10px rgba(251,191,36,0.6); color:#fbbf24; }
+#padsBarColor.active { background:rgba(0,217,255,0.35); border-color:var(--cyan-bright); box-shadow: inset 0 0 6px rgba(0,217,255,0.6), 0 0 8px rgba(0,217,255,0.7), 0 0 16px rgba(0,217,255,0.4); color:#fff; text-shadow:0 0 4px rgba(0,217,255,0.9); }
 #btnExprCross { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
 #btnExprCross.active { background:rgba(0,217,255,0.15); border-color:var(--cyan-bright); box-shadow: 0 0 12px rgba(0,217,255,0.7); }
 #btnPadExprToggle { box-shadow: 0 0 6px rgba(0,217,255,0.2); }
@@ -396,6 +405,15 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
   transition:all 0.15s;
   flex-shrink:0;
   box-shadow:
+    inset 0 0 0 2.5px rgba(90,255,180,0.25),
+    inset 0 0 4px 1px rgba(140,255,200,0.12),
+    0 0 0 1px rgba(42,252,138,0.18),
+    0 0 5px 1px rgba(60,255,160,0.12),
+    0 0 12px 3px rgba(42,252,138,0.07);
+}
+.seq-play-btn.playing{
+  background:#051a0c;
+  box-shadow:
     inset 0 0 0 2.5px rgba(90,255,180,1),
     inset 0 0 8px 3px rgba(140,255,200,0.85),
     0 0 0 1.5px rgba(42,252,138,0.95),
@@ -403,35 +421,36 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
     0 0 34px 10px rgba(42,252,138,0.5),
     0 0 60px 16px rgba(42,252,138,0.22);
 }
-.seq-play-btn.playing{
-  background:#051a0c;
-  box-shadow:
-    inset 0 0 0 2.5px rgba(150,255,210,1),
-    inset 0 0 12px 4px rgba(180,255,220,1),
-    0 0 0 2.5px rgba(90,255,180,1),
-    0 0 20px 6px rgba(90,255,180,0.95),
-    0 0 48px 14px rgba(42,252,138,0.7),
-    0 0 90px 22px rgba(42,252,138,0.35);
-}
 /* SVG triangle inside the play button */
 .seq-play-btn svg{display:block;width:40%;height:40%;overflow:visible;transition:all 0.15s;}
-.seq-play-btn .play-tri-face{fill:url(#playTriGradient);stroke:rgba(180,255,210,0.85);stroke-width:1.2;stroke-linejoin:round;}
-.seq-play-btn .play-tri-highlight{fill:none;stroke:rgba(220,255,235,0.9);stroke-width:0.9;stroke-linejoin:round;stroke-linecap:round;}
-.seq-play-btn svg{filter:drop-shadow(0 0 3px rgba(90,255,180,0.8)) drop-shadow(0 0 6px rgba(42,252,138,0.45));}
-.seq-play-btn.playing .play-tri-face{fill:url(#playTriGradientBright);stroke:rgba(220,255,235,1);}
-.seq-play-btn.playing .play-tri-highlight{stroke:rgba(255,255,255,1);}
-.seq-play-btn.playing svg{filter:drop-shadow(0 0 5px rgba(150,255,210,1)) drop-shadow(0 0 12px rgba(90,255,180,0.7));}
+.seq-play-btn .play-tri-face{fill:url(#playTriGradientDim);stroke:rgba(90,180,120,0.2);stroke-width:1.2;stroke-linejoin:round;}
+.seq-play-btn .play-tri-highlight{fill:none;stroke:rgba(220,255,235,0.3);stroke-width:0.9;stroke-linejoin:round;stroke-linecap:round;}
+.seq-play-btn svg{filter:drop-shadow(0 0 1px rgba(90,255,180,0.25));}
+.seq-play-btn.playing .play-tri-face{fill:url(#playTriGradient);stroke:rgba(180,255,210,0.85);stroke-width:1.2;}
+.seq-play-btn.playing .play-tri-highlight{stroke:rgba(220,255,235,0.9);}
+.seq-play-btn.playing svg{filter:drop-shadow(0 0 3px rgba(90,255,180,0.8)) drop-shadow(0 0 6px rgba(42,252,138,0.45));}
 .seq-rec-btn{
   width:40px;height:40px;border-radius:50%;
   border:none;
   background:#0a0a0a;
-  color:#8a1525;
+  color:#3a0810;
   font-family:'IBM Plex Mono',monospace;
   font-size:8.5px;font-weight:700;letter-spacing:0.5px;
-  text-shadow:0 0 1.5px rgba(255,60,90,0.5);
+  text-shadow:none;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   transition:all 0.15s;
   flex-shrink:0;
+  box-shadow:
+    inset 0 0 0 2px rgba(255,80,110,0.22),
+    inset 0 0 3px 1px rgba(255,140,160,0.1),
+    0 0 0 1px rgba(255,42,85,0.15),
+    0 0 4px 1px rgba(255,80,100,0.1),
+    0 0 10px 3px rgba(255,42,85,0.06);
+}
+.seq-rec-btn.active{
+  background:#1a0508;
+  color:#ff5577;
+  text-shadow:0 0 4px rgba(255,90,120,0.9);
   box-shadow:
     inset 0 0 0 2px rgba(255,80,110,1),
     inset 0 0 5px 2px rgba(255,140,160,0.85),
@@ -439,18 +458,6 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
     0 0 8px 2px rgba(255,80,100,0.8),
     0 0 22px 6px rgba(255,42,85,0.5),
     0 0 40px 10px rgba(255,42,85,0.22);
-}
-.seq-rec-btn.active{
-  background:#1a0508;
-  color:#ff5577;
-  text-shadow:0 0 4px rgba(255,90,120,0.9);
-  box-shadow:
-    inset 0 0 0 2px rgba(255,120,150,1),
-    inset 0 0 7px 3px rgba(255,170,190,1),
-    0 0 0 2px rgba(255,80,110,1),
-    0 0 14px 4px rgba(255,80,110,0.95),
-    0 0 32px 10px rgba(255,42,85,0.7),
-    0 0 60px 16px rgba(255,42,85,0.35);
 }
 .seq-transport-btns-row{display:flex;gap:6px;align-items:center;}
 .seq-transport-micro-row{display:flex;gap:3px;align-items:center;}
@@ -543,7 +550,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v6.19</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v6.60</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -618,34 +625,39 @@ window.onerror=function(msg,src,line,col,err){
             <button class="seq-btn seq-btn-sq" id="seqSave" title="Save" style="flex-shrink:0;">💾</button>
             <button class="seq-btn seq-btn-sq" id="seqLoad" title="Load" style="flex-shrink:0;">📂</button>
           </div>
-          <!-- Center: Touch Sense + Spin + Particles + Glow — flex:1 + justify-content:center -->
+          <!-- Center: Touch Sense + Haptic + L-R + EXPR + (hidden Spin/Particle/Glow — moved to PAD FX menu) -->
           <div style="display:flex;gap:3px;flex:1;justify-content:center;align-items:center;">
             <button class="seq-btn" id="btnSensToggle" title="Tap sensitivity (hold for settings)" style="flex-shrink:0;font-size:10px;padding:2px 5px;">&#x1F44B;</button>
+            <button class="seq-btn" id="btnHapticToggle" title="Pad haptics (hold for settings)" style="flex-shrink:0;font-size:10px;padding:2px 5px;">&#x1F4F3;</button>
+            <button class="seq-btn" id="btnPadFx" title="Pad FX (long-press for menu)" style="flex-shrink:0;font-size:7px;font-weight:700;padding:2px 3px;line-height:1;display:flex;flex-direction:column;justify-content:center;letter-spacing:0.5px;"><span>PAD</span><span style="margin-top:1px;">FX</span></button>
+            <button class="seq-btn" id="btnPadDsply" title="Pad display options (long-press for menu)" style="flex-shrink:0;font-size:7px;font-weight:700;padding:2px 3px;line-height:1;display:flex;flex-direction:column;justify-content:center;letter-spacing:0.5px;"><span>PAD</span><span style="margin-top:1px;">DSPLY</span></button>
             <button class="seq-btn seq-btn-sq" id="btnPadPanToggle" title="Pad pan (tap position = L/R pan)" style="flex-shrink:0;font-size:9px;font-weight:700;padding:2px 4px;">L·R</button>
-            <button class="seq-btn seq-btn-sq" id="btnPadExprToggle" title="Expression (X=volume, Y=pitch)" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 4px;">EXPR</button>
-            <button class="seq-btn seq-btn-sq" id="btnSpinToggle" title="Spin on/off" style="font-size:10px;flex-shrink:0;">&#x1F300;</button>
-            <button class="seq-btn seq-btn-sq" id="btnParticleToggle" title="Particles on/off" style="font-size:10px;flex-shrink:0;">&#x2728;</button>
-            <button class="seq-btn seq-btn-sq" id="btnGlowToggle" title="Tap glow on/off" style="font-size:10px;padding:0;overflow:hidden;flex-shrink:0;"><canvas id="glowIconCanvas" width="26" height="26" style="display:block;width:26px;height:26px;"></canvas></button>
+            <button class="seq-btn seq-btn-sq" id="btnPadExprToggle" title="Expression — tap to toggle, hold for menu (X=volume, Y=pitch)" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 4px;">EXPR</button>
+            <button class="seq-btn seq-btn-sq" id="btnSpinToggle" title="Spin on/off" style="font-size:10px;flex-shrink:0;display:none;">&#x1F300;</button>
+            <button class="seq-btn seq-btn-sq" id="btnParticleToggle" title="Particles on/off" style="font-size:10px;flex-shrink:0;display:none;">&#x2728;</button>
+            <button class="seq-btn seq-btn-sq" id="btnGlowToggle" title="Tap glow on/off" style="font-size:10px;padding:0;overflow:hidden;flex-shrink:0;display:none;"><canvas id="glowIconCanvas" width="26" height="26" style="display:block;width:26px;height:26px;"></canvas></button>
           </div>
-          <!-- Right: Color Pads + Sound Style + Labels + Settings -->
+          <!-- Right: Settings (Color tiles + Sound Style hidden — moved to PADS bar / menus) -->
           <div style="display:flex;gap:3px;flex-shrink:0;">
-            <button class="seq-btn seq-btn-sq" id="colorTagBtnOld" title="Color tiles" style="flex-shrink:0;">🎨</button>
-            <button class="seq-btn seq-btn-sq" id="seqSndBtn" title="Sound Style" style="flex-shrink:0;font-size:11px;">♪</button>
+            <button class="seq-btn seq-btn-sq" id="colorTagBtnOld" title="Color tiles" style="flex-shrink:0;display:none;">🎨</button>
+            <button class="seq-btn seq-btn-sq" id="seqSndBtn" title="Sound Style" style="flex-shrink:0;font-size:11px;display:none;">♪</button>
             <button class="seq-btn seq-btn-sq" id="seqSettingsBtn" title="Settings" style="flex-shrink:0;font-size:12px;">⚙</button>
           </div>
         </div>
         <!-- Row 2: additional controls -->
-        <div style="display:flex;flex-direction:row;align-items:center;gap:3px;padding:0 6px 4px;">
-          <button class="seq-btn" id="padLabelsBtn" title="Show sample names on pads" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 6px;letter-spacing:0.5px;">ABC</button>
-          <button class="seq-btn" id="btnExprGrid" title="Show EXPR grid on pads" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 6px;letter-spacing:0.5px;">GRID</button>
-          <button class="seq-btn" id="btnHideNums" title="Hide numbers on pads" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 6px;letter-spacing:0.5px;">123</button>
-          <button class="seq-btn" id="btnSeqNums" title="Show sequential pad numbers (reading order)" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 6px;letter-spacing:0.5px;">1,2,3</button>
-          <button class="seq-btn" id="btnSnapX" title="Snap volume to grid" style="flex-shrink:0;font-size:7px;font-weight:700;padding:2px 5px;">SX</button>
-          <button class="seq-btn" id="btnSnapY" title="Snap pitch to grid" style="flex-shrink:0;font-size:7px;font-weight:700;padding:2px 5px;">SY</button>
-          <button class="seq-btn" id="btnExprCross" title="EXPR crosshair — horizontal/vertical lines through tap point" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 5px;letter-spacing:0.5px;">XHR</button>
-          <button class="seq-btn" id="btnHoldMode" title="Hold mode — tap to select which pads use hold behavior (pads pulse yellow, tap to tag/untag). Long-press to tag/untag all at once." style="flex-shrink:0;font-size:7px;font-weight:700;padding:2px 3px;line-height:1;display:flex;flex-direction:column;justify-content:center;letter-spacing:0.5px;"><span>HLD</span><span style="margin-top:1px;">BTN</span></button>
-          <button class="seq-btn" id="btnGridEdit" title="Edit grid divisions" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 5px;">⊞#</button>
-          <button class="seq-btn" id="btnWaveToggle" title="Show waveforms on pads" style="flex-shrink:0;font-size:8px;font-weight:700;padding:2px 5px;letter-spacing:0.5px;">WAV</button>
+        <!-- Row 2: legacy buttons hidden (moved into long-press menus). Kept in DOM
+             so existing handlers, refresh functions, and ID lookups still work. -->
+        <div style="display:none;">
+          <button class="seq-btn" id="padLabelsBtn" title="Show sample names on pads">ABC</button>
+          <button class="seq-btn" id="btnExprGrid" title="Show EXPR grid on pads">GRID</button>
+          <button class="seq-btn" id="btnHideNums" title="Hide numbers on pads">123</button>
+          <button class="seq-btn" id="btnSeqNums" title="Show sequential pad numbers (reading order)">1,2,3</button>
+          <button class="seq-btn" id="btnSnapX" title="Snap volume to grid">SX</button>
+          <button class="seq-btn" id="btnSnapY" title="Snap pitch to grid">SY</button>
+          <button class="seq-btn" id="btnExprCross" title="EXPR crosshair">XHR</button>
+          <button class="seq-btn" id="btnHoldMode" title="Hold mode"><span>HLD</span><span>BTN</span></button>
+          <button class="seq-btn" id="btnGridEdit" title="Edit grid divisions">⊞#</button>
+          <button class="seq-btn" id="btnWaveToggle" title="Show waveforms on pads">WAV</button>
         </div>
       </div>
     </div>
@@ -674,7 +686,7 @@ window.onerror=function(msg,src,line,col,err){
     <!-- Pitch top dock -->
     <div id="_pitchTopDock" style="display:none;width:100%;background:var(--bg-secondary);padding:2px 4px;align-items:center;gap:4px;"></div>
     <!-- PADS slim panel -->
-    <div class="slim-panel" id="padSlimPanel"><div class="slim-panel-bar" id="padPanelBar" style="display:none;"><button class="slim-panel-bar-arrow" id="padPanelArrow">▲</button><span>PADS</span><span id="padsBarStyleName" style="font-family:monospace;font-size:7px;color:rgba(0,217,255,0.5);letter-spacing:1px;margin-left:6px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span><button id="padsBarEdit" style="font-family:monospace;font-size:7px;font-weight:700;padding:1px 6px;height:16px;line-height:14px;border:1px solid #a855f7;border-radius:3px;background:transparent;color:#a855f7;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:4px;" title="Edit a pad's sample &mdash; tap this, then tap a pad">EDIT</button><button id="padsBarSaveKit" style="font-family:monospace;font-size:7px;font-weight:700;padding:1px 6px;height:16px;line-height:14px;border:1px solid #fbbf24;border-radius:3px;background:transparent;color:#fbbf24;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:4px;" title="Save current pad assignments as a sound style">SAVE</button><button id="padsBarLoadKit" style="font-family:monospace;font-size:7px;font-weight:700;padding:1px 6px;height:16px;line-height:14px;border:1px solid var(--cyan);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:2px;" title="Load a saved sound style">LOAD</button></div><div class="slim-panel-body" id="padPanelBody" style="max-height:3000px;"><div class="bank-row" style="position:relative;"><div id="_pitchLeftDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:var(--bg-secondary);"></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="display:none;width:0;height:0;padding:0;border:none;overflow:hidden;position:absolute;pointer-events:none;">SEQ</button><div class="bank"><div class="btiles" id="bank"></div></div><div id="_pitchRightDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:var(--bg-secondary);"></div></div><div id="_pitchBottomDock" style="display:none;width:100%;background:var(--bg-secondary);padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div id="_volBottomDock" style="display:none;width:100%;background:var(--bg-secondary);padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div></div></div>
+    <div class="slim-panel" id="padSlimPanel"><div class="slim-panel-bar" id="padPanelBar" style="display:none;"><button class="slim-panel-bar-arrow" id="padPanelArrow">▲</button><span>PADS</span><span style="flex:1;"></span><button id="padsBarClassic" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 6px;height:16px;line-height:16px;border:1px solid var(--cyan);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Current sound style — tap to load a style">CLASSIC</button><span style="flex:1;"></span><button id="padsBarEdit" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid #a855f7;border-radius:3px;background:transparent;color:#a855f7;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;" title="Edit a pad's sample — tap this, then tap a pad">EDIT</button><button id="padsBarHoldMode" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid var(--cyan);border-radius:3px;background:transparent;color:var(--text-primary);cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:2px;" title="Hold mode — tap to select which pads use hold behavior">HLD BTN</button><button id="padsBarColor" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid var(--cyan);border-radius:3px;background:transparent;color:var(--text-primary);cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:2px;" title="Color tiles">COLOR</button><button id="padsBarSaveKit" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid #fbbf24;border-radius:3px;background:transparent;color:#fbbf24;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:4px;" title="Save current pad assignments as a sound style">SAVE</button></div><div class="slim-panel-body" id="padPanelBody" style="max-height:3000px;"><div class="bank-row" style="position:relative;"><div id="_pitchLeftDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:var(--bg-secondary);"></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="display:none;width:0;height:0;padding:0;border:none;overflow:hidden;position:absolute;pointer-events:none;">SEQ</button><div class="bank"><div class="btiles" id="bank"></div></div><div id="_pitchRightDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:var(--bg-secondary);"></div></div><div id="_pitchBottomDock" style="display:none;width:100%;background:var(--bg-secondary);padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div id="_volBottomDock" style="display:none;width:100%;background:var(--bg-secondary);padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div></div></div>
   </div></div></div></div>
 
 
@@ -741,6 +753,11 @@ window.onerror=function(msg,src,line,col,err){
       <button class="seq-play-btn" id="seqPlay" title="Play/Stop">
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <defs>
+            <linearGradient id="playTriGradientDim" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#2a3d32"/>
+              <stop offset="45%" stop-color="#1a3328"/>
+              <stop offset="100%" stop-color="#0d1f15"/>
+            </linearGradient>
             <linearGradient id="playTriGradient" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stop-color="#b6ffd4"/>
               <stop offset="45%" stop-color="#5cffb0"/>
@@ -4089,7 +4106,7 @@ window._showSaveKitModal=function(){
         .then(function(w){ return w.write(blob).then(function(){ return w.close(); }); })
         .then(function(){
           window._currentKitName=name;
-          var sn=document.getElementById('padsBarStyleName'); if(sn) sn.textContent=name;
+          if(window._padsBarUpdateClassic) window._padsBarUpdateClassic(name);
           ov.parentNode&&ov.parentNode.removeChild(ov);
         }).catch(function(e){ if(e.name!=='AbortError') _kitDL(blob,fname,name,ov); });
       return;
@@ -4112,7 +4129,7 @@ function _kitDL(blob,fname,name,ov){
       if(navigator.canShare({files:[file]})){
         navigator.share({files:[file],title:fname}).then(function(){
           window._currentKitName=name;
-          var sn=document.getElementById('padsBarStyleName'); if(sn) sn.textContent=name;
+          if(window._padsBarUpdateClassic) window._padsBarUpdateClassic(name);
           if(ov&&ov.parentNode) ov.parentNode.removeChild(ov);
         }).catch(function(e){ if(e.name!=='AbortError') _kitADL(blob,fname,name,ov); });
         return;
@@ -4127,7 +4144,7 @@ function _kitADL(blob,fname,name,ov){
   document.body.appendChild(a); a.click();
   setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },2000);
   window._currentKitName=name;
-  var sn=document.getElementById('padsBarStyleName'); if(sn) sn.textContent=name;
+  if(window._padsBarUpdateClassic) window._padsBarUpdateClassic(name);
   if(ov&&ov.parentNode) ov.parentNode.removeChild(ov);
 }
 
@@ -4184,8 +4201,7 @@ window._loadKit=function(kit){
   if(window._updateSampleIcons) window._updateSampleIcons();
   if(window._updateHoldMarks) window._updateHoldMarks();
   if(PZ) renderBank();
-  var sn=document.getElementById('padsBarStyleName');
-  if(sn) sn.textContent=kit.name;
+  if(window._padsBarUpdateClassic) window._padsBarUpdateClassic(kit.name);
   window._currentKitName=kit.name;
 };
 
@@ -4263,7 +4279,7 @@ window._showKitPicker=function(){
         if(window._updateSampleIcons) window._updateSampleIcons();
         if(PZ) renderBank();
         window._currentKitName=_SNAMES[k];
-        var sn=document.getElementById('padsBarStyleName'); if(sn) sn.textContent=_SNAMES[k];
+        if(window._padsBarUpdateClassic) window._padsBarUpdateClassic(_SNAMES[k]);
         ov.parentNode&&ov.parentNode.removeChild(ov);
       });
       tabBody.appendChild(row);
@@ -5963,15 +5979,30 @@ function alphaColor(hex, alpha){
 function applyTileColor(tile, idx){
   var col = tileColors[idx];
   if(col){
-    // No glow / box-shadow — the colored pad should look structurally
-    // identical to the default cyan pad, just with its cyan accents swapped
-    // to the assigned color. Border uses the same 0.35 alpha as the default
-    // (see .bt rule: border:1.5px solid rgba(0,217,255,0.35)).
     tile.style.boxShadow = 'none';
     tile.style.border = '1.5px solid '+alphaColor(col, 0.35);
   } else {
     tile.style.boxShadow = '';
-    tile.style.border = '';  // clears to CSS class default (dim cyan)
+    tile.style.border = '';
+  }
+  var cv = tile.querySelector('.bt-wave');
+  if(cv){
+    var strokeCol = col ? alphaColor(col, 0.9) : 'rgba(0,217,255,0.9)';
+    var state = _padWavePlays && _padWavePlays[idx];
+    if(state){
+      state.baseCol = strokeCol;
+      state.borderCol = col || '#00d9ff';
+      state.litCol = _padWaveLitColor(col||null);
+    }
+    var buf = (state && state.buffer) || cv._waveBuffer;
+    if(buf) _drawPadWaveform(cv, buf, strokeCol);
+  }
+  // Recolor sample-name label SVG fill so it updates without renderBank
+  var lbl = tile.querySelector('.bt-name');
+  if(lbl){
+    var labelCol = col ? alphaColor(col, 0.85) : 'rgba(0,217,255,0.85)';
+    var txt = lbl.querySelector('text');
+    if(txt) txt.setAttribute('fill', labelCol);
   }
 }
 
@@ -6321,6 +6352,8 @@ function renderBank(){
         window._lastActivePad=idx;
         window._lastTapPanVal=window._currentTapPan;
         if(window._seqNoteOn) _seqNoteOn(sndIdx,idx,vol);
+        // Pad tap haptic — scales with pressure when sens is on
+        if(window._padHaptic) window._padHaptic(vol, false);
 
         // Use tile's color for tap glow and crosshair — compute before hit
         // marker block so it can reference _tapCol too.
@@ -6462,7 +6495,11 @@ function renderBank(){
         }
         // Color tag mode — paint tile and begin drag-paint
         if(window._colorModeActive && window._colorModeActive()){
-          if(window._colorModeStart) window._colorModeStart(idx, e.touches[0].identifier, e.touches[0].clientX, e.touches[0].clientY);
+          // Use changedTouches[0] (the finger that just landed on this pad),
+          // not e.touches[0] (which would be a different finger if one's
+          // already on the scroll strip).
+          var ct = e.changedTouches[0];
+          if(window._colorModeStart) window._colorModeStart(idx, ct.identifier, ct.clientX, ct.clientY);
           return;
         }
         // Hold-select mode — tap to toggle whether this pad uses hold behavior.
@@ -7128,6 +7165,8 @@ window._updateSampleIcons=function(){
       // read as "belonging" to their tile rather than a uniform overlay.
       var padCol=tileColors[idx];
       var waveCol = padCol ? alphaColor(padCol, 0.9) : 'rgba(0,217,255,0.9)';
+      // Store buffer on canvas so applyTileColor can redraw without replaying
+      existingWave._waveBuffer = buf;
       // Defer draw to next frame so the canvas has laid out its size first
       (function(cv, b, c){
         requestAnimationFrame(function(){ _drawPadWaveform(cv, b, c); });
@@ -7749,6 +7788,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       fingerOver[touch.identifier]=tile;
       // Don't play if a slider is being dragged (prevents accidental hits)
       if(_sliderDragging) continue;
+      // Don't play if color mode is active — the pad-color drag handler
+      // owns this gesture and just paints (with its own button click sound).
+      if(window._colorModeActive && window._colorModeActive()) continue;
       // Play sound if no cell selected and tile not used
       var idx=parseInt(tile.dataset.bankIdx);
       var sndIdx=parseInt(tile.dataset.sndIdx);
@@ -7771,6 +7813,8 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         playBankSound(sndIdx, _dragVol, _dragPan, _dragPanV);
         if(window._seqNoteOn) _seqNoteOn(sndIdx, idx, _dragVol);
         if(!SEL && window._pulseRandomEq) window._pulseRandomEq();
+        // Drag-over haptic — lighter than tap since it fires per pad crossed
+        if(window._padHaptic) window._padHaptic(_dragVol, true);
         // Full tap-style visual: color, box-shadow glow, particles, spin/flash
         var _stc=tileColors[idx];
         var _stapCol=_stc&&_stc!=='none'?_stc:'#00d9ff';
@@ -9068,6 +9112,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       body.appendChild(_toggleRow('Button FX (REC/PLAY/etc.)',
         function(){return window._sfxSettings.buttonFx;},
         function(v){window._sfxSettings.buttonFx=v; window._saveSfxSettings();}));
+      body.appendChild(_toggleRow('Pad bar buttons & color paint',
+        function(){return window._sfxSettings.padBarBtns;},
+        function(v){window._sfxSettings.padBarBtns=v; window._saveSfxSettings();}));
 
       // Pan mode selector
       var panRow=document.createElement('div');
@@ -9120,13 +9167,37 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       body.appendChild(_toggleRow('Slider vibration',
         function(){return window._sfxSettings.sliderHaptic;},
         function(v){window._sfxSettings.sliderHaptic=v; window._saveSfxSettings();}));
+      body.appendChild(_toggleRow('Pad vibration (tap & drag)',
+        function(){return window._sfxSettings.padHaptic;},
+        function(v){window._sfxSettings.padHaptic=v; window._saveSfxSettings();}));
     };
 
     tabs[2].build=function(body){
-      // VISUAL tab (placeholder for future settings)
+      // VISUAL tab
+      body.appendChild(_toggleRow('Show hint popups',
+        function(){return window._sfxSettings.hints!==false;},
+        function(v){window._sfxSettings.hints=v; window._saveSfxSettings();}));
+      // Reset all dismissed hints button
+      var resetRow=document.createElement('div');
+      resetRow.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:9px 4px;border-top:1px solid rgba(0,217,255,0.15);margin-top:6px;';
+      var resetLbl=document.createElement('span');
+      resetLbl.textContent='RESET DISMISSED HINTS';
+      resetLbl.style.cssText='font-family:monospace;font-size:10px;color:#ccc;letter-spacing:1px;';
+      var resetBtn=document.createElement('button');
+      resetBtn.textContent='RESET';
+      resetBtn.style.cssText='font-family:monospace;font-size:10px;font-weight:700;padding:4px 10px;border:1.5px solid var(--cyan);border-radius:4px;background:transparent;color:var(--cyan);cursor:pointer;letter-spacing:1px;';
+      resetBtn.addEventListener('click',function(e){
+        e.stopPropagation();
+        if(window._resetAllHints) window._resetAllHints();
+        resetBtn.textContent='✓ DONE';
+        setTimeout(function(){ resetBtn.textContent='RESET'; }, 1200);
+      });
+      resetRow.appendChild(resetLbl); resetRow.appendChild(resetBtn);
+      body.appendChild(resetRow);
+      // Future-settings note
       var ph=document.createElement('div');
-      ph.style.cssText='font-family:monospace;font-size:9px;color:#666;padding:16px 4px;text-align:center;letter-spacing:1px;line-height:1.6;';
-      ph.innerHTML='Visual settings coming soon.<br><br>— Tap glow, spin, particles, etc. will move here —';
+      ph.style.cssText='font-family:monospace;font-size:9px;color:#666;padding:16px 4px;text-align:center;letter-spacing:1px;line-height:1.6;border-top:1px solid rgba(0,217,255,0.1);margin-top:8px;';
+      ph.innerHTML='— More visual settings (tap glow, spin, particles) coming soon —';
       body.appendChild(ph);
     };
 
@@ -9167,6 +9238,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       btn.classList.toggle('active', window._padLabelsOn);
       btn.style.opacity=window._padLabelsOn?'1':'0.55';
       if(window._updateSampleIcons) window._updateSampleIcons();
+      if(window._padDsplyMenuRefresh) window._padDsplyMenuRefresh();
     }
     btn.addEventListener('click',function(){
       window._padLabelsOn=!window._padLabelsOn;
@@ -9200,6 +9272,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       if(window._padWavesOn && window.prewarmStockWaveforms){
         window.prewarmStockWaveforms(false);
       }
+      if(window._padDsplyMenuRefresh) window._padDsplyMenuRefresh();
     }
     btn.addEventListener('click',function(){
       window._padWavesOn=!window._padWavesOn;
@@ -9215,8 +9288,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   // before/alongside the button's own handler. Toggle buttons get an on/off
   // chirp based on whether they currently have the 'active' class.
   (function(){
-    // Simple tap: Save, Load, Color, Sound Style, Settings
-    var tapBtns=['seqSave','seqLoad','colorTagBtnOld','seqSndBtn','seqSettingsBtn'];
+    // Simple tap: Save, Load, Sound Style, Settings
+    // (colorTagBtnOld handles its own open/close chimes via showPicker/closePicker)
+    var tapBtns=['seqSave','seqLoad','seqSndBtn','seqSettingsBtn'];
     tapBtns.forEach(function(id){
       var el=document.getElementById(id);
       if(!el) return;
@@ -9444,6 +9518,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
     return { start:start, cancel:cancel };
   })();
+  // Expose so reusable long-press helper (and any other top-level code)
+  // can access the same charge animation + audio used by the scroll lock.
+  window._pulseRingCharge = _pulseRingCharge;
 
   // Small helper — single short vibration for regular-tap feedback.
   // Respects sliderHaptic toggle like the rest of the UI haptics.
@@ -9554,6 +9631,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
     return { start:start, stop:stop, setVelocity:setVelocity };
   })();
+  window._dragWind = _dragWind;
 
   // ── Dock proximity tone ──────────────────────────────────
   // Plays while the floating scroll-lock is being dragged near the docked
@@ -9838,13 +9916,6 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   var _fzPanStartX = 0;
   var _fzPanStartY = 0;
   var _fzPanTouchId = null;
-  // Two-finger pan/pinch tracking (used by doc-level gestures when freeze
-  // is off). Mid-start + starting TX/TY let us separate pan (midpoint
-  // drift) from pinch (distance change) and apply them simultaneously.
-  var _fzWrapperPanStartMidX = 0;
-  var _fzWrapperPanStartMidY = 0;
-  var _fzWrapperPanStartTX = 0;
-  var _fzWrapperPanStartTY = 0;
 
   function _fzCaptureScroll(){
     _fzGestureScrollX = window.pageXOffset || document.documentElement.scrollLeft || 0;
@@ -9876,9 +9947,11 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // stays on top.
     document.body.insertBefore(wrap, _freezeOverlay);
     _fzWrapper = wrap;
-    // Install document-level gesture listeners once. They guard against
-    // firing when _fzWrapper is null, so they're safe to leave around.
-    _fzInstallDocGestures();
+    // Attach two-finger gesture handlers to the wrapper itself. These
+    // only activate on 2+ finger touches, so single-finger interaction
+    // with UI elements (pads, sliders, etc.) passes through. Enables
+    // pinch/pan AFTER freeze is turned off while zoomed.
+    _fzAttachWrapperGestures(wrap);
     return wrap;
   }
 
@@ -9904,6 +9977,10 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       _fzWrapper.style.transform = 'translate('+_fzTX+'px,'+_fzTY+'px) scale('+_fzScale+')';
       _fzWrapper.style.transformOrigin = '0 0';
       _fzWrapper.style.willChange = 'transform';
+      // Very short transition so clamp corrections during a pinch smooth
+      // themselves out over a frame or two, avoiding the visible snap when
+      // the allowed pan range shrinks as scale decreases. Cleared again
+      // on full reset above.
       _fzWrapper.style.transition = 'transform 60ms linear';
     }
   }
@@ -9972,70 +10049,82 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     };
   }
 
-  // Document-level capture-phase gesture tracking. Fires for ANY 2-finger
-  // touch on the page, regardless of which element the fingers hit. Used
-  // to provide pan/zoom when freeze is OFF — single-finger touches are
-  // always left alone so the user can tap pads and drag sliders normally.
-  // Installed once on page load; guards internally against running when
-  // the wrapper doesn't exist or when the freeze overlay is the target.
-  function _fzInstallDocGestures(){
-    if(window._fzDocGesturesInstalled) return;
-    window._fzDocGesturesInstalled = true;
-
-    document.addEventListener('touchstart', function(e){
-      if(!_fzWrapper) return;
-      // Freeze overlay has its own gesture handlers attached — skip to
-      // avoid double-applying transforms.
-      if(_freezeActive) return;
-      if(e.touches.length !== 2) return;
-      _fzPinchActive = true;
-      _fzPanActive = false;
-      _fzCaptureScroll();
-      var t1 = e.touches[0], t2 = e.touches[1];
-      _fzPinchStartDist = _fzTouchDist(t1, t2);
-      _fzPinchStartScale = _fzScale;
-      var mid = _fzTouchMid(t1, t2);
-      _fzAnchorViewportX = mid.x;
-      _fzAnchorViewportY = mid.y;
-      var content = _fzViewportToContent(mid.x, mid.y);
-      _fzAnchorContentX = content.x;
-      _fzAnchorContentY = content.y;
-      _fzWrapperPanStartMidX = mid.x;
-      _fzWrapperPanStartMidY = mid.y;
-      _fzWrapperPanStartTX = _fzTX;
-      _fzWrapperPanStartTY = _fzTY;
-      e.preventDefault();
-    }, {passive:false, capture:true});
-
-    document.addEventListener('touchmove', function(e){
-      if(!_fzWrapper) return;
-      if(_freezeActive) return; // overlay handles this
-      if(!_fzPinchActive) return;
-      if(e.touches.length < 2) return;
-      var t1 = e.touches[0], t2 = e.touches[1];
-      var dist = _fzTouchDist(t1, t2);
-      var newMid = _fzTouchMid(t1, t2);
-      if(_fzPinchStartDist > 0){
-        var newScale = _fzPinchStartScale * (dist / _fzPinchStartDist);
-        newScale = Math.max(1, Math.min(5, newScale));
-        var pinchTX = _fzAnchorViewportX - _fzAnchorContentX * newScale + _fzGestureScrollX;
-        var pinchTY = _fzAnchorViewportY - _fzAnchorContentY * newScale + _fzGestureScrollY;
-        var panDX = newMid.x - _fzWrapperPanStartMidX;
-        var panDY = newMid.y - _fzWrapperPanStartMidY;
-        _fzTX = pinchTX + panDX;
-        _fzTY = pinchTY + panDY;
-        _fzScale = newScale;
-        _fzClampTranslate();
-        _fzApplyTransform();
+  // Gesture handlers meant for the wrapper itself (NOT the freeze overlay).
+  // These only activate on 2-finger touches — single-finger touches pass
+  // through to the underlying UI elements so taps, drags on pads, sliders,
+  // etc. work normally. This lets the user interact with zoomed content
+  // AFTER freeze is turned off while still being able to pinch-zoom and
+  // two-finger-pan the view. When freeze is ACTIVE, the overlay catches
+  // these events first so the wrapper's handlers never fire.
+  //
+  // Two-finger pan: move both fingers together (distance barely changes).
+  // Two-finger pinch: change distance between fingers. Both can happen
+  // simultaneously — the math handles it because we track scale and
+  // translation independently.
+  var _fzWrapperPanStartMidX = 0;
+  var _fzWrapperPanStartMidY = 0;
+  var _fzWrapperPanStartTX = 0;
+  var _fzWrapperPanStartTY = 0;
+  function _fzAttachWrapperGestures(wrap){
+    wrap.addEventListener('touchstart', function(e){
+      if(e.touches.length === 2){
+        // Two fingers — start a combined pan+pinch gesture. We track both
+        // the midpoint drift (for pan) and distance change (for pinch).
+        _fzPinchActive = true;
+        _fzPanActive = false; // using wrapper's combined tracking instead
+        _fzCaptureScroll();
+        var t1 = e.touches[0], t2 = e.touches[1];
+        _fzPinchStartDist = _fzTouchDist(t1, t2);
+        _fzPinchStartScale = _fzScale;
+        var mid = _fzTouchMid(t1, t2);
+        _fzAnchorViewportX = mid.x;
+        _fzAnchorViewportY = mid.y;
+        var content = _fzViewportToContent(mid.x, mid.y);
+        _fzAnchorContentX = content.x;
+        _fzAnchorContentY = content.y;
+        // Also capture starting translate for the pan component — pan is
+        // the midpoint delta added to the starting TX/TY.
+        _fzWrapperPanStartMidX = mid.x;
+        _fzWrapperPanStartMidY = mid.y;
+        _fzWrapperPanStartTX = _fzTX;
+        _fzWrapperPanStartTY = _fzTY;
+        e.preventDefault();
       }
-      e.preventDefault();
-    }, {passive:false, capture:true});
+      // Single-finger touches: do nothing — let them propagate to UI.
+    }, {passive:false});
 
-    function endDocGesture(e){
+    wrap.addEventListener('touchmove', function(e){
+      if(_fzPinchActive && e.touches.length >= 2){
+        var t1 = e.touches[0], t2 = e.touches[1];
+        var dist = _fzTouchDist(t1, t2);
+        var newMid = _fzTouchMid(t1, t2);
+        if(_fzPinchStartDist > 0){
+          var newScale = _fzPinchStartScale * (dist / _fzPinchStartDist);
+          newScale = Math.max(1, Math.min(5, newScale));
+          // Pinch component: anchor the initial content point under the
+          // initial viewport anchor, at the new scale.
+          var pinchTX = _fzAnchorViewportX - _fzAnchorContentX * newScale + _fzGestureScrollX;
+          var pinchTY = _fzAnchorViewportY - _fzAnchorContentY * newScale + _fzGestureScrollY;
+          // Pan component: add the midpoint drift on top of the pinch
+          // translate. Midpoint moving by (dx, dy) should shift view by
+          // (dx, dy) — so final TX = pinchTX + (newMid.x - startMid.x).
+          var panDX = newMid.x - _fzWrapperPanStartMidX;
+          var panDY = newMid.y - _fzWrapperPanStartMidY;
+          _fzTX = pinchTX + panDX;
+          _fzTY = pinchTY + panDY;
+          _fzScale = newScale;
+          _fzClampTranslate();
+          _fzApplyTransform();
+        }
+        e.preventDefault();
+      }
+    }, {passive:false});
+
+    function endWrapperGesture(e){
       if(e.touches.length < 2) _fzPinchActive = false;
     }
-    document.addEventListener('touchend', endDocGesture, {passive:true, capture:true});
-    document.addEventListener('touchcancel', endDocGesture, {passive:true, capture:true});
+    wrap.addEventListener('touchend', endWrapperGesture, {passive:true});
+    wrap.addEventListener('touchcancel', endWrapperGesture, {passive:true});
   }
 
   function _fzAttachGestures(ov){
@@ -10167,21 +10256,6 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       // Scroll lock + freeze simultaneously is pointless — can't scroll AND
       // can't touch anything. Turn scroll lock off when freeze activates.
       if(_scrollLocked) setScrollLock(false);
-      // Save current scroll position so we can restore it on freeze exit,
-      // then scroll to top and lock body. This ensures the wrapper's
-      // natural flow position equals viewport top, so position:fixed
-      // elements inside the wrapper (when transform is applied) render
-      // at the same position they would render scoped to the viewport
-      // (when transform is cleared). Without this, any non-zero scroll
-      // at the moment of transform-clear would cause fixed elements to
-      // snap by the scroll amount — the "zoom-out jump" bug.
-      window._fzSavedScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
-      window._fzSavedScrollX = window.pageXOffset || document.documentElement.scrollLeft || 0;
-      window._fzSavedBodyOverflow = document.body.style.overflow || '';
-      window._fzSavedDocOverflow = document.documentElement.style.overflow || '';
-      window.scrollTo(0, 0);
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
       _freezeOverlay=document.createElement('div');
       // touch-action:pan-y allows native vertical page scroll when we don't
       // preventDefault. The gesture handlers preventDefault only when they
@@ -10196,27 +10270,23 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       _fzAttachGestures(_freezeOverlay);
       requestAnimationFrame(function(){ if(_freezeOverlay) _freezeOverlay.style.opacity='1'; });
     } else {
-      // Reset any zoom/pan applied during the freeze session, then unwrap
-      // so body layout returns to exactly how it was before freeze.
-      _fzResetTransform();
-      _fzDestroyWrapper();
-      // Restore scroll position
-      if(window._fzSavedBodyOverflow !== undefined){
-        document.body.style.overflow = window._fzSavedBodyOverflow;
-        delete window._fzSavedBodyOverflow;
-      }
-      if(window._fzSavedDocOverflow !== undefined){
-        document.documentElement.style.overflow = window._fzSavedDocOverflow;
-        delete window._fzSavedDocOverflow;
-      }
-      if(window._fzSavedScrollY !== undefined){
-        window.scrollTo(window._fzSavedScrollX || 0, window._fzSavedScrollY || 0);
-        delete window._fzSavedScrollX;
-        delete window._fzSavedScrollY;
-      }
+      // Keep zoom/pan state intact when freeze deactivates. The user might
+      // want to continue interacting with the zoomed UI — pads, sliders,
+      // panels, etc. still work correctly because events route through
+      // the scaled-and-translated DOM. To fully reset, they can double-
+      // tap while freeze is on, or re-enter freeze and double-tap.
+      //
+      // The wrapper div also stays in place. It doesn't affect normal
+      // interaction; position:fixed elements still resolve to wrapper-
+      // local coords (which equal viewport coords when transform is
+      // identity), and when transform is active, fixed elements scale
+      // along with everything else, which is what we want.
       if(_freezeOverlay){
         var ov=_freezeOverlay; _freezeOverlay=null;
         if(immediate){
+          // Instant removal — no fade. Used when docking so the user isn't
+          // left with a 160ms window where the overlay is still blocking input
+          // with no floating pill around to turn freeze off.
           if(ov.parentNode) ov.parentNode.removeChild(ov);
         } else {
           ov.style.opacity='0';
@@ -11043,7 +11113,14 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       sliderDrag: true,     // subtle noise while dragging sliders
       sliderHaptic: true,   // vibration pulses while dragging sliders
       padHaptic: true,      // vibration on pad taps (scales with pressure when sens on)
+      padHapticTapMin: 4,   // ms — lightest tap pulse (sens off or pressure 0)
+      padHapticTapMax: 14,  // ms — firmest tap pulse (sens on, pressure 1)
+      padHapticDragInt: 60, // 0-100 — drag pulse as % of tap pulse
+      padHapticDragFloor: 15, // 0-100 — minimum drag pulse so quiet drags still register
+      padHapticPattern: 'single', // 'single' | 'double' | 'buzz'
       buttonFx: true,       // REC/PLAY/STOP etc. button sounds
+      padBarBtns: true,     // sound on pads bar buttons (CLASSIC, EDIT, HLD, COLOR, SAVE) and color paint
+      hints: true,          // show first-time-use hint popups (per-hint dismissal in seqHintsDismissed)
       panMode: 'speaker',   // 'speaker' = HRTF spatial, 'headphones' = simple stereo, 'off' = disabled
       longPressEditor: true // long-press pad to open sample editor
     };
@@ -11221,19 +11298,47 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   // ── Pad tap haptic feedback ─────────────────────────────────
   // pressure: optional 0..1 normalized value. When sensitivity is on,
   // higher pressure = longer buzz. When off or no pressure given, a fixed medium buzz.
-  function _padHaptic(pressure){
+  function _padHaptic(pressure, isDrag){
     if(!window._sfxSettings||!window._sfxSettings.padHaptic) return;
     if(!navigator.vibrate) return;
+    var s = window._sfxSettings;
+    var tapMin = (typeof s.padHapticTapMin === 'number') ? s.padHapticTapMin : 4;
+    var tapMax = (typeof s.padHapticTapMax === 'number') ? s.padHapticTapMax : 14;
+    if(tapMax < tapMin) tapMax = tapMin;
+    var sensOn = window._getSensOn?window._getSensOn():false;
+    // Compute base pulse length (ms) from pressure
     var ms;
-    var sensOn=window._getSensOn?window._getSensOn():false;
-    if(sensOn && typeof pressure==='number'){
-      // Clamp to 0..1 then map to ~6ms (soft) to ~22ms (hard)
-      var p=Math.max(0, Math.min(1, pressure));
-      ms=Math.round(6 + p*16);
+    if(sensOn && typeof pressure === 'number'){
+      var p = Math.max(0, Math.min(1, pressure));
+      ms = tapMin + p * (tapMax - tapMin);
     } else {
-      ms=12; // fixed medium pulse
+      // Mid-point pulse when no pressure info
+      ms = (tapMin + tapMax) / 2;
     }
-    try{ navigator.vibrate(ms); }catch(e){}
+    // Drag pulses scale down by intensity setting, with a floor
+    if(isDrag){
+      var dragInt = (typeof s.padHapticDragInt === 'number') ? s.padHapticDragInt : 60;
+      var dragFloor = (typeof s.padHapticDragFloor === 'number') ? s.padHapticDragFloor : 15;
+      ms = ms * (dragInt / 100);
+      var floorMs = tapMin * (dragFloor / 100) + 1;
+      if(ms < floorMs) ms = floorMs;
+    }
+    ms = Math.max(1, Math.round(ms));
+    // Apply pattern preset
+    var pattern = s.padHapticPattern || 'single';
+    try{
+      if(pattern === 'double'){
+        // Two short pulses with a tiny gap — sharper feel
+        var half = Math.max(1, Math.round(ms * 0.55));
+        navigator.vibrate([half, 18, half]);
+      } else if(pattern === 'buzz'){
+        // Three rapid micro-pulses — emphasized hit
+        var third = Math.max(1, Math.round(ms * 0.45));
+        navigator.vibrate([third, 10, third, 10, third]);
+      } else {
+        navigator.vibrate(ms);
+      }
+    }catch(e){}
   }
   window._padHaptic=_padHaptic;
 
@@ -12184,7 +12289,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // the V1 flag without the onboarding actually firing as intended,
     // which would silently skip the placement on every subsequent load.
     // The V2 key gives anyone with the old flag a fresh first-load.
-    _seqPuzFirstLoad = (localStorage.getItem('seqPuzFirstSeenV2') !== '1');
+    _seqPuzFirstLoad = (localStorage.getItem('seqPuzFirstSeenV3') !== '1');
   }catch(e){}
   // Stash original parent + inline style so we can restore later.
   var _seqPuzOrigParent = btnPuz ? btnPuz.parentElement : null;
@@ -12192,24 +12297,27 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   var _seqPuzOrigCssText = btnPuz ? btnPuz.style.cssText : '';
 
   function _placeSeqPuzForFirstLoad(){
+    // Guard: if the user has already progressed past onboarding (tapped
+    // the button), don't re-apply the onboarding styling.
+    if(!_seqPuzFirstLoad) return true;
     if(!btnPuz) return false;
-    var bankOuter = document.querySelector('.bank-outer');
-    if(!bankOuter) return false;
-    if(getComputedStyle(bankOuter).position === 'static'){
-      bankOuter.style.position = 'relative';
-    }
-    bankOuter.appendChild(btnPuz);
-    btnPuz.style.cssText = 'position:absolute;bottom:2px;left:2px;z-index:200;padding:0;width:20px;height:20px;overflow:hidden;border-radius:3px;box-shadow:0 0 10px rgba(0,217,255,0.55),0 0 20px rgba(0,217,255,0.25);';
+    // Keep the button in its original parent (.gscroll) — do NOT move it
+    // to .bank-outer. Previous versions of this code moved the button to
+    // bank-outer for visibility, but that caused an absolutely-positioned
+    // 20x20 button at (bottom:2px, left:2px) with z-index:200 to overlap
+    // the bottom-left corner of the sequence bank panel when the user
+    // later entered SEQ mode, making slot selection glitch or appear
+    // broken. Now we just restyle the button in place — smaller, with a
+    // prominent cyan glow — while it remains in its original gscroll
+    // container. No DOM reshuffling required.
+    btnPuz.style.cssText = 'position:absolute;bottom:4px;left:4px;z-index:200;padding:0;width:20px;height:20px;overflow:hidden;border-radius:3px;box-shadow:0 0 10px rgba(0,217,255,0.7),0 0 22px rgba(0,217,255,0.35);';
     return true;
   }
 
   function _restoreSeqPuzPosition(){
-    if(!btnPuz || !_seqPuzOrigParent) return;
-    if(_seqPuzOrigNextSibling && _seqPuzOrigNextSibling.parentNode === _seqPuzOrigParent){
-      _seqPuzOrigParent.insertBefore(btnPuz, _seqPuzOrigNextSibling);
-    } else {
-      _seqPuzOrigParent.appendChild(btnPuz);
-    }
+    if(!btnPuz) return;
+    // Since we no longer move the DOM node, just restore the original
+    // inline style. The button stays in its original parent (.gscroll).
     btnPuz.style.cssText = _seqPuzOrigCssText;
   }
 
@@ -12232,7 +12340,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // First press — restore button position and flag first-load complete.
     if(_seqPuzFirstLoad){
       _seqPuzFirstLoad = false;
-      try{ localStorage.setItem('seqPuzFirstSeenV2','1'); }catch(e){}
+      try{ localStorage.setItem('seqPuzFirstSeenV3','1'); }catch(e){}
       _restoreSeqPuzPosition();
     }
     if(!seqVisible){
@@ -17314,34 +17422,7 @@ window._clampScrollTransition=function(anchorEl){
     });
     panel.appendChild(smoothRow.row);
 
-
-    // ANIMATION
-    panel.appendChild(hdr('ANIMATION','#06b6d4'));
-    var spinRow=mkRow('Spin speed base (ms)', '_spSpin', 50, 1000, 10, window._spinBaseDur||400, 'ms', '#06b6d4');
-    spinRow.sl.addEventListener('_sync',function(){ window._spinBaseDur=parseInt(spinRow.sl.value); });
-    spinRow.vl.textContent=(window._spinBaseDur||400)+'ms';
-    panel.appendChild(spinRow.row);
-    var flashRow=mkRow('Flash duration (ms)', '_spFlash', 20, 400, 10, window._flashBaseDur||120, 'ms', '#a855f7');
-    flashRow.sl.addEventListener('_sync',function(){ window._flashBaseDur=parseInt(flashRow.sl.value); });
-    panel.appendChild(flashRow.row);
-
-    // PARTICLES
-    panel.appendChild(hdr('PARTICLES','#4ade80'));
-    var pCountRow=mkRow('Count multiplier', '_spPCount', 0, 3, 0.1, window._partCountMult||1, '×', '#4ade80');
-    pCountRow.sl.addEventListener('_sync',function(){ window._partCountMult=parseFloat(pCountRow.sl.value); });
-    panel.appendChild(pCountRow.row);
-    var pSpeedRow=mkRow('Speed multiplier', '_spPSpeed', 0, 3, 0.1, window._partSpeedMult||1, '×', '#fbbf24');
-    pSpeedRow.sl.addEventListener('_sync',function(){ window._partSpeedMult=parseFloat(pSpeedRow.sl.value); });
-    panel.appendChild(pSpeedRow.row);
-    var pLifeRow=mkRow('Lifetime (frames)', '_spPLife', 10, 150, 5, window._partLifeMult||55, '', '#f97316');
-    pLifeRow.sl.addEventListener('_sync',function(){ window._partLifeMult=parseInt(pLifeRow.sl.value); });
-    panel.appendChild(pLifeRow.row);
-    var pDecayRow=mkRow('Deceleration', '_spPDecay', 0.7, 0.98, 0.01, window._partDecay||0.88, '', '#a855f7');
-    pDecayRow.sl.addEventListener('_sync',function(){ window._partDecay=parseFloat(pDecayRow.sl.value); });
-    panel.appendChild(pDecayRow.row);
-    var pSizeRow=mkRow('Size multiplier', '_spPSize', 0.2, 3, 0.1, window._partSizeMult||1, '×', '#ec4899');
-    pSizeRow.sl.addEventListener('_sync',function(){ window._partSizeMult=parseFloat(pSizeRow.sl.value); });
-    panel.appendChild(pSizeRow.row);
+    // (ANIMATION and PARTICLES sliders moved to the PAD FX long-press menu.)
 
     var closeBtn=document.createElement('button');
     closeBtn.textContent='✕  CLOSE';
@@ -17393,6 +17474,241 @@ window._clampScrollTransition=function(anchorEl){
   updateSensBtn();
 })();
 
+// ── HAPTIC TOGGLE BUTTON ────────────────────────────────────
+// Tap toggles _sfxSettings.padHaptic on/off. Long press opens settings popup
+// with sliders for tap min/max ms, drag intensity, drag floor, and pattern preset.
+(function(){
+  var hapBtn=document.getElementById('btnHapticToggle');
+  if(!hapBtn) return;
+
+  var hapPopup = null;
+
+  function updateHapBtn(){
+    var on = !!(window._sfxSettings && window._sfxSettings.padHaptic);
+    hapBtn.classList.toggle('active', on);
+    hapBtn.style.opacity = on ? '1' : '0.55';
+  }
+  function toggleHaptic(){
+    if(!window._sfxSettings) return;
+    window._sfxSettings.padHaptic = !window._sfxSettings.padHaptic;
+    if(window._saveSfxSettings) window._saveSfxSettings();
+    updateHapBtn();
+    if(window._btnFx) window._btnFx(window._sfxSettings.padHaptic ? 'tool_on' : 'tool_off');
+    if(window._sfxSettings.padHaptic && navigator.vibrate){
+      try{ navigator.vibrate(8); }catch(e){}
+    }
+  }
+
+  // ── Settings popup ─────────────────────────────────────────
+  function _closeHapPopup(){
+    if(!hapPopup) return;
+    if(hapPopup._cleanup) hapPopup._cleanup();
+    if(hapPopup.parentNode) hapPopup.parentNode.removeChild(hapPopup);
+    hapPopup = null;
+    if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool_off');
+  }
+  function _openHapPopup(){
+    if(hapPopup){ _closeHapPopup(); return; }
+    var s = window._sfxSettings || {};
+
+    hapPopup = document.createElement('div');
+    hapPopup.id = '_hapticSettingsPopup';
+    // visibility hidden until positioned, so initial flicker doesn't show
+    hapPopup.style.cssText = 'position:fixed;z-index:600;background:#151515;border:2px solid rgba(0,217,255,0.45);border-radius:8px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,.6);max-width:240px;min-width:220px;display:flex;flex-direction:column;gap:8px;visibility:hidden;';
+
+    // Title (small, since the draggable tab takes top space)
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'font-family:monospace;font-size:9px;color:var(--cyan);letter-spacing:2px;font-weight:700;text-align:center;';
+    hdr.textContent = 'PAD HAPTIC SETTINGS';
+    hapPopup.appendChild(hdr);
+
+    function _mkSlider(label, key, min, max, step, suffix){
+      var initial = (typeof s[key] === 'number') ? s[key] : min;
+      // Header row: label on left, value on right (using styled slider's vlbl)
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex;flex-direction:column;gap:2px;';
+      var head = document.createElement('div');
+      head.style.cssText = 'display:flex;justify-content:space-between;align-items:center;font-family:monospace;font-size:9px;color:#bbb;letter-spacing:0.5px;';
+      var lbl = document.createElement('span'); lbl.textContent = label;
+      head.appendChild(lbl);
+      var styled = window._mkStyledSlider({
+        color: '#00d9ff',
+        min: min, max: max, step: step, value: initial,
+        format: function(v){ return v + suffix; },
+        onChange: function(v){
+          s[key] = v;
+          if(window._saveSfxSettings) window._saveSfxSettings();
+        }
+      });
+      head.appendChild(styled.vlbl);
+      wrap.appendChild(head);
+      wrap.appendChild(styled.row);
+      return wrap;
+    }
+
+    hapPopup.appendChild(_mkSlider('Tap min', 'padHapticTapMin', 1, 20, 1, 'ms'));
+    hapPopup.appendChild(_mkSlider('Tap max', 'padHapticTapMax', 1, 40, 1, 'ms'));
+    hapPopup.appendChild(_mkSlider('Drag intensity', 'padHapticDragInt', 0, 100, 5, '%'));
+    hapPopup.appendChild(_mkSlider('Drag floor', 'padHapticDragFloor', 0, 100, 5, '%'));
+
+    // Pattern preset row
+    var patRow = document.createElement('div');
+    patRow.style.cssText = 'display:flex;flex-direction:column;gap:3px;margin-top:2px;';
+    var patLbl = document.createElement('div');
+    patLbl.style.cssText = 'font-family:monospace;font-size:9px;color:#bbb;letter-spacing:0.5px;';
+    patLbl.textContent = 'Pattern';
+    patRow.appendChild(patLbl);
+    var patBtns = document.createElement('div');
+    patBtns.style.cssText = 'display:flex;gap:4px;';
+    var patterns = [['single','Single'],['double','Double'],['buzz','Buzz']];
+    patterns.forEach(function(p){
+      var b = document.createElement('button');
+      b.textContent = p[1];
+      b.style.cssText = 'flex:1;font-family:monospace;font-size:9px;font-weight:700;padding:5px 6px;border:1.5px solid rgba(0,217,255,0.4);border-radius:4px;background:transparent;color:#ccc;cursor:pointer;letter-spacing:0.5px;';
+      function refresh(){
+        var active = (s.padHapticPattern || 'single') === p[0];
+        b.style.background = active ? 'rgba(0,217,255,0.18)' : 'transparent';
+        b.style.borderColor = active ? 'var(--cyan-bright)' : 'rgba(0,217,255,0.4)';
+        b.style.color = active ? 'var(--cyan)' : '#ccc';
+        b.style.boxShadow = active ? '0 0 8px rgba(0,217,255,0.45)' : 'none';
+      }
+      b.addEventListener('click', function(e){
+        e.stopPropagation();
+        s.padHapticPattern = p[0];
+        if(window._saveSfxSettings) window._saveSfxSettings();
+        Array.prototype.forEach.call(patBtns.children, function(child){ if(child._refresh) child._refresh(); });
+        if(window._padHaptic) window._padHaptic(0.6, false);
+      });
+      b._refresh = refresh;
+      refresh();
+      patBtns.appendChild(b);
+    });
+    patRow.appendChild(patBtns);
+    hapPopup.appendChild(patRow);
+
+    var hint = document.createElement('div');
+    hint.style.cssText = 'font-family:monospace;font-size:8px;color:#888;text-align:center;letter-spacing:0.3px;line-height:1.4;margin-top:2px;';
+    hint.textContent = 'Tap or drag pads below to test changes live';
+    hapPopup.appendChild(hint);
+
+    // DONE row with strip toggles (matches color picker pattern)
+    var doneRow = document.createElement('div');
+    doneRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px;';
+    function _mkStripToggle(side){
+      var b=document.createElement('button');
+      b.style.cssText='font-family:monospace;font-size:11px;font-weight:700;width:22px;height:22px;border:1.5px solid var(--cyan);border-radius:4px;background:rgba(0,217,255,0.08);color:var(--cyan);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;text-shadow:0 0 4px rgba(0,217,255,0.8);box-shadow:0 0 6px rgba(0,217,255,0.35),inset 0 0 4px rgba(0,217,255,0.2);transition:all 120ms;';
+      b.dataset.side = side;
+      return b;
+    }
+    var leftToggle = _mkStripToggle('left');
+    var rightToggle = _mkStripToggle('right');
+    doneRow.appendChild(leftToggle);
+
+    var done = document.createElement('button');
+    done.textContent = 'DONE';
+    done.style.cssText = 'font-family:monospace;font-size:9px;font-weight:700;padding:5px 14px;border:1.5px solid #22c55e;border-radius:4px;background:rgba(34,197,94,0.1);color:#22c55e;cursor:pointer;letter-spacing:1.5px;';
+    done.addEventListener('click', function(e){
+      e.stopPropagation();
+      _closeHapPopup();
+    });
+    doneRow.appendChild(done);
+    doneRow.appendChild(rightToggle);
+    hapPopup.appendChild(doneRow);
+
+    document.body.appendChild(hapPopup);
+
+    // Position top-left of screen with 6px margins
+    hapPopup.style.top = '6px';
+    hapPopup.style.left = '6px';
+    hapPopup.style.visibility = 'visible';
+
+    // Add reusable draggable header (semicircle tab on top)
+    var draggable = window._makeDraggableHeader(hapPopup, {
+      topPadding: 16,
+      onMove: function(){
+        if(stripRight) stripRight.position();
+        if(stripLeft) stripLeft.position();
+      }
+    });
+
+    // Add reusable dual scroll strips
+    // Wire the toggles to their respective strips and arrow direction
+    function refreshArrows(){
+      rightToggle.textContent = (stripRight.getState() === 'out') ? '◀' : '▶';
+      leftToggle.textContent  = (stripLeft.getState()  === 'out') ? '▶' : '◀';
+    }
+    var stripRight = window._makeScrollStrip('right', hapPopup, { onAnimEnd: function(){ refreshArrows(); } });
+    var stripLeft  = window._makeScrollStrip('left',  hapPopup, { onAnimEnd: function(){ refreshArrows(); } });
+    leftToggle.addEventListener('click', function(e){
+      e.stopPropagation();
+      stripLeft.toggle();
+    });
+    rightToggle.addEventListener('click', function(e){
+      e.stopPropagation();
+      stripRight.toggle();
+    });
+    refreshArrows();
+
+    stripRight.position();
+    stripLeft.position();
+
+    // Cleanup hook called by _closeHapPopup
+    hapPopup._cleanup = function(){
+      stripRight.cleanup();
+      stripLeft.cleanup();
+      draggable.cleanup();
+    };
+
+    if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool_on');
+  }
+  // Expose so toggle handlers can reference
+  window._hapticSettingsOpen = function(){ return !!hapPopup; };
+
+  // Touch/click handlers
+  var _hapTimer=null, _hapLongFired=false, _hapTouch=false;
+  hapBtn.addEventListener('touchstart', function(e){
+    e.stopPropagation();
+    _hapTouch = true; _hapLongFired = false;
+    _hapTimer = setTimeout(function(){
+      _hapTimer = null; _hapLongFired = true;
+      _openHapPopup();
+    }, 500);
+  }, {passive:true});
+  hapBtn.addEventListener('touchend', function(e){
+    e.stopPropagation(); e.preventDefault();
+    if(_hapTimer){ clearTimeout(_hapTimer); _hapTimer = null; }
+    if(!_hapLongFired){
+      // Tap behavior depends on whether popup is open
+      if(hapPopup){ _closeHapPopup(); }
+      else { toggleHaptic(); }
+    }
+    _hapLongFired = false; _hapTouch = false;
+  }, {passive:false});
+  hapBtn.addEventListener('touchcancel', function(){
+    if(_hapTimer){ clearTimeout(_hapTimer); _hapTimer = null; }
+    _hapLongFired = false; _hapTouch = false;
+  }, {passive:true});
+  hapBtn.addEventListener('touchmove', function(){
+    if(_hapTimer){ clearTimeout(_hapTimer); _hapTimer = null; }
+  }, {passive:true});
+  hapBtn.addEventListener('click', function(e){
+    if(_hapTouch){ e.stopPropagation(); return; }
+    if(hapPopup){ _closeHapPopup(); }
+    else { toggleHaptic(); }
+  });
+  hapBtn.addEventListener('mousedown', function(){
+    _hapTimer = setTimeout(function(){ _hapTimer = null; _openHapPopup(); }, 500);
+  });
+  hapBtn.addEventListener('mouseup', function(){
+    if(_hapTimer){
+      clearTimeout(_hapTimer); _hapTimer = null;
+      if(hapPopup){ _closeHapPopup(); }
+      else { toggleHaptic(); }
+    }
+  });
+  updateHapBtn();
+})();
+
 // ── SPIN + PARTICLE + GLOW TOGGLES ──────────────────────────
 (function(){
   var spinBtn=document.getElementById('btnSpinToggle');
@@ -17434,6 +17750,7 @@ window._clampScrollTransition=function(anchorEl){
     if(partBtn){ partBtn.classList.toggle('active',PARTICLES_ON); partBtn.style.opacity=PARTICLES_ON?'1':'0.4'; }
     if(glowBtn){ glowBtn.classList.toggle('active',GLOW_ON); glowBtn.style.opacity=GLOW_ON?'1':'0.5'; }
     drawGlowIcon(GLOW_ON);
+    if(window._padFxMenuRefresh) window._padFxMenuRefresh();
   }
   if(spinBtn) spinBtn.addEventListener('click',function(){ SPIN_ON=!SPIN_ON; updateBtns(); });
   if(partBtn) partBtn.addEventListener('click',function(){
@@ -17527,6 +17844,8 @@ window._clampScrollTransition=function(anchorEl){
     var shouldShowActive = _holdSelectMode || hasAny;
     holdModeBtn.classList.toggle('active', shouldShowActive);
     holdModeBtn.style.opacity = shouldShowActive ? '1' : '0.5';
+    // Mirror state on pads bar button
+    if(window._padsBarSyncHold) window._padsBarSyncHold(shouldShowActive);
     // Pulse the bank area when in select mode
     var bankEl=document.getElementById('bank');
     if(bankEl) bankEl.classList.toggle('_holdSelectMode', _holdSelectMode);
@@ -17692,6 +18011,7 @@ window._clampScrollTransition=function(anchorEl){
   var gridBtn=document.getElementById('btnExprGrid');
   function updateGridBtn(){
     if(gridBtn){ gridBtn.classList.toggle('active', EXPR_GRID_ON); gridBtn.style.opacity=EXPR_GRID_ON?'1':'0.5'; }
+    if(window._padExprMenuRefresh) window._padExprMenuRefresh();
   }
   if(gridBtn){
     gridBtn.addEventListener('click',function(){
@@ -17707,6 +18027,7 @@ window._clampScrollTransition=function(anchorEl){
   var crossBtn=document.getElementById('btnExprCross');
   function updateCrossBtn(){
     if(crossBtn){ crossBtn.classList.toggle('active', EXPR_CROSS_ON); crossBtn.style.opacity=EXPR_CROSS_ON?'1':'0.5'; }
+    if(window._padExprMenuRefresh) window._padExprMenuRefresh();
   }
   if(crossBtn){
     crossBtn.addEventListener('click',function(){
@@ -17785,6 +18106,7 @@ window._clampScrollTransition=function(anchorEl){
       numBtn.classList.toggle('active', on);
       numBtn.style.opacity=on?'1':'0.5';
     }
+    if(window._padDsplyMenuRefresh) window._padDsplyMenuRefresh();
   }
   if(numBtn){
     numBtn.addEventListener('click',function(){
@@ -17812,6 +18134,7 @@ window._clampScrollTransition=function(anchorEl){
     if(!seqNumBtn) return;
     seqNumBtn.classList.toggle('active', !!window._seqNumsOn);
     seqNumBtn.style.opacity=window._seqNumsOn?'1':'0.5';
+    if(window._padDsplyMenuRefresh) window._padDsplyMenuRefresh();
   }
   if(seqNumBtn){
     seqNumBtn.addEventListener('click',function(){
@@ -17838,7 +18161,7 @@ window._clampScrollTransition=function(anchorEl){
 
   // SNAP X toggle
   var snapXBtn=document.getElementById('btnSnapX');
-  function updateSnapXBtn(){ if(snapXBtn){ snapXBtn.classList.toggle('active',EXPR_SNAP_X); snapXBtn.style.opacity=EXPR_SNAP_X?'1':'0.5'; } }
+  function updateSnapXBtn(){ if(snapXBtn){ snapXBtn.classList.toggle('active',EXPR_SNAP_X); snapXBtn.style.opacity=EXPR_SNAP_X?'1':'0.5'; } if(window._padExprMenuRefresh) window._padExprMenuRefresh(); }
   if(snapXBtn){
     snapXBtn.addEventListener('click',function(){ EXPR_SNAP_X=!EXPR_SNAP_X; updateSnapXBtn(); });
     updateSnapXBtn();
@@ -17846,7 +18169,7 @@ window._clampScrollTransition=function(anchorEl){
 
   // SNAP Y toggle
   var snapYBtn=document.getElementById('btnSnapY');
-  function updateSnapYBtn(){ if(snapYBtn){ snapYBtn.classList.toggle('active',EXPR_SNAP_Y); snapYBtn.style.opacity=EXPR_SNAP_Y?'1':'0.5'; } }
+  function updateSnapYBtn(){ if(snapYBtn){ snapYBtn.classList.toggle('active',EXPR_SNAP_Y); snapYBtn.style.opacity=EXPR_SNAP_Y?'1':'0.5'; } if(window._padExprMenuRefresh) window._padExprMenuRefresh(); }
   if(snapYBtn){
     snapYBtn.addEventListener('click',function(){ EXPR_SNAP_Y=!EXPR_SNAP_Y; updateSnapYBtn(); });
     updateSnapYBtn();
@@ -18483,10 +18806,1356 @@ window._clampScrollTransition=function(anchorEl){
 
   makeBeatsFloatable();
   makeRecVolFloatable();
-})();// ── COLOR TAG MODE ──────────────────────────────────────────
+})();
+// ── REUSABLE SCROLLBAR STRIP ─────────────────────────────────
+// _makeScrollStrip(side, anchor) — creates a scrollbar strip that hides under
+// `anchor` (any fixed-position element). 'side' is 'left' or 'right'.
+// Tap-to-ease, drag-to-follow scrolling. Multi-touch safe via _stripTouchIds.
+// Returns: { el, toggle, position, updateThumb, getState, cancelAnim, cleanup }
+(function(){
+  if(!window._stripTouchIds) window._stripTouchIds = {};
+  window._makeScrollStrip = function(side, anchor, opts){
+    opts = opts || {};
+    // side: 'left' or 'right'
+    var strip = document.createElement('div');
+    strip.className = '_colorScrollStrip';
+    strip.dataset.side = side;
+    // z-index 599: below picker (600) so sliding "in" tucks under and hides
+    strip.style.cssText = 'position:fixed;z-index:599;width:18px;background:rgba(20,20,20,0.95);border:1.5px solid rgba(0,217,255,0.4);border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,0.5);touch-action:none;user-select:none;transition:none;';
+    var thumb = document.createElement('div');
+    thumb.style.cssText = 'position:absolute;left:2px;right:2px;background:rgba(0,217,255,0.55);border-radius:4px;box-shadow:0 0 6px rgba(0,217,255,0.5);transition:background 120ms;';
+    strip.appendChild(thumb);
+    document.body.appendChild(strip);
+
+    var stripState = 'in'; // start hidden, user spits out
+    var stripAnimRaf = null;
+
+    function outLeft(){
+      var ppr = anchor.getBoundingClientRect();
+      if(side === 'right') return ppr.right + 4;
+      // left side: outside picker's left edge
+      return ppr.left - 22;
+    }
+    function inLeft(){
+      var ppr = anchor.getBoundingClientRect();
+      if(side === 'right') return ppr.right - 22; // tucked under right edge
+      return ppr.left + 4; // tucked just inside left edge
+    }
+    function positionStrip(){
+      if(!anchor || !strip.parentNode) return;
+      var ppr = anchor.getBoundingClientRect();
+      strip.style.top = ppr.top + 'px';
+      strip.style.height = ppr.height + 'px';
+      if(!stripAnimRaf){
+        strip.style.left = (stripState === 'out' ? outLeft() : inLeft()) + 'px';
+      }
+      updateThumb();
+    }
+    function updateThumb(){
+      var stripH = strip.clientHeight;
+      var docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+      var winH = window.innerHeight;
+      if(docH <= winH){ thumb.style.display = 'none'; return; }
+      thumb.style.display = '';
+      var thumbH = Math.max(20, stripH * (winH / docH));
+      var maxScroll = docH - winH;
+      var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      var thumbTop = (scrollY / maxScroll) * (stripH - thumbH);
+      thumb.style.height = thumbH + 'px';
+      thumb.style.top = thumbTop + 'px';
+    }
+
+    function animateStrip(toState){
+      if(stripAnimRaf){ cancelAnimationFrame(stripAnimRaf); stripAnimRaf=null; }
+      var startLeft = parseFloat(strip.style.left);
+      if(isNaN(startLeft)) startLeft = (stripState === 'out' ? outLeft() : inLeft());
+      var endLeft = (toState === 'out') ? outLeft() : inLeft();
+      var dur = 320;
+      var startTs = performance.now();
+      function setShadow(progress){
+        var shadowAmount = (toState === 'in') ? progress : (1 - progress);
+        var insetBlur = 4 + shadowAmount * 8;
+        var insetSpread = shadowAmount * 6;
+        // Shadow direction depends on side: right strip gets shadow on left edge; left strip on right edge
+        var shadowX = (side === 'right') ? (shadowAmount * 10) : -(shadowAmount * 10);
+        strip.style.boxShadow = '0 2px 10px rgba(0,0,0,0.5), inset '+shadowX+'px 0 '+insetBlur+'px '+insetSpread+'px rgba(0,0,0,'+(shadowAmount*0.7)+')';
+      }
+      function tick(){
+        var t = (performance.now() - startTs) / dur;
+        if(t >= 1){
+          strip.style.left = endLeft + 'px';
+          stripState = toState;
+          stripAnimRaf = null;
+          setShadow(1);
+          if(opts.onAnimEnd) opts.onAnimEnd(stripState);
+          return;
+        }
+        var eased = (toState === 'out') ? (t*t*t*t*t) : (1 - Math.pow(1-t,5));
+        strip.style.left = (startLeft + (endLeft - startLeft) * eased) + 'px';
+        setShadow(eased);
+        stripAnimRaf = requestAnimationFrame(tick);
+      }
+      stripAnimRaf = requestAnimationFrame(tick);
+      playStripSound(toState);
+    }
+
+    function playStripSound(toState){
+      if(!AC || !window._sfxSettings || window._sfxSettings.padBarBtns === false) return;
+      try{
+        var dest = window._sfxGain || AC.destination;
+        var t = AC.currentTime;
+        var dur = 0.32;
+        var sr = AC.sampleRate, nLen = Math.ceil(sr*dur);
+        var buf = AC.createBuffer(1, nLen, sr);
+        var d = buf.getChannelData(0);
+        for(var i=0;i<nLen;i++) d[i] = (Math.random()*2-1) * 0.7;
+        var src = AC.createBufferSource(); src.buffer = buf;
+        var bp = AC.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.Q.setValueAtTime(1.8, t);
+        if(toState === 'out'){
+          bp.frequency.setValueAtTime(400, t);
+          bp.frequency.exponentialRampToValueAtTime(1800, t + dur);
+        } else {
+          bp.frequency.setValueAtTime(1800, t);
+          bp.frequency.exponentialRampToValueAtTime(400, t + dur);
+        }
+        var g = AC.createGain();
+        g.gain.setValueAtTime(0, t);
+        if(toState === 'out'){
+          g.gain.linearRampToValueAtTime(0.06, t + 0.18);
+          g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+        } else {
+          g.gain.linearRampToValueAtTime(0.06, t + 0.04);
+          g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+        }
+        src.connect(bp); bp.connect(g); g.connect(dest);
+        src.start(t); src.stop(t + dur + 0.02);
+        // Subtle thud at end (low sine + bit of noise) instead of high blip
+        var t2 = t + dur - 0.03;
+        var thudG = AC.createGain(); thudG.connect(dest);
+        thudG.gain.setValueAtTime(0, t2);
+        thudG.gain.linearRampToValueAtTime(0.085, t2 + 0.012);
+        thudG.gain.exponentialRampToValueAtTime(0.0008, t2 + 0.18);
+        var thudO = AC.createOscillator(); thudO.type = 'sine';
+        // Slightly different pitch per direction so they're distinguishable
+        thudO.frequency.setValueAtTime(toState === 'out' ? 110 : 75, t2);
+        thudO.frequency.exponentialRampToValueAtTime(toState === 'out' ? 78 : 55, t2 + 0.16);
+        // LP filter for body
+        var thudLp = AC.createBiquadFilter();
+        thudLp.type = 'lowpass';
+        thudLp.frequency.setValueAtTime(280, t2);
+        thudO.connect(thudLp); thudLp.connect(thudG);
+        thudO.start(t2); thudO.stop(t2 + 0.2);
+      }catch(e){}
+    }
+
+    function toggleStrip(){
+      animateStrip(stripState === 'out' ? 'in' : 'out');
+    }
+
+    // ── Drag/tap on strip: tap-off-thumb eases, drag follows ──
+    var stripDragging = false;
+    var stripStartY = 0;
+    var stripStartScroll = 0;
+    var stripDirectMode = false;
+    var stripEaseRaf = null;
+    function cancelEase(){ if(stripEaseRaf){ cancelAnimationFrame(stripEaseRaf); stripEaseRaf=null; } }
+    function easeScrollTo(targetY, durationMs){
+      cancelEase();
+      var startY = window.pageYOffset || document.documentElement.scrollTop;
+      var diff = targetY - startY;
+      var startTs = performance.now();
+      function tick(){
+        var t = (performance.now() - startTs) / durationMs;
+        if(t >= 1){ window.scrollTo(0, targetY); stripEaseRaf=null; return; }
+        var eased = t < 0.5 ? 16*t*t*t*t*t : 1 - Math.pow(-2*t + 2,5)/2;
+        window.scrollTo(0, startY + diff * eased);
+        stripEaseRaf = requestAnimationFrame(tick);
+      }
+      stripEaseRaf = requestAnimationFrame(tick);
+    }
+    function scrollPositionFromY(clientY){
+      var rect = strip.getBoundingClientRect();
+      var stripH = rect.height;
+      var docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+      var winH = window.innerHeight;
+      if(docH <= winH) return 0;
+      var thumbH = Math.max(20, stripH * (winH / docH));
+      var maxScroll = docH - winH;
+      var localY = clientY - rect.top - thumbH/2;
+      var ratio = Math.max(0, Math.min(1, localY / (stripH - thumbH)));
+      return ratio * maxScroll;
+    }
+    function isOnThumb(clientY){
+      var trect = thumb.getBoundingClientRect();
+      return clientY >= trect.top && clientY <= trect.bottom;
+    }
+    function startDrag(clientY){
+      stripDragging = true;
+      stripStartY = clientY;
+      stripStartScroll = window.pageYOffset || document.documentElement.scrollTop;
+      stripDirectMode = false;
+      thumb.style.background = 'rgba(0,217,255,0.85)';
+      cancelEase();
+      if(isOnThumb(clientY)){
+        stripDirectMode = true;
+      } else {
+        var target = scrollPositionFromY(clientY);
+        easeScrollTo(target, 520);
+      }
+    }
+    function moveDrag(clientY){
+      if(!stripDirectMode && Math.abs(clientY - stripStartY) > 6){
+        stripDirectMode = true;
+        cancelEase();
+        stripStartY = clientY;
+        stripStartScroll = window.pageYOffset || document.documentElement.scrollTop;
+      }
+      if(stripDirectMode){
+        var rect = strip.getBoundingClientRect();
+        var stripH = rect.height;
+        var docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+        var winH = window.innerHeight;
+        if(docH <= winH) return;
+        var thumbH = Math.max(20, stripH * (winH / docH));
+        var maxScroll = docH - winH;
+        var trackLen = stripH - thumbH;
+        if(trackLen <= 0) return;
+        var pxPerScrollUnit = trackLen / maxScroll;
+        var fingerDeltaY = clientY - stripStartY;
+        var newScroll = stripStartScroll + fingerDeltaY / pxPerScrollUnit;
+        newScroll = Math.max(0, Math.min(maxScroll, newScroll));
+        window.scrollTo(0, newScroll);
+      }
+    }
+    function endDrag(){
+      stripDragging = false;
+      stripDirectMode = false;
+      thumb.style.background = 'rgba(0,217,255,0.55)';
+    }
+    var myTouchId = null;
+    strip.addEventListener('touchstart', function(e){
+      for(var ti=0; ti<e.changedTouches.length; ti++){
+        var ct = e.changedTouches[ti];
+        var sr = strip.getBoundingClientRect();
+        if(ct.clientX >= sr.left && ct.clientX <= sr.right
+           && ct.clientY >= sr.top && ct.clientY <= sr.bottom){
+          myTouchId = ct.identifier;
+          window._stripTouchIds[ct.identifier] = true;
+          e.preventDefault();
+          startDrag(ct.clientY);
+          break;
+        }
+      }
+    }, {passive:false});
+    strip.addEventListener('touchmove', function(e){
+      if(!stripDragging) return;
+      for(var ti=0; ti<e.touches.length; ti++){
+        if(e.touches[ti].identifier === myTouchId){
+          e.preventDefault();
+          moveDrag(e.touches[ti].clientY);
+          return;
+        }
+      }
+    }, {passive:false});
+    function touchEnd(e){
+      for(var ti=0; ti<e.changedTouches.length; ti++){
+        if(e.changedTouches[ti].identifier === myTouchId){
+          delete window._stripTouchIds[myTouchId];
+          myTouchId = null;
+          endDrag();
+          return;
+        }
+      }
+    }
+    strip.addEventListener('touchend', touchEnd, {passive:true});
+    strip.addEventListener('touchcancel', touchEnd, {passive:true});
+    strip.addEventListener('mousedown', function(e){
+      e.preventDefault();
+      startDrag(e.clientY);
+      function mm(ev){ if(stripDragging) moveDrag(ev.clientY); }
+      function mu(){ endDrag(); document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }
+      document.addEventListener('mousemove', mm);
+      document.addEventListener('mouseup', mu);
+    });
+
+    return {
+      el: strip,
+      toggle: toggleStrip,
+      position: positionStrip,
+      updateThumb: updateThumb,
+      getState: function(){ return stripState; },
+      cancelAnim: function(){ if(stripAnimRaf){ cancelAnimationFrame(stripAnimRaf); stripAnimRaf=null; } },
+      cleanup: function(){
+        if(stripAnimRaf) cancelAnimationFrame(stripAnimRaf);
+        if(stripEaseRaf) cancelAnimationFrame(stripEaseRaf);
+        if(strip.parentNode) strip.parentNode.removeChild(strip);
+      }
+    };
+  };
+})();
+
+// ── REUSABLE LONG-PRESS HELPER ───────────────────────────────
+// _attachLongPress(el, opts) — wires touch + mouse handlers for short tap
+// vs long press. Uses _pulseRingCharge for the steady-brightening glow
+// + ascending tone, and the pop sound on completion. Same UX feel as the
+// scroll-lock undock long-press, but configurable threshold (default 500ms).
+//
+// opts:
+//   duration: ms before long-press fires (default 500)
+//   onTap: function() — short tap callback
+//   onLongPress: function() — long press fired callback
+//   moveCancel: pixels of finger movement that cancels the press (default 10)
+// Returns: { detach } for cleanup
+(function(){
+  window._attachLongPress = function(el, opts){
+    opts = opts || {};
+    var duration = opts.duration || 500;
+    var moveCancel = opts.moveCancel || 10;
+    var _timer = null;
+    var _longFired = false;
+    var _touch = false;
+    var _startX = 0, _startY = 0;
+
+    function _cancel(){
+      if(_timer){ clearTimeout(_timer); _timer = null; }
+      if(window._pulseRingCharge) window._pulseRingCharge.cancel(false);
+    }
+    function _fireLong(){
+      _timer = null;
+      _longFired = true;
+      if(window._pulseRingCharge) window._pulseRingCharge.cancel(true);
+      if(opts.onLongPress) opts.onLongPress();
+    }
+    function _onTouchStart(e){
+      e.stopPropagation();
+      _touch = true; _longFired = false;
+      var t = e.touches && e.touches[0];
+      if(t){ _startX = t.clientX; _startY = t.clientY; }
+      _cancel();
+      _longFired = false; // belt + suspenders reset after _cancel
+      // Single haptic pulse at touch-start — matches scroll-lock UX so every
+      // tap (short or held) feels instantly responsive.
+      if(window._sfxSettings && window._sfxSettings.sliderHaptic && navigator.vibrate){
+        try{ navigator.vibrate(12); }catch(_){}
+      }
+      if(window._pulseRingCharge) window._pulseRingCharge.start(el, {descending:false});
+      _timer = setTimeout(_fireLong, duration);
+    }
+    function _onTouchMove(e){
+      if(!_timer) return;
+      var t = e.touches && e.touches[0]; if(!t) return;
+      var dx = t.clientX - _startX, dy = t.clientY - _startY;
+      if(dx*dx + dy*dy > moveCancel*moveCancel) _cancel();
+    }
+    function _onTouchEnd(e){
+      e.stopPropagation(); e.preventDefault();
+      if(_timer){ clearTimeout(_timer); _timer = null; }
+      if(window._pulseRingCharge && !_longFired) window._pulseRingCharge.cancel(false);
+      if(!_longFired && opts.onTap) opts.onTap();
+      _longFired = false; _touch = false;
+      _lastTouchEndTs = performance.now();
+    }
+    function _onTouchCancel(){
+      _cancel();
+      _longFired = false; _touch = false;
+    }
+
+    el.addEventListener('touchstart', _onTouchStart, {passive:true});
+    el.addEventListener('touchmove',  _onTouchMove,  {passive:true});
+    el.addEventListener('touchend',   _onTouchEnd,   {passive:false});
+    el.addEventListener('touchcancel',_onTouchCancel,{passive:true});
+
+    // Mouse fallback for desktop. Guarded against synthetic mouse events
+    // that some touch devices fire after touchend.
+    var _mouseDownTimer = null;
+    var _mouseLongFired = false;
+    var _lastTouchEndTs = 0;
+    function _isSyntheticMouse(){
+      // Synthetic mouse events fire within ~600ms of touchend on most
+      // touchscreens. Real desktop mouse use never has a recent touchend.
+      return (performance.now() - _lastTouchEndTs) < 600;
+    }
+    function _onMouseDown(e){
+      if(_touch || _isSyntheticMouse()) return;
+      e.stopPropagation();
+      _mouseLongFired = false;
+      if(window._pulseRingCharge) window._pulseRingCharge.start(el, {descending:false});
+      _mouseDownTimer = setTimeout(function(){
+        _mouseDownTimer = null; _mouseLongFired = true;
+        if(window._pulseRingCharge) window._pulseRingCharge.cancel(true);
+        if(opts.onLongPress) opts.onLongPress();
+      }, duration);
+    }
+    function _onMouseUp(){
+      if(_mouseDownTimer){
+        clearTimeout(_mouseDownTimer); _mouseDownTimer = null;
+        if(window._pulseRingCharge) window._pulseRingCharge.cancel(false);
+        if(!_mouseLongFired && opts.onTap) opts.onTap();
+      }
+    }
+    function _onMouseLeave(){
+      if(_mouseDownTimer){ clearTimeout(_mouseDownTimer); _mouseDownTimer = null; }
+      if(window._pulseRingCharge && !_mouseLongFired) window._pulseRingCharge.cancel(false);
+    }
+    function _onClick(e){
+      // If touch already handled this, suppress the synthetic click
+      if(_touch || _isSyntheticMouse()){ e.stopPropagation(); return; }
+    }
+    el.addEventListener('mousedown', _onMouseDown);
+    el.addEventListener('mouseup', _onMouseUp);
+    el.addEventListener('mouseleave', _onMouseLeave);
+    el.addEventListener('click', _onClick);
+
+    return {
+      detach: function(){
+        el.removeEventListener('touchstart', _onTouchStart);
+        el.removeEventListener('touchmove',  _onTouchMove);
+        el.removeEventListener('touchend',   _onTouchEnd);
+        el.removeEventListener('touchcancel',_onTouchCancel);
+        el.removeEventListener('mousedown', _onMouseDown);
+        el.removeEventListener('mouseup', _onMouseUp);
+        el.removeEventListener('mouseleave', _onMouseLeave);
+        el.removeEventListener('click', _onClick);
+      }
+    };
+  };
+})();
+
+// ── EXPR MENU ───────────────────────────────────────────────
+// Long-press the EXPR toolbar button (btnPadExprToggle) to open a popup
+// menu with grid/snap/crosshair items. Short tap continues to do its
+// existing thing (toggle EXPR mode).
+//
+// Items:
+//   Grid          — delegates to btnExprGrid (toggle)
+//   Grid Settings — delegates to btnGridEdit (action — opens divisions editor)
+//   SX            — delegates to btnSnapX (toggle)
+//   SY            — delegates to btnSnapY (toggle)
+//   XHR           — delegates to btnExprCross (toggle)
+//   Set X         — placeholder (no-op for now, per spec)
+//   Set Y         — placeholder (no-op for now, per spec)
+(function(){
+  var exprBtn = document.getElementById('btnPadExprToggle');
+  if(!exprBtn) return;
+
+  var exprPopup = null;
+
+  // [label, btnId, kind] — kind 'toggle' or 'action' or 'placeholder'
+  var ITEMS = [
+    { label:'Grid',          btnId:'btnExprGrid',  kind:'toggle', isOn:function(){ var b=document.getElementById('btnExprGrid');  return b && b.classList.contains('active'); } },
+    { label:'Grid Settings', btnId:'btnGridEdit',  kind:'action' },
+    { label:'SX',            btnId:'btnSnapX',     kind:'toggle', isOn:function(){ var b=document.getElementById('btnSnapX');     return b && b.classList.contains('active'); } },
+    { label:'SY',            btnId:'btnSnapY',     kind:'toggle', isOn:function(){ var b=document.getElementById('btnSnapY');     return b && b.classList.contains('active'); } },
+    { label:'XHR',           btnId:'btnExprCross', kind:'toggle', isOn:function(){ var b=document.getElementById('btnExprCross'); return b && b.classList.contains('active'); } },
+    { label:'Set X',         btnId:null,           kind:'placeholder' },
+    { label:'Set Y',         btnId:null,           kind:'placeholder' }
+  ];
+
+  function _refreshAll(){
+    if(!exprPopup) return;
+    Array.prototype.forEach.call(exprPopup.querySelectorAll('[data-expr-item]'), function(el){
+      if(el._refresh) el._refresh();
+    });
+  }
+  window._padExprMenuRefresh = _refreshAll;
+
+  function _closeExpr(){
+    if(!exprPopup) return;
+    if(exprPopup._cleanup) exprPopup._cleanup();
+    if(exprPopup.parentNode) exprPopup.parentNode.removeChild(exprPopup);
+    exprPopup = null;
+    if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool_off');
+  }
+
+  function _openExpr(){
+    if(exprPopup){ _closeExpr(); return; }
+
+    exprPopup = document.createElement('div');
+    exprPopup.id = '_padExprPopup';
+    exprPopup.style.cssText = 'position:fixed;z-index:600;background:#151515;border:2px solid rgba(0,217,255,0.45);border-radius:8px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,.6);max-width:240px;min-width:200px;display:flex;flex-direction:column;gap:6px;visibility:hidden;';
+
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'font-family:monospace;font-size:9px;color:var(--cyan);letter-spacing:2px;font-weight:700;text-align:center;';
+    hdr.textContent = 'EXPR';
+    exprPopup.appendChild(hdr);
+
+    ITEMS.forEach(function(item){
+      var b = document.createElement('button');
+      b.dataset.exprItem = item.label;
+      b.textContent = item.label;
+      b.style.cssText = 'font-family:monospace;font-size:10px;font-weight:700;padding:7px 10px;border:1.5px solid rgba(0,217,255,0.4);border-radius:4px;background:transparent;color:#ccc;cursor:pointer;letter-spacing:1px;text-align:left;';
+      function refresh(){
+        if(item.kind === 'toggle' && item.isOn){
+          var on = item.isOn();
+          b.style.background  = on ? 'rgba(0,217,255,0.18)' : 'transparent';
+          b.style.borderColor = on ? 'var(--cyan-bright)' : 'rgba(0,217,255,0.4)';
+          b.style.color       = on ? 'var(--cyan)' : '#ccc';
+          b.style.boxShadow   = on ? '0 0 8px rgba(0,217,255,0.45)' : 'none';
+        } else if(item.kind === 'placeholder'){
+          // Dim the placeholder buttons so they look intentionally inactive
+          b.style.opacity = '0.55';
+          b.style.borderStyle = 'dashed';
+        }
+      }
+      b.addEventListener('click', function(e){
+        e.stopPropagation();
+        if(item.kind === 'placeholder'){
+          // No-op for now per spec — Sam will wire these later
+          return;
+        }
+        var src = document.getElementById(item.btnId);
+        if(src) src.click();
+        // Refresh all toggles to reflect any state changes
+        _refreshAll();
+      });
+      b._refresh = refresh;
+      refresh();
+      exprPopup.appendChild(b);
+    });
+
+    var doneRow = document.createElement('div');
+    doneRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px;';
+    function _mkStripToggle(side){
+      var b=document.createElement('button');
+      b.style.cssText='font-family:monospace;font-size:11px;font-weight:700;width:22px;height:22px;border:1.5px solid var(--cyan);border-radius:4px;background:rgba(0,217,255,0.08);color:var(--cyan);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;text-shadow:0 0 4px rgba(0,217,255,0.8);box-shadow:0 0 6px rgba(0,217,255,0.35),inset 0 0 4px rgba(0,217,255,0.2);transition:all 120ms;';
+      b.dataset.side = side;
+      return b;
+    }
+    var leftToggle = _mkStripToggle('left');
+    var rightToggle = _mkStripToggle('right');
+    doneRow.appendChild(leftToggle);
+
+    var done = document.createElement('button');
+    done.textContent = 'DONE';
+    done.style.cssText = 'font-family:monospace;font-size:9px;font-weight:700;padding:5px 14px;border:1.5px solid #22c55e;border-radius:4px;background:rgba(34,197,94,0.1);color:#22c55e;cursor:pointer;letter-spacing:1.5px;';
+    done.addEventListener('click', function(e){
+      e.stopPropagation();
+      _closeExpr();
+    });
+    doneRow.appendChild(done);
+    doneRow.appendChild(rightToggle);
+    exprPopup.appendChild(doneRow);
+
+    document.body.appendChild(exprPopup);
+
+    exprPopup.style.top = '6px';
+    exprPopup.style.left = '6px';
+    exprPopup.style.visibility = 'visible';
+
+    var draggable = window._makeDraggableHeader(exprPopup, {
+      topPadding: 16,
+      onMove: function(){
+        if(stripRight) stripRight.position();
+        if(stripLeft) stripLeft.position();
+      }
+    });
+
+    function refreshArrows(){
+      rightToggle.textContent = (stripRight.getState() === 'out') ? '◀' : '▶';
+      leftToggle.textContent  = (stripLeft.getState()  === 'out') ? '▶' : '◀';
+    }
+    var stripRight = window._makeScrollStrip('right', exprPopup, { onAnimEnd: function(){ refreshArrows(); } });
+    var stripLeft  = window._makeScrollStrip('left',  exprPopup, { onAnimEnd: function(){ refreshArrows(); } });
+    leftToggle.addEventListener('click', function(e){
+      e.stopPropagation();
+      stripLeft.toggle();
+    });
+    rightToggle.addEventListener('click', function(e){
+      e.stopPropagation();
+      stripRight.toggle();
+    });
+    refreshArrows();
+    stripRight.position();
+    stripLeft.position();
+
+    exprPopup._cleanup = function(){
+      stripRight.cleanup();
+      stripLeft.cleanup();
+      draggable.cleanup();
+    };
+
+    if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool_on');
+  }
+
+  // EXPR button has an existing click handler (toggle EXPR mode). We wire
+  // long-press to open the menu, and have onTap delegate the existing
+  // click logic by re-firing the click event on the same button. This
+  // preserves the existing toggle behavior unchanged.
+  if(window._attachLongPress){
+    window._attachLongPress(exprBtn, {
+      duration: 500,
+      onTap: function(){
+        if(exprPopup){
+          _closeExpr();
+          return;
+        }
+        // Fire the existing toggle handler programmatically. Touch path
+        // already preventDefault'd the synthetic click, so this is the
+        // only invocation the listener will see.
+        exprBtn.click();
+      },
+      onLongPress: function(){
+        if(exprPopup) _closeExpr();
+        else _openExpr();
+      }
+    });
+  }
+})();
+
+// ── PAD FX MENU ─────────────────────────────────────────────
+// Long-press the PAD FX toolbar button to open a popup menu with
+// the three FX toggles (Spin, Particle, Glow) and seven sliders
+// (Spin Speed Base, Flash Duration, Particle Count/Speed/Lifetime/
+// Deceleration/Size). Toggles delegate to underlying toolbar buttons;
+// sliders write directly to window state used by the FX renderer.
+//
+// Pattern matches PAD DSPLY menu:
+//   - Top-left fixed position, 6px margins
+//   - Reusable draggable header (semicircle tab)
+//   - Reusable dual scroll strips
+//   - No dim overlay — tap pads to test FX live
+//   - Close via DONE button OR re-tap the toolbar button
+(function(){
+  var fxBtn = document.getElementById('btnPadFx');
+  if(!fxBtn) return;
+
+  var fxPopup = null;
+
+  // Toggle items: [label, underlying-button-id, sourceOfTruth]
+  var TOGGLES = [
+    { label:'Spin',     btnId:'btnSpinToggle',     isOn:function(){ return !!window.SPIN_ON; } },
+    { label:'Particle', btnId:'btnParticleToggle', isOn:function(){ return !!window.PARTICLES_ON; } },
+    { label:'Glow',     btnId:'btnGlowToggle',     isOn:function(){ return !!window.GLOW_ON; } }
+  ];
+
+  // Slider items: each writes directly to window.<key>
+  // [label, key, min, max, step, default, suffix, color]
+  var SLIDERS = [
+    { label:'Spin speed base',   key:'_spinBaseDur',   min:50,  max:1000, step:10,   def:400,  suffix:'ms', color:'#06b6d4', cast:'int'   },
+    { label:'Flash duration',    key:'_flashBaseDur',  min:20,  max:400,  step:10,   def:120,  suffix:'ms', color:'#a855f7', cast:'int'   },
+    { label:'Particle count',    key:'_partCountMult', min:0,   max:3,    step:0.1,  def:1,    suffix:'×',  color:'#4ade80', cast:'float' },
+    { label:'Particle speed',    key:'_partSpeedMult', min:0,   max:3,    step:0.1,  def:1,    suffix:'×',  color:'#fbbf24', cast:'float' },
+    { label:'Particle lifetime', key:'_partLifeMult',  min:10,  max:150,  step:5,    def:55,   suffix:'',   color:'#f97316', cast:'int'   },
+    { label:'Particle decel',    key:'_partDecay',     min:0.7, max:0.98, step:0.01, def:0.88, suffix:'',   color:'#a855f7', cast:'float' },
+    { label:'Particle size',     key:'_partSizeMult',  min:0.2, max:3,    step:0.1,  def:1,    suffix:'×',  color:'#ec4899', cast:'float' }
+  ];
+
+  function _refreshAllToggles(){
+    if(!fxPopup) return;
+    Array.prototype.forEach.call(fxPopup.querySelectorAll('[data-fx-toggle]'), function(el){
+      if(el._refresh) el._refresh();
+    });
+  }
+  // Expose so external code (toolbar button clicks) can refresh menu state
+  window._padFxMenuRefresh = _refreshAllToggles;
+
+  function _closeFx(){
+    if(!fxPopup) return;
+    if(fxPopup._cleanup) fxPopup._cleanup();
+    if(fxPopup.parentNode) fxPopup.parentNode.removeChild(fxPopup);
+    fxPopup = null;
+    fxBtn.classList.remove('active');
+    if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool_off');
+  }
+
+  function _openFx(){
+    if(fxPopup){ _closeFx(); return; }
+
+    fxPopup = document.createElement('div');
+    fxPopup.id = '_padFxPopup';
+    fxPopup.style.cssText = 'position:fixed;z-index:600;background:#151515;border:2px solid rgba(0,217,255,0.45);border-radius:8px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,.6);max-width:260px;min-width:240px;display:flex;flex-direction:column;gap:6px;visibility:hidden;max-height:90vh;overflow-y:auto;';
+
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'font-family:monospace;font-size:9px;color:var(--cyan);letter-spacing:2px;font-weight:700;text-align:center;';
+    hdr.textContent = 'PAD FX';
+    fxPopup.appendChild(hdr);
+
+    // ── Toggle row (Spin / Particle / Glow side by side) ──
+    var togRow = document.createElement('div');
+    togRow.style.cssText = 'display:flex;gap:4px;';
+    TOGGLES.forEach(function(item){
+      var b = document.createElement('button');
+      b.dataset.fxToggle = item.label;
+      b.textContent = item.label;
+      b.style.cssText = 'flex:1;font-family:monospace;font-size:9px;font-weight:700;padding:6px 4px;border:1.5px solid rgba(0,217,255,0.4);border-radius:4px;background:transparent;color:#ccc;cursor:pointer;letter-spacing:0.5px;';
+      function refresh(){
+        var on = item.isOn();
+        b.style.background  = on ? 'rgba(0,217,255,0.18)' : 'transparent';
+        b.style.borderColor = on ? 'var(--cyan-bright)' : 'rgba(0,217,255,0.4)';
+        b.style.color       = on ? 'var(--cyan)' : '#ccc';
+        b.style.boxShadow   = on ? '0 0 8px rgba(0,217,255,0.45)' : 'none';
+      }
+      b.addEventListener('click', function(e){
+        e.stopPropagation();
+        var src = document.getElementById(item.btnId);
+        if(src) src.click();
+        _refreshAllToggles();
+      });
+      b._refresh = refresh;
+      refresh();
+      togRow.appendChild(b);
+    });
+    fxPopup.appendChild(togRow);
+
+    // ── Slider rows ──
+    SLIDERS.forEach(function(s){
+      var initial = (typeof window[s.key] === 'number') ? window[s.key] : s.def;
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex;flex-direction:column;gap:2px;';
+      var head = document.createElement('div');
+      head.style.cssText = 'display:flex;justify-content:space-between;align-items:center;font-family:monospace;font-size:9px;color:#bbb;letter-spacing:0.3px;';
+      var lbl = document.createElement('span'); lbl.textContent = s.label;
+      head.appendChild(lbl);
+      var styled = window._mkStyledSlider({
+        color: s.color,
+        min: s.min, max: s.max, step: s.step, value: initial,
+        format: function(v){
+          if(s.cast === 'int') return Math.round(v) + s.suffix;
+          // Show 2 decimals for sub-1 step, else 1 decimal
+          if(s.step < 0.05) return v.toFixed(2) + s.suffix;
+          return v.toFixed(1) + s.suffix;
+        },
+        onChange: function(v){
+          window[s.key] = (s.cast === 'int') ? Math.round(v) : v;
+        }
+      });
+      head.appendChild(styled.vlbl);
+      wrap.appendChild(head);
+      wrap.appendChild(styled.row);
+      fxPopup.appendChild(wrap);
+    });
+
+    var hint = document.createElement('div');
+    hint.style.cssText = 'font-family:monospace;font-size:8px;color:#888;text-align:center;letter-spacing:0.3px;line-height:1.4;margin-top:2px;';
+    hint.textContent = 'Tap pads below to test FX live';
+    fxPopup.appendChild(hint);
+
+    // DONE row with strip toggles
+    var doneRow = document.createElement('div');
+    doneRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px;';
+    function _mkStripToggle(side){
+      var b=document.createElement('button');
+      b.style.cssText='font-family:monospace;font-size:11px;font-weight:700;width:22px;height:22px;border:1.5px solid var(--cyan);border-radius:4px;background:rgba(0,217,255,0.08);color:var(--cyan);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;text-shadow:0 0 4px rgba(0,217,255,0.8);box-shadow:0 0 6px rgba(0,217,255,0.35),inset 0 0 4px rgba(0,217,255,0.2);transition:all 120ms;';
+      b.dataset.side = side;
+      return b;
+    }
+    var leftToggle = _mkStripToggle('left');
+    var rightToggle = _mkStripToggle('right');
+    doneRow.appendChild(leftToggle);
+
+    var done = document.createElement('button');
+    done.textContent = 'DONE';
+    done.style.cssText = 'font-family:monospace;font-size:9px;font-weight:700;padding:5px 14px;border:1.5px solid #22c55e;border-radius:4px;background:rgba(34,197,94,0.1);color:#22c55e;cursor:pointer;letter-spacing:1.5px;';
+    done.addEventListener('click', function(e){
+      e.stopPropagation();
+      _closeFx();
+    });
+    doneRow.appendChild(done);
+    doneRow.appendChild(rightToggle);
+    fxPopup.appendChild(doneRow);
+
+    document.body.appendChild(fxPopup);
+
+    fxPopup.style.top = '6px';
+    fxPopup.style.left = '6px';
+    fxPopup.style.visibility = 'visible';
+
+    var draggable = window._makeDraggableHeader(fxPopup, {
+      topPadding: 16,
+      onMove: function(){
+        if(stripRight) stripRight.position();
+        if(stripLeft) stripLeft.position();
+      }
+    });
+
+    function refreshArrows(){
+      rightToggle.textContent = (stripRight.getState() === 'out') ? '◀' : '▶';
+      leftToggle.textContent  = (stripLeft.getState()  === 'out') ? '▶' : '◀';
+    }
+    var stripRight = window._makeScrollStrip('right', fxPopup, { onAnimEnd: function(){ refreshArrows(); } });
+    var stripLeft  = window._makeScrollStrip('left',  fxPopup, { onAnimEnd: function(){ refreshArrows(); } });
+    leftToggle.addEventListener('click', function(e){
+      e.stopPropagation();
+      stripLeft.toggle();
+    });
+    rightToggle.addEventListener('click', function(e){
+      e.stopPropagation();
+      stripRight.toggle();
+    });
+    refreshArrows();
+    stripRight.position();
+    stripLeft.position();
+
+    fxPopup._cleanup = function(){
+      stripRight.cleanup();
+      stripLeft.cleanup();
+      draggable.cleanup();
+    };
+
+    fxBtn.classList.add('active');
+    if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool_on');
+  }
+
+  if(window._attachLongPress){
+    window._attachLongPress(fxBtn, {
+      duration: 500,
+      onTap: function(){
+        if(fxPopup) _closeFx();
+        else _openFx();
+      },
+      onLongPress: function(){
+        if(fxPopup) _closeFx();
+        else _openFx();
+      }
+    });
+  }
+})();
+
+// ── PAD DSPLY MENU ──────────────────────────────────────────
+// Long-press the PAD DSPLY toolbar button to open a popup menu with
+// four toggle items (ABC, 123, 1,2,3, Waveform). Each item delegates
+// to its underlying toolbar button so all existing wiring + mutex
+// logic (123 vs 1,2,3) stays in one place.
+//
+// Pattern matches haptic settings popup:
+//   - Top-left fixed position, 6px margins
+//   - Reusable draggable header (semicircle tab)
+//   - Reusable dual scroll strips
+//   - No dim overlay — rest of UI stays interactive
+//   - Close via DONE button OR re-tap the toolbar button
+(function(){
+  var dsplyBtn = document.getElementById('btnPadDsply');
+  if(!dsplyBtn) return;
+
+  var dsplyPopup = null;
+
+  // Items: [label, underlying-button-id, sourceOfTruth fn]
+  // sourceOfTruth returns the current active boolean for that item
+  var ITEMS = [
+    { label:'ABC',      btnId:'padLabelsBtn',   isOn:function(){ return !!window._padLabelsOn; } },
+    { label:'123',      btnId:'btnHideNums',    isOn:function(){ return !!window._userShowNums; } },
+    { label:'1,2,3',    btnId:'btnSeqNums',     isOn:function(){ return !!window._seqNumsOn; } },
+    { label:'Waveform', btnId:'btnWaveToggle',  isOn:function(){ return !!window._padWavesOn; } }
+  ];
+
+  function _refreshAll(){
+    if(!dsplyPopup) return;
+    Array.prototype.forEach.call(dsplyPopup.querySelectorAll('[data-dsply-item]'), function(el){
+      if(el._refresh) el._refresh();
+    });
+  }
+  // Expose so toggle handlers in the underlying buttons (which have their
+  // own state-sync logic) can ask the menu to refresh after their state
+  // changes — keeps menu in sync with mutex effects (e.g. 123 ↔ 1,2,3).
+  window._padDsplyMenuRefresh = _refreshAll;
+
+  function _closeDsply(){
+    if(!dsplyPopup) return;
+    if(dsplyPopup._cleanup) dsplyPopup._cleanup();
+    if(dsplyPopup.parentNode) dsplyPopup.parentNode.removeChild(dsplyPopup);
+    dsplyPopup = null;
+    dsplyBtn.classList.remove('active');
+    if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool_off');
+  }
+
+  function _openDsply(){
+    if(dsplyPopup){ _closeDsply(); return; }
+
+    dsplyPopup = document.createElement('div');
+    dsplyPopup.id = '_padDsplyPopup';
+    dsplyPopup.style.cssText = 'position:fixed;z-index:600;background:#151515;border:2px solid rgba(0,217,255,0.45);border-radius:8px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,.6);max-width:240px;min-width:200px;display:flex;flex-direction:column;gap:8px;visibility:hidden;';
+
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'font-family:monospace;font-size:9px;color:var(--cyan);letter-spacing:2px;font-weight:700;text-align:center;';
+    hdr.textContent = 'PAD DISPLAY';
+    dsplyPopup.appendChild(hdr);
+
+    // Build the four toggle items
+    ITEMS.forEach(function(item){
+      var b = document.createElement('button');
+      b.dataset.dsplyItem = item.label;
+      b.textContent = item.label;
+      b.style.cssText = 'font-family:monospace;font-size:10px;font-weight:700;padding:7px 10px;border:1.5px solid rgba(0,217,255,0.4);border-radius:4px;background:transparent;color:#ccc;cursor:pointer;letter-spacing:1px;text-align:left;';
+      function refresh(){
+        var on = item.isOn();
+        b.style.background  = on ? 'rgba(0,217,255,0.18)' : 'transparent';
+        b.style.borderColor = on ? 'var(--cyan-bright)' : 'rgba(0,217,255,0.4)';
+        b.style.color       = on ? 'var(--cyan)' : '#ccc';
+        b.style.boxShadow   = on ? '0 0 8px rgba(0,217,255,0.45)' : 'none';
+      }
+      b.addEventListener('click', function(e){
+        e.stopPropagation();
+        // Delegate to underlying toolbar button — preserves all existing
+        // state, persistence, mutex, and side-effect logic
+        var src = document.getElementById(item.btnId);
+        if(src) src.click();
+        // Refresh ALL items because of the 123 ↔ 1,2,3 mutex side effects
+        _refreshAll();
+      });
+      b._refresh = refresh;
+      refresh();
+      dsplyPopup.appendChild(b);
+    });
+
+    // DONE row with strip toggles (matches haptic popup pattern)
+    var doneRow = document.createElement('div');
+    doneRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px;';
+    function _mkStripToggle(side){
+      var b=document.createElement('button');
+      b.style.cssText='font-family:monospace;font-size:11px;font-weight:700;width:22px;height:22px;border:1.5px solid var(--cyan);border-radius:4px;background:rgba(0,217,255,0.08);color:var(--cyan);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;text-shadow:0 0 4px rgba(0,217,255,0.8);box-shadow:0 0 6px rgba(0,217,255,0.35),inset 0 0 4px rgba(0,217,255,0.2);transition:all 120ms;';
+      b.dataset.side = side;
+      return b;
+    }
+    var leftToggle = _mkStripToggle('left');
+    var rightToggle = _mkStripToggle('right');
+    doneRow.appendChild(leftToggle);
+
+    var done = document.createElement('button');
+    done.textContent = 'DONE';
+    done.style.cssText = 'font-family:monospace;font-size:9px;font-weight:700;padding:5px 14px;border:1.5px solid #22c55e;border-radius:4px;background:rgba(34,197,94,0.1);color:#22c55e;cursor:pointer;letter-spacing:1.5px;';
+    done.addEventListener('click', function(e){
+      e.stopPropagation();
+      _closeDsply();
+    });
+    doneRow.appendChild(done);
+    doneRow.appendChild(rightToggle);
+    dsplyPopup.appendChild(doneRow);
+
+    document.body.appendChild(dsplyPopup);
+
+    dsplyPopup.style.top = '6px';
+    dsplyPopup.style.left = '6px';
+    dsplyPopup.style.visibility = 'visible';
+
+    var draggable = window._makeDraggableHeader(dsplyPopup, {
+      topPadding: 16,
+      onMove: function(){
+        if(stripRight) stripRight.position();
+        if(stripLeft) stripLeft.position();
+      }
+    });
+
+    function refreshArrows(){
+      rightToggle.textContent = (stripRight.getState() === 'out') ? '◀' : '▶';
+      leftToggle.textContent  = (stripLeft.getState()  === 'out') ? '▶' : '◀';
+    }
+    var stripRight = window._makeScrollStrip('right', dsplyPopup, { onAnimEnd: function(){ refreshArrows(); } });
+    var stripLeft  = window._makeScrollStrip('left',  dsplyPopup, { onAnimEnd: function(){ refreshArrows(); } });
+    leftToggle.addEventListener('click', function(e){
+      e.stopPropagation();
+      stripLeft.toggle();
+    });
+    rightToggle.addEventListener('click', function(e){
+      e.stopPropagation();
+      stripRight.toggle();
+    });
+    refreshArrows();
+    stripRight.position();
+    stripLeft.position();
+
+    dsplyPopup._cleanup = function(){
+      stripRight.cleanup();
+      stripLeft.cleanup();
+      draggable.cleanup();
+    };
+
+    dsplyBtn.classList.add('active');
+    if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool_on');
+  }
+
+  // Wire long-press: short tap = toggle popup, long-press = open popup
+  // Both behaviors converge to "open if closed, close if open" — the
+  // long-press just adds the buildup glow + audio feedback.
+  if(window._attachLongPress){
+    window._attachLongPress(dsplyBtn, {
+      duration: 500,
+      onTap: function(){
+        if(dsplyPopup) _closeDsply();
+        else _openDsply();
+      },
+      onLongPress: function(){
+        // Long-press always opens (and toggles closed if already open)
+        if(dsplyPopup) _closeDsply();
+        else _openDsply();
+      }
+    });
+  }
+})();
+
+// ── REUSABLE STYLED SLIDER ───────────────────────────────────
+// _mkStyledSlider({label, color, min, max, step, value, format, onChange})
+// Returns { row, sl, vlbl, redraw } — same shape as the internal _mkRow used
+// by PAD SIZE/GAP sliders. `row` is the slider element ready to append; `sl`
+// is the actual <input type=range> for programmatic value updates; `vlbl` is
+// the formatted value display you can append wherever (e.g. in a header row).
+(function(){
+  // Local copy of the canvas drawer; uses already-top-level _hexWithAlpha and
+  // _darkenHex helpers. Renders the slatted/hatched-fill style used elsewhere.
+  function _drawStyledSlider(cv, pct, color){
+    if(!cv) return;
+    var wrap=cv.parentElement; if(!wrap) return;
+    var W=Math.max(10,wrap.offsetWidth||160), H=Math.max(10,wrap.offsetHeight||22);
+    cv.width=W; cv.height=H;
+    cv.style.width=W+'px'; cv.style.height=H+'px';
+    var ctx=cv.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+    var PAD=2, R=3;
+    var trackH=Math.round(H*0.55), trackY=Math.round((H-trackH)/2);
+    var hW=10;
+    var handleX=Math.round(hW/2 + (W - hW) * pct);
+    var fillX=PAD, fillW=handleX-fillX;
+    ctx.beginPath();
+    ctx.moveTo(PAD+R,trackY); ctx.lineTo(W-PAD-R,trackY);
+    ctx.arcTo(W-PAD,trackY,W-PAD,trackY+R,R);
+    ctx.lineTo(W-PAD,trackY+trackH-R);
+    ctx.arcTo(W-PAD,trackY+trackH,W-PAD-R,trackY+trackH,R);
+    ctx.lineTo(PAD+R,trackY+trackH);
+    ctx.arcTo(PAD,trackY+trackH,PAD,trackY+trackH-R,R);
+    ctx.lineTo(PAD,trackY+R);
+    ctx.arcTo(PAD,trackY,PAD+R,trackY,R);
+    ctx.closePath();
+    ctx.fillStyle=window._hexWithAlpha(color,0.07); ctx.fill();
+    ctx.strokeStyle=window._darkenHex(color,0.28); ctx.lineWidth=1.5; ctx.stroke();
+    if(fillW>0){
+      ctx.save(); ctx.beginPath();
+      ctx.moveTo(Math.max(PAD,fillX)+R,trackY+1);
+      ctx.lineTo(Math.min(W-PAD,fillX+fillW),trackY+1);
+      ctx.lineTo(Math.min(W-PAD,fillX+fillW),trackY+trackH-1);
+      ctx.lineTo(Math.max(PAD,fillX),trackY+trackH-1);
+      ctx.closePath(); ctx.clip();
+      ctx.globalAlpha=0.45; ctx.fillStyle=color;
+      ctx.fillRect(fillX,trackY+1,fillW,trackH-2);
+      ctx.globalAlpha=0.55; ctx.strokeStyle=color; ctx.lineWidth=1.2;
+      for(var xi=fillX-trackH;xi<fillX+fillW+trackH;xi+=6){
+        ctx.beginPath(); ctx.moveTo(xi,trackY+1); ctx.lineTo(xi+trackH,trackY+trackH-1); ctx.stroke();
+      }
+      ctx.globalAlpha=1; ctx.restore();
+    }
+    var hH=H+4, hX=Math.round(handleX-hW/2), hY=-2;
+    ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=3; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1;
+    ctx.fillStyle='#1a1a1a'; ctx.beginPath();
+    ctx.moveTo(hX+2,hY); ctx.lineTo(hX+hW-2,hY);
+    ctx.arcTo(hX+hW,hY,hX+hW,hY+2,2); ctx.lineTo(hX+hW,hY+hH-2);
+    ctx.arcTo(hX+hW,hY+hH,hX+hW-2,hY+hH,2); ctx.lineTo(hX+2,hY+hH);
+    ctx.arcTo(hX,hY+hH,hX,hY+hH-2,2); ctx.lineTo(hX,hY+2);
+    ctx.arcTo(hX,hY,hX+2,hY,2); ctx.closePath(); ctx.fill();
+    ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0;
+    ctx.strokeStyle='#000'; ctx.lineWidth=1; ctx.stroke();
+    ctx.strokeStyle='#666'; ctx.lineWidth=1;
+    var cx2=hX+hW/2, cy=H/2;
+    [-3,0,3].forEach(function(dy){
+      ctx.beginPath(); ctx.moveTo(hX+2,cy+dy); ctx.lineTo(hX+hW-2,cy+dy); ctx.stroke();
+    });
+  }
+
+  window._mkStyledSlider = function(opts){
+    opts = opts || {};
+    var color = opts.color || '#00d9ff';
+    var min = (typeof opts.min === 'number') ? opts.min : 0;
+    var max = (typeof opts.max === 'number') ? opts.max : 100;
+    var step = opts.step || 1;
+    var value = (typeof opts.value === 'number') ? opts.value : min;
+    var format = opts.format || function(v){ return v + ''; };
+    var onChange = opts.onChange || function(){};
+
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:2px;width:100%;';
+    if(opts.label){
+      var lbl = document.createElement('span');
+      lbl.style.cssText = 'font-family:monospace;font-size:8px;color:#888;min-width:32px;flex-shrink:0;letter-spacing:.5px;';
+      lbl.textContent = opts.label;
+      row.appendChild(lbl);
+    }
+    var slWrap = document.createElement('div');
+    slWrap.style.cssText = 'position:relative;flex:1;height:22px;touch-action:none;cursor:ew-resize;overflow:visible;filter:drop-shadow(0px 4px 8px '+window._hexWithAlpha(color,0.7)+') drop-shadow(0px 2px 4px rgba(0,0,0,0.4));';
+    var cv = document.createElement('canvas');
+    cv.style.cssText = 'position:absolute;left:0;top:0;pointer-events:none;z-index:2;display:block;';
+    var sl = document.createElement('input');
+    sl.type = 'range'; sl.min = min; sl.max = max; sl.step = step;
+    sl.value = value;
+    sl.style.cssText = 'position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ew-resize;z-index:5;-webkit-appearance:none;appearance:none;background:transparent;';
+    sl.addEventListener('touchstart', function(e){ e.stopPropagation(); }, {passive:true});
+    slWrap.appendChild(cv); slWrap.appendChild(sl);
+    row.appendChild(slWrap);
+
+    var vlbl = document.createElement('span');
+    vlbl.style.cssText = 'font-family:monospace;font-size:7px;color:'+color+';margin-left:auto;flex-shrink:0;';
+    vlbl.textContent = format(parseFloat(sl.value));
+
+    function redraw(){
+      var pct = (parseFloat(sl.value) - min) / (max - min);
+      _drawStyledSlider(cv, pct, color);
+      vlbl.textContent = format(parseFloat(sl.value));
+    }
+    sl.addEventListener('input', function(){ redraw(); onChange(parseFloat(sl.value)); });
+    if(typeof ResizeObserver !== 'undefined'){
+      var _ro = new ResizeObserver(function(){ redraw(); });
+      _ro.observe(slWrap);
+    }
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ redraw(); }); });
+
+    return { row: row, sl: sl, vlbl: vlbl, redraw: redraw };
+  };
+})();
+
+// ── REUSABLE DRAGGABLE HEADER ────────────────────────────────
+// _makeDraggableHeader(menuEl, opts) — adds a semicircle tab handle to the top
+// of any fixed-position menu. The tab protrudes upward; three grip lines sit
+// inside (short near top, medium middle, long across menu's top edge).
+// Drag is active across the tab AND the menu's top edge.
+//
+// opts:
+//   onMove(rect): callback fired on each drag move with new bounding rect
+//   onEnd(): callback when drag ends
+//   topPadding: extra padding-top to apply to menu (default 16px)
+(function(){
+  window._makeDraggableHeader = function(menuEl, opts){
+    opts = opts || {};
+    // Menu padding-top reserves space for the part of the header that overlaps
+    // the menu (just enough for the long edge line — 8px is comfortable).
+    var topPad = opts.topPadding || 8;
+    menuEl.style.paddingTop = topPad + 'px';
+
+    // Container: extends UPWARD from the menu's top edge by tabHeight, and
+    // also covers the menu's top edge band where the long grip line sits.
+    var tabHeight = 36;        // protrusion above menu top edge
+    var hdrHeight = tabHeight + topPad;
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'position:absolute;left:0;right:0;top:'+(-tabHeight)+'px;height:'+hdrHeight+'px;pointer-events:none;z-index:1;';
+
+    // SVG draws the semicircle tab + grip lines.
+    // viewBox: 0..200 horizontal, 0..(tabHeight+topPad) vertical.
+    // Menu's top edge sits at y = tabHeight (i.e. bottom of the protrusion).
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    svg.setAttribute('viewBox', '0 0 200 '+hdrHeight);
+    svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;';
+
+    // Tab body — semicircle bump from x=64 to x=136 (72 wide), apex at y≈2,
+    // base at y=tabHeight (the menu's top edge). Smooth fillets on both sides.
+    var EDGE_Y = tabHeight; // 36
+    // Path: start at (60, EDGE_Y) — slight overshoot so fillet curves nicely.
+    // Curve into bump base, arc up & over, curve back out, end at (140, EDGE_Y).
+    var tab = document.createElementNS(svgNS, 'path');
+    var pathD = 'M 60 '+EDGE_Y+
+                ' C 60 '+EDGE_Y+', 64 '+EDGE_Y+', 68 '+(EDGE_Y-6)+
+                ' C 76 4, 124 4, 132 '+(EDGE_Y-6)+
+                ' C 136 '+EDGE_Y+', 140 '+EDGE_Y+', 140 '+EDGE_Y;
+    tab.setAttribute('d', pathD);
+    tab.setAttribute('fill', '#151515');
+    tab.setAttribute('stroke', 'rgba(0,217,255,0.45)');
+    tab.setAttribute('stroke-width', '1.8');
+    tab.setAttribute('stroke-linejoin', 'round');
+    tab.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(tab);
+
+    // Three grip lines, all cyan with glow filter
+    function gripLine(x1, x2, y, sw){
+      var ln = document.createElementNS(svgNS, 'line');
+      ln.setAttribute('x1', x1);
+      ln.setAttribute('y1', y);
+      ln.setAttribute('x2', x2);
+      ln.setAttribute('y2', y);
+      ln.setAttribute('stroke', 'rgba(0,217,255,0.85)');
+      ln.setAttribute('stroke-width', sw);
+      ln.setAttribute('stroke-linecap', 'round');
+      ln.style.filter = 'drop-shadow(0 0 1.5px rgba(0,217,255,0.7))';
+      return ln;
+    }
+    // Three lines INSIDE the tab — each progressively wider as we descend.
+    // Tab is wider toward the bottom, so we have more horizontal room there.
+    // All have ~6px gap from tab border on each side.
+    // Top line: y=14 (12px below apex), short
+    svg.appendChild(gripLine(93, 107, 14, 1.5));
+    // Middle line: y=22, medium
+    svg.appendChild(gripLine(88, 112, 22, 1.6));
+    // Lower line inside tab: y=30 (6px above edge), wider
+    svg.appendChild(gripLine(82, 118, 30, 1.5));
+    // Long edge lines along menu's top edge (y=EDGE_Y) with gaps before tab base
+    svg.appendChild(gripLine(8, 56, EDGE_Y, 1.4));    // left segment
+    svg.appendChild(gripLine(144, 192, EDGE_Y, 1.4)); // right segment
+
+    hdr.appendChild(svg);
+
+    // Drag-active region: an invisible div over the entire top area
+    // covers tab + both top-edge segments
+    var dragLayer = document.createElement('div');
+    dragLayer.style.cssText = 'position:absolute;top:0;left:0;right:0;height:100%;cursor:grab;touch-action:none;pointer-events:auto;background:transparent;';
+    hdr.appendChild(dragLayer);
+
+    menuEl.style.position = menuEl.style.position || 'fixed';
+    menuEl.appendChild(hdr);
+
+    // Drag mechanics
+    var ddx=0, ddy=0, dragging=false;
+    var lastX=0, lastY=0, lastT=0;
+    function onStart(e){
+      var t = e.touches ? e.touches[0] : e;
+      var r = menuEl.getBoundingClientRect();
+      ddx = t.clientX - r.left;
+      ddy = t.clientY - r.top;
+      dragging = true;
+      dragLayer.style.cursor='grabbing';
+      lastX=t.clientX; lastY=t.clientY; lastT=performance.now();
+      if(window._dragWind) window._dragWind.start();
+      if(e.cancelable) e.preventDefault();
+    }
+    function onMove(e){
+      if(!dragging) return;
+      var t = e.touches ? e.touches[0] : e;
+      var nx = Math.max(2, Math.min(t.clientX - ddx, window.innerWidth - menuEl.offsetWidth - 2));
+      var ny = Math.max(2, Math.min(t.clientY - ddy, window.innerHeight - menuEl.offsetHeight - 2));
+      menuEl.style.left = nx + 'px';
+      menuEl.style.top  = ny + 'px';
+      if(opts.onMove) opts.onMove(menuEl.getBoundingClientRect());
+      var now = performance.now();
+      var dt = now - lastT;
+      if(dt > 0 && window._dragWind){
+        var vdx = t.clientX - lastX, vdy = t.clientY - lastY;
+        window._dragWind.setVelocity(Math.sqrt(vdx*vdx+vdy*vdy)/(dt/1000));
+      }
+      lastX=t.clientX; lastY=t.clientY; lastT=now;
+      if(e.cancelable) e.preventDefault();
+    }
+    function onEnd(){
+      if(!dragging) return;
+      dragging=false;
+      dragLayer.style.cursor='grab';
+      if(window._dragWind) window._dragWind.stop();
+      if(opts.onEnd) opts.onEnd();
+    }
+    dragLayer.addEventListener('touchstart', onStart, {passive:false});
+    document.addEventListener('touchmove', onMove, {passive:false});
+    document.addEventListener('touchend', onEnd, {passive:true});
+    document.addEventListener('touchcancel', onEnd, {passive:true});
+    dragLayer.addEventListener('mousedown', onStart);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+
+    return {
+      el: hdr,
+      cleanup: function(){
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onEnd);
+        document.removeEventListener('touchcancel', onEnd);
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onEnd);
+        if(hdr.parentNode) hdr.parentNode.removeChild(hdr);
+      }
+    };
+  };
+})();
+// ── REUSABLE HINT SYSTEM ─────────────────────────────────────
+// _showHint(id, message, anchorEl, opts) — pops a small dismissable hint
+// next to anchorEl. Persists "don't show again" per-id in localStorage.
+// Use _resetAllHints() to bring all hints back (called from settings).
+//
+// opts:
+//   side: 'right' (default), 'left', 'above', 'below'
+//   maxWidth: pixels (default 180)
+(function(){
+  var _activeHint = null;
+  function _hintDismissed(id){
+    try{
+      var dismissed = JSON.parse(localStorage.getItem('seqHintsDismissed')||'{}');
+      return !!dismissed[id];
+    }catch(e){ return false; }
+  }
+  function _markHintDismissed(id){
+    try{
+      var dismissed = JSON.parse(localStorage.getItem('seqHintsDismissed')||'{}');
+      dismissed[id] = true;
+      localStorage.setItem('seqHintsDismissed', JSON.stringify(dismissed));
+    }catch(e){}
+  }
+  function _hideActive(){
+    if(!_activeHint) return;
+    var h = _activeHint; _activeHint = null;
+    if(h._outsideHandler){
+      document.removeEventListener('touchstart', h._outsideHandler, true);
+      document.removeEventListener('mousedown', h._outsideHandler, true);
+    }
+    if(h.parentNode) h.parentNode.removeChild(h);
+  }
+  window._showHint = function(id, message, anchorEl, opts){
+    opts = opts || {};
+    if(!id || _hintDismissed(id)) return;
+    if(window._sfxSettings && window._sfxSettings.hints === false) return;
+    _hideActive(); // only one hint at a time
+    var h = document.createElement('div');
+    h.id = '_hint_' + id;
+    var maxW = opts.maxWidth || 180;
+    h.style.cssText = 'position:fixed;z-index:650;background:#1a1a1a;border:1.5px solid rgba(0,217,255,0.5);border-radius:6px;padding:8px 10px;font-family:monospace;font-size:10px;color:#cde;line-height:1.45;letter-spacing:0.3px;box-shadow:0 2px 12px rgba(0,0,0,0.6);max-width:'+maxW+'px;display:flex;flex-direction:column;gap:6px;';
+    var msg = document.createElement('div');
+    msg.textContent = message;
+    h.appendChild(msg);
+    // "Don't show again" row
+    var row = document.createElement('label');
+    row.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:9px;color:#8aa;cursor:pointer;user-select:none;margin-top:2px;';
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.style.cssText = 'width:13px;height:13px;cursor:pointer;accent-color:#00d9ff;';
+    cb.addEventListener('change', function(){
+      if(cb.checked){
+        _markHintDismissed(id);
+        _hideActive();
+      }
+    });
+    var lbl = document.createElement('span');
+    lbl.textContent = "don't show again";
+    row.appendChild(cb); row.appendChild(lbl);
+    h.appendChild(row);
+    h.style.visibility = 'hidden';
+    document.body.appendChild(h);
+    // Position near anchor
+    var ar = anchorEl ? anchorEl.getBoundingClientRect() : {top:100,left:100,right:200,bottom:130,width:100,height:30};
+    var hr = h.getBoundingClientRect();
+    var side = opts.side || 'right';
+    var top, left;
+    if(side === 'left'){
+      top = ar.top + (opts.align === 'middle' ? (ar.height/2 - hr.height/2) : 0);
+      left = ar.left - hr.width - 12;
+    } else if(side === 'above'){
+      top = ar.top - hr.height - 8;
+      left = ar.left + ar.width/2 - hr.width/2;
+    } else if(side === 'below'){
+      top = ar.bottom + 8;
+      left = ar.left + ar.width/2 - hr.width/2;
+    } else { // right
+      top = ar.top + (opts.align === 'middle' ? (ar.height/2 - hr.height/2) : 0);
+      left = ar.right + 12;
+    }
+    // Clamp to viewport
+    top = Math.max(4, Math.min(top, window.innerHeight - hr.height - 4));
+    left = Math.max(4, Math.min(left, window.innerWidth - hr.width - 4));
+    h.style.top = top + 'px';
+    h.style.left = left + 'px';
+    h.style.visibility = 'visible';
+    _activeHint = h;
+    // Outside-tap dismiss (doesn't mark as permanently dismissed)
+    h._outsideHandler = function(e){
+      if(h && !h.contains(e.target)){ _hideActive(); }
+    };
+    setTimeout(function(){
+      document.addEventListener('touchstart', h._outsideHandler, true);
+      document.addEventListener('mousedown', h._outsideHandler, true);
+    }, 50);
+  };
+  window._hideHint = _hideActive;
+  window._resetAllHints = function(){
+    try{ localStorage.removeItem('seqHintsDismissed'); }catch(e){}
+  };
+})();
+
+// ── COLOR TAG MODE ──────────────────────────────────────────
 (function(){
   var colorMode = false;
-  var activeColor = '#ef4444';
+  var activeColor = null;  // null = no color selected; user must pick from swatch or pad
   var btn = document.getElementById('colorTagBtnOld');
   if(!btn) return;
 
@@ -18506,16 +20175,17 @@ window._clampScrollTransition=function(anchorEl){
     if(pickerOv) return;
     pickerOv = document.createElement('div');
     pickerOv.style.cssText = 'position:fixed;z-index:600;background:#151515;border:2px solid rgba(0,217,255,0.4);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:220px;';
-    var br = btn.getBoundingClientRect();
-    // Position below the button, clamped within screen
-    var cTop=Math.min(br.bottom+4, window.innerHeight-240);
-    var cLeft=Math.max(4, Math.min(br.left, window.innerWidth-224));
-    pickerOv.style.top=cTop+'px';
-    pickerOv.style.left=cLeft+'px';
+    // Prefer pads bar COLOR button as anchor (visible at bottom); fall back to toolbar btn
+    var anchor = document.getElementById('padsBarColor') || btn;
+    var ar = anchor.getBoundingClientRect();
+    // Render off-screen to measure, then position above the anchor
+    pickerOv.style.visibility='hidden';
+    pickerOv.style.top='0px'; pickerOv.style.left='0px';
+    document.body.appendChild(pickerOv);
 
     var lbl = document.createElement('div');
-    lbl.style.cssText = 'font-family:monospace;font-size:9px;color:#888;letter-spacing:1px;';
-    lbl.textContent = 'PICK A COLOR';
+    lbl.style.cssText = 'display:none;';
+    lbl.textContent = '';
     pickerOv.appendChild(lbl);
 
     var grid = document.createElement('div');
@@ -18523,54 +20193,60 @@ window._clampScrollTransition=function(anchorEl){
 
     palette.forEach(function(col){
       var sw = document.createElement('button');
+      sw.setAttribute('data-swatch','1');
       sw.style.cssText = 'width:30px;height:30px;border-radius:5px;cursor:pointer;border:2px solid '+(col===activeColor?'#fff':'rgba(255,255,255,0.15)')+';background:'+col+';touch-action:manipulation;transition:transform .1s;';
       if(col===activeColor) sw.style.transform='scale(1.2)';
+      sw._swatchColor = col;
       sw.addEventListener('click',function(e){
         e.stopPropagation();
         activeColor = col;
-        closePicker();
-        enterColorMode();
+        // Update visual selection on all swatches
+        Array.prototype.forEach.call(grid.children,function(s){
+          if(s._swatchColor===col){
+            s.style.border='2px solid #fff'; s.style.transform='scale(1.2)';
+          } else {
+            s.style.border='2px solid rgba(255,255,255,0.15)'; s.style.transform='';
+          }
+        });
+        if(!colorMode) enterColorMode(); else {
+          if(activeColor==='none'){
+            btn.style.background='#374151'; btn.style.borderColor='#6b7280'; btn.style.color='#fff';
+          } else {
+            btn.style.background=activeColor; btn.style.borderColor=activeColor;
+            btn.style.color=(activeColor==='#ffffff'||activeColor==='#eab308')?'#000':'#fff';
+          }
+        }
+        // Swatch pick sound — short brushy "dip" — like dipping brush in paint
+        if(AC && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)){
+          try{
+            var dest = window._sfxGain || AC.destination;
+            var t = AC.currentTime;
+            var dur = 0.06; // shorter than paint stroke
+            var sr = AC.sampleRate, nLen = Math.ceil(sr*dur);
+            var buf = AC.createBuffer(1, nLen, sr);
+            var d = buf.getChannelData(0);
+            for(var i=0;i<nLen;i++) d[i] = (Math.random()*2-1) * (1 - i/nLen);
+            var src = AC.createBufferSource(); src.buffer = buf;
+            var bp = AC.createBiquadFilter();
+            bp.type = 'bandpass';
+            bp.Q.setValueAtTime(3.5, t); // higher Q than paint stroke = thinner sound
+            // Higher starting freq, sweeps down faster — "dip" feel
+            bp.frequency.setValueAtTime(3500 + Math.random()*500, t);
+            bp.frequency.exponentialRampToValueAtTime(1400, t+dur);
+            var g = AC.createGain();
+            g.gain.setValueAtTime(0, t);
+            g.gain.linearRampToValueAtTime(0.07, t+0.005);
+            g.gain.exponentialRampToValueAtTime(0.0008, t+dur);
+            src.connect(bp); bp.connect(g); g.connect(dest);
+            src.start(t); src.stop(t+dur+0.02);
+          }catch(e){}
+        }
+        // Picking a swatch dismisses the intro hint
+        if(window._hideHint) window._hideHint();
       });
       grid.appendChild(sw);
     });
     pickerOv.appendChild(grid);
-
-    // Custom color row
-    var customRow = document.createElement('div');
-    customRow.style.cssText = 'display:flex;align-items:center;gap:6px;border-top:1px solid #333;padding-top:6px;';
-    var customLbl = document.createElement('span');
-    customLbl.style.cssText = 'font-family:monospace;font-size:9px;color:#888;';
-    customLbl.textContent = 'CUSTOM:';
-    var colorInput = document.createElement('input');
-    colorInput.type = 'color';
-    colorInput.value = activeColor.startsWith('#') ? activeColor : '#ef4444';
-    colorInput.style.cssText = 'width:36px;height:30px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px;';
-    colorInput.addEventListener('input', function(){
-      activeColor = colorInput.value;
-    });
-    var useCustom = document.createElement('button');
-    useCustom.textContent = 'USE';
-    useCustom.style.cssText = 'font-family:monospace;font-size:9px;font-weight:700;padding:4px 8px;border:1.5px solid #888;border-radius:4px;background:transparent;color:#fff;cursor:pointer;';
-    useCustom.addEventListener('click',function(e){
-      e.stopPropagation();
-      activeColor = colorInput.value;
-      closePicker();
-      enterColorMode();
-    });
-
-    // Clear option
-    var clearBtn2 = document.createElement('button');
-    clearBtn2.textContent = '✕ CLEAR';
-    clearBtn2.style.cssText = 'font-family:monospace;font-size:9px;padding:4px 8px;border:1.5px solid #666;border-radius:4px;background:transparent;color:#aaa;cursor:pointer;margin-left:auto;';
-    clearBtn2.addEventListener('click',function(e){
-      e.stopPropagation();
-      activeColor = 'none';
-      closePicker();
-      enterColorMode();
-    });
-
-    customRow.appendChild(customLbl); customRow.appendChild(colorInput); customRow.appendChild(useCustom); customRow.appendChild(clearBtn2);
-    pickerOv.appendChild(customRow);
 
     // Presets button
     var presetsBtn=document.createElement('button');
@@ -18578,28 +20254,266 @@ window._clampScrollTransition=function(anchorEl){
     presetsBtn.style.cssText='font-family:monospace;font-size:9px;font-weight:700;padding:6px;border:1.5px solid #7c3aed;border-radius:4px;background:transparent;color:#c4b5fd;cursor:pointer;letter-spacing:1px;width:100%;margin-top:4px;';
     presetsBtn.addEventListener('click',function(e){
       e.stopPropagation();
+      if(colorMode) exitColorMode();
       closePicker();
       if(window._showColorPresets) window._showColorPresets(btn);
     });
     pickerOv.appendChild(presetsBtn);
-    document.body.appendChild(pickerOv);
 
-    setTimeout(function(){
-      function _closePicker(e){
-        if(pickerOv && !pickerOv.contains(e.target) && e.target!==btn){
-          closePicker();
-          document.removeEventListener('touchstart',_closePicker,true);
-          document.removeEventListener('mousedown',_closePicker,true);
-        }
+    // DONE row — left toggle + DONE button + right toggle
+    var doneRow=document.createElement('div');
+    doneRow.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:2px;';
+
+    function _mkStripToggle(side){
+      var b=document.createElement('button');
+      b.setAttribute('data-strip-toggle', side);
+      b.style.cssText='font-family:monospace;font-size:11px;font-weight:700;width:22px;height:22px;border:1.5px solid var(--cyan);border-radius:4px;background:rgba(0,217,255,0.08);color:var(--cyan);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;text-shadow:0 0 4px rgba(0,217,255,0.8);box-shadow:0 0 6px rgba(0,217,255,0.35),inset 0 0 4px rgba(0,217,255,0.2);transition:all 120ms;';
+      b.addEventListener('click',function(e){
+        e.stopPropagation();
+        if(pickerOv && pickerOv._toggleStrip) pickerOv._toggleStrip();
+      });
+      return b;
+    }
+    var leftToggle=_mkStripToggle('left');
+    var rightToggle=_mkStripToggle('right');
+    doneRow.appendChild(leftToggle);
+
+    // DONE button — only way to close the picker (besides COLOR btn toggle)
+    var doneBtn=document.createElement('button');
+    doneBtn.textContent='DONE';
+    doneBtn.style.cssText='font-family:monospace;font-size:9px;font-weight:700;padding:4px 14px;border:1.5px solid #22c55e;border-radius:4px;background:rgba(34,197,94,0.1);color:#22c55e;cursor:pointer;letter-spacing:1.5px;';
+    doneBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      closePicker();
+      if(colorMode) exitColorMode();
+    });
+    doneRow.appendChild(doneBtn);
+    doneRow.appendChild(rightToggle);
+    pickerOv.appendChild(doneRow);
+
+    // Stash refs for use after picker is built
+    pickerOv._leftToggle = leftToggle;
+    pickerOv._rightToggle = rightToggle;
+
+    // ── Drag handle (header bar at top of picker) ──
+    var dragBar=document.createElement('div');
+    dragBar.style.cssText='position:absolute;top:0;left:0;right:0;height:14px;cursor:grab;background:linear-gradient(180deg,rgba(0,217,255,0.18),rgba(0,217,255,0.04));border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;touch-action:none;';
+    var dragGrip=document.createElement('div');
+    dragGrip.style.cssText='width:32px;height:3px;background:rgba(0,217,255,0.4);border-radius:2px;';
+    dragBar.appendChild(dragGrip);
+    pickerOv.insertBefore(dragBar, pickerOv.firstChild);
+    pickerOv.style.paddingTop='18px';
+    // Drag mechanics — uses _dragWind (the pill drag sound)
+    (function(){
+      var ddx=0, ddy=0, dragging=false;
+      var lastX=0, lastY=0, lastT=0;
+      function onStart(e){
+        var t = e.touches ? e.touches[0] : e;
+        var r = pickerOv.getBoundingClientRect();
+        ddx = t.clientX - r.left;
+        ddy = t.clientY - r.top;
+        dragging = true;
+        dragBar.style.cursor='grabbing';
+        lastX=t.clientX; lastY=t.clientY; lastT=performance.now();
+        if(window._dragWind) window._dragWind.start();
+        if(e.cancelable) e.preventDefault();
       }
-      document.addEventListener('touchstart',_closePicker,true);
-      document.addEventListener('mousedown',_closePicker,true);
-    },50);
+      function onMove(e){
+        if(!dragging) return;
+        var t = e.touches ? e.touches[0] : e;
+        var nx = Math.max(2, Math.min(t.clientX - ddx, window.innerWidth - pickerOv.offsetWidth - 2));
+        var ny = Math.max(2, Math.min(t.clientY - ddy, window.innerHeight - pickerOv.offsetHeight - 2));
+        pickerOv.style.left = nx+'px';
+        pickerOv.style.top = ny+'px';
+        if(pickerOv._repositionStrip) pickerOv._repositionStrip();
+        // Update wind velocity (px/sec) — same calc as the pill drag
+        var now = performance.now();
+        var dt = now - lastT;
+        if(dt > 0 && window._dragWind){
+          var vdx = t.clientX - lastX, vdy = t.clientY - lastY;
+          window._dragWind.setVelocity(Math.sqrt(vdx*vdx+vdy*vdy)/(dt/1000));
+        }
+        lastX=t.clientX; lastY=t.clientY; lastT=now;
+        if(e.cancelable) e.preventDefault();
+      }
+      function onEnd(){
+        if(!dragging) return;
+        dragging=false;
+        dragBar.style.cursor='grab';
+        if(window._dragWind) window._dragWind.stop();
+      }
+      dragBar.addEventListener('touchstart', onStart, {passive:false});
+      document.addEventListener('touchmove', onMove, {passive:false});
+      document.addEventListener('touchend', onEnd, {passive:true});
+      document.addEventListener('touchcancel', onEnd, {passive:true});
+      dragBar.addEventListener('mousedown', onStart);
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onEnd);
+    })();
+
+    // Now measure and position above the anchor
+    var pr = pickerOv.getBoundingClientRect();
+    var cTop = Math.max(4, ar.top - pr.height - 6);
+    var cLeft = Math.max(4, Math.min(ar.left + ar.width/2 - pr.width/2 - 14, window.innerWidth - pr.width - 28));
+    pickerOv.style.top = cTop+'px';
+    pickerOv.style.left = cLeft+'px';
+    pickerOv.style.visibility = 'visible';
+
+    // ── Dual scrollbar strips — one on each side of the picker ──
+    // Each strip is independent: own state, own animation, own touch tracking.
+    // The corresponding toggle button (left/right) controls that side's strip.
+    if(!window._stripTouchIds) window._stripTouchIds = {};
+
+
+    // Build both strips
+    var stripRight = window._makeScrollStrip('right', pickerOv, { onAnimEnd: function(){ updateToggleArrows(); } });
+    var stripLeft = window._makeScrollStrip('left', pickerOv, { onAnimEnd: function(){ updateToggleArrows(); } });
+
+    function updateToggleArrows(){
+      // Each toggle reflects its OWN strip's state independently.
+      // Right toggle: shows ◀ when right strip is OUT (tap to suck in), ▶ when IN (tap to spit out)
+      // Left toggle: shows ▶ when left strip is OUT (tap to suck in), ◀ when IN (tap to spit out)
+      var lt = pickerOv && pickerOv._leftToggle;
+      var rt = pickerOv && pickerOv._rightToggle;
+      if(rt) rt.textContent = (stripRight.getState() === 'out') ? '◀' : '▶';
+      if(lt) lt.textContent = (stripLeft.getState() === 'out') ? '▶' : '◀';
+    }
+    updateToggleArrows();
+
+    // Wire toggle buttons to their respective strips
+    if(pickerOv._leftToggle){
+      // Replace generic click that called pickerOv._toggleStrip
+      var oldL = pickerOv._leftToggle;
+      var newL = oldL.cloneNode(true);
+      oldL.parentNode.replaceChild(newL, oldL);
+      pickerOv._leftToggle = newL;
+      newL.textContent = '▶'; // initial: strip is in
+      newL.addEventListener('click', function(e){
+        e.stopPropagation();
+        stripLeft.toggle();
+      });
+    }
+    if(pickerOv._rightToggle){
+      var oldR = pickerOv._rightToggle;
+      var newR = oldR.cloneNode(true);
+      oldR.parentNode.replaceChild(newR, oldR);
+      pickerOv._rightToggle = newR;
+      newR.textContent = '◀'; // initial: strip is in (need to spit OUT, so points right way)
+      // Actually initial state is 'in' so arrow should be ▶ (spit-out direction)
+      newR.textContent = '▶';
+      newR.addEventListener('click', function(e){
+        e.stopPropagation();
+        stripRight.toggle();
+      });
+    }
+    updateToggleArrows();
+
+    stripRight.position();
+    stripLeft.position();
+
+    pickerOv._repositionStrip = function(){
+      stripRight.position();
+      stripLeft.position();
+    };
+    function _onScrollOrResize(){
+      stripRight.updateThumb(); stripRight.position();
+      stripLeft.updateThumb(); stripLeft.position();
+    }
+    window.addEventListener('scroll', _onScrollOrResize, {passive:true});
+    window.addEventListener('resize', _onScrollOrResize, {passive:true});
+    pickerOv._scrollStripCleanup = function(){
+      window.removeEventListener('scroll', _onScrollOrResize);
+      window.removeEventListener('resize', _onScrollOrResize);
+      stripRight.cleanup();
+      stripLeft.cleanup();
+    };
+
+    // Show the dim overlay (everything-but-pads gets darkened + non-interactive)
+    _showColorDim();
+    // Light up the COLOR button to show picker is open
+    if(window._padsBarSyncColor) window._padsBarSyncColor(true);
+    // Open chime — match other pads bar buttons (EDIT, HLD BTN)
+    if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool_on');
+    // Intro hint — anchored to the picker itself, dismisses on swatch/pad pick
+    if(window._showHint){
+      setTimeout(function(){
+        if(!pickerOv) return;
+        window._showHint(
+          'colorPickerIntro',
+          'Pick a color from the palette, or tap any pad to grab its color.',
+          pickerOv,
+          { side: 'left', maxWidth: 160 }
+        );
+      }, 80);
+    }
   }
 
   function closePicker(){
-    if(pickerOv && document.body.contains(pickerOv)) document.body.removeChild(pickerOv);
+    if(window._hideHint) window._hideHint();
+    if(pickerOv){
+      if(pickerOv._scrollStripCleanup) pickerOv._scrollStripCleanup();
+      if(document.body.contains(pickerOv)) document.body.removeChild(pickerOv);
+    }
     pickerOv=null;
+    _hideColorDim();
+    // Reset activeColor so next open starts blank
+    activeColor = null;
+    // Clear the active glow on COLOR button if not still in color mode
+    if(!colorMode && window._padsBarSyncColor) window._padsBarSyncColor(false);
+    // Close chime — match other pads bar buttons
+    if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool_off');
+  }
+
+  // ── Dim overlay: darkens everything except the pad bank, blocks taps ──
+  // Pads remain interactive by raising #bank above the overlay's z-index.
+  var _colorDim = null;
+  var _bankZSaved = null;
+  var _bankPosSaved = null;
+  function _showColorDim(){
+    if(_colorDim) return;
+    _colorDim = document.createElement('div');
+    _colorDim.id = '_colorPickerDim';
+    // z-index 580: below the picker (600) but above everything else
+    _colorDim.style.cssText = 'position:fixed;inset:0;z-index:580;background:rgba(0,0,0,0.45);touch-action:pan-y;pointer-events:all;transition:opacity 150ms ease;opacity:0;';
+    document.body.appendChild(_colorDim);
+    requestAnimationFrame(function(){ if(_colorDim) _colorDim.style.opacity='1'; });
+    // Block taps but allow vertical scroll gestures to pass through naturally
+    _colorDim.addEventListener('click', function(e){ e.stopPropagation(); e.preventDefault(); }, true);
+    // Raise the pad bank above the dim so pads stay tappable & full-brightness
+    var bank = document.getElementById('bank');
+    if(bank){
+      _bankZSaved = bank.style.zIndex;
+      _bankPosSaved = bank.style.position;
+      bank.style.position = 'relative';
+      bank.style.zIndex = '590';
+    }
+    // Raise the pads bar COLOR button above the dim too — so it stays full
+    // brightness and tappable (it's the only way to close the picker besides DONE)
+    var colorBtn = document.getElementById('padsBarColor');
+    if(colorBtn){
+      colorBtn._zSaved = colorBtn.style.zIndex;
+      colorBtn._posSaved = colorBtn.style.position;
+      colorBtn.style.position = 'relative';
+      colorBtn.style.zIndex = '590';
+    }
+  }
+  function _hideColorDim(){
+    if(!_colorDim) return;
+    var ov = _colorDim; _colorDim = null;
+    ov.style.opacity = '0';
+    setTimeout(function(){ if(ov && ov.parentNode) ov.parentNode.removeChild(ov); }, 180);
+    var bank = document.getElementById('bank');
+    if(bank){
+      bank.style.zIndex = _bankZSaved || '';
+      bank.style.position = _bankPosSaved || '';
+      _bankZSaved = null; _bankPosSaved = null;
+    }
+    var colorBtn = document.getElementById('padsBarColor');
+    if(colorBtn){
+      colorBtn.style.zIndex = colorBtn._zSaved || '';
+      colorBtn.style.position = colorBtn._posSaved || '';
+      colorBtn._zSaved = null; colorBtn._posSaved = null;
+    }
   }
 
   function enterColorMode(){
@@ -18610,23 +20524,40 @@ window._clampScrollTransition=function(anchorEl){
       btn.style.background=activeColor; btn.style.borderColor=activeColor;
       btn.style.color=(activeColor==='#ffffff'||activeColor==='#eab308')?'#000':'#fff';
     }
-    // Show hint
-    showHint(activeColor==='none'?'Drag tiles to CLEAR color · tap 🎨 to apply':'Drag tiles to PAINT · tap 🎨 to apply');
+    if(window._padsBarSyncColor) window._padsBarSyncColor(true);
   }
 
   function exitColorMode(){
     colorMode=false;
     btn.style.background=''; btn.style.borderColor=''; btn.style.color='';
-    clearHint();
-    // Play confirm chime
-    if(AC){ try{
+    if(window._padsBarSyncColor) window._padsBarSyncColor(false);
+    _hideColorDim();
+  }
+
+  // Menu open/close chimes
+  // Open: descending 880 → 660 Hz sine (the "reverse" of close)
+  // Close: ascending 660 → 880 Hz sine (the original confirm chime)
+  function _colorMenuOpenSound(){
+    if(!AC) return;
+    try{
+      var t=AC.currentTime;
+      var g=AC.createGain(); g.connect(getMasterDest());
+      g.gain.setValueAtTime(0.15,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.2);
+      var o=AC.createOscillator(); o.type='sine';
+      o.frequency.setValueAtTime(880,t); o.frequency.exponentialRampToValueAtTime(660,t+0.1);
+      o.connect(g); o.start(t); o.stop(t+0.2);
+    }catch(e){}
+  }
+  function _colorMenuCloseSound(){
+    if(!AC) return;
+    try{
       var t=AC.currentTime;
       var g=AC.createGain(); g.connect(getMasterDest());
       g.gain.setValueAtTime(0.15,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.2);
       var o=AC.createOscillator(); o.type='sine';
       o.frequency.setValueAtTime(660,t); o.frequency.exponentialRampToValueAtTime(880,t+0.1);
       o.connect(g); o.start(t); o.stop(t+0.2);
-    }catch(e){} }
+    }catch(e){}
   }
 
   function showHint(msg){
@@ -18644,12 +20575,13 @@ window._clampScrollTransition=function(anchorEl){
 
   btn.addEventListener('click',function(e){
     e.stopPropagation();
-    if(colorMode){
-      // Second tap: apply and exit
-      exitColorMode();
+    if(pickerOv){
+      // Picker open → close it AND exit color mode (toggle off)
+      closePicker();
+      if(colorMode) exitColorMode();
     } else {
-      // First tap: show color picker
-      if(pickerOv) closePicker(); else showPicker();
+      // Picker closed → open it (color mode will start when a swatch is tapped)
+      showPicker();
     }
   });
 
@@ -18659,28 +20591,104 @@ window._clampScrollTransition=function(anchorEl){
   function paintTile(idx){
     if(idx===lastPainted) return;
     lastPainted=idx;
+    // No color selected yet → tapping a pad picks its color (or cyan if uncolored)
+    // and enters paint mode for the rest of this gesture.
+    if(activeColor===null){
+      var existing = tileColors[idx];
+      activeColor = existing || '#00d9ff';
+      // Update swatch visual selection in picker
+      if(pickerOv){
+        var swatches = pickerOv.querySelectorAll('button[data-swatch="1"]');
+        Array.prototype.forEach.call(swatches, function(s){
+          if(s._swatchColor === activeColor){
+            s.style.border='2px solid #fff'; s.style.transform='scale(1.2)';
+          } else {
+            s.style.border='2px solid rgba(255,255,255,0.15)'; s.style.transform='';
+          }
+        });
+      }
+      if(!colorMode) enterColorMode();
+      // Picking from a pad doesn't repaint that pad — it just samples the color.
+      // Subtle press animation only, no paint application or paint sound.
+      var tile=document.querySelector('.bt[data-bank-idx="'+idx+'"]');
+      if(tile){
+        tile.style.transition='transform 80ms ease-out';
+        tile.style.transform='scale(0.94)';
+        setTimeout(function(){
+          tile.style.transform='';
+          setTimeout(function(){ tile.style.transition=''; }, 100);
+        }, 90);
+      }
+      // Dismiss the hint if it's open
+      if(window._hideHint) window._hideHint();
+      return;
+    }
+    // Normal paint flow
     if(activeColor==='none') delete tileColors[idx];
     else tileColors[idx]=activeColor;
     var tile=document.querySelector('.bt[data-bank-idx="'+idx+'"]');
-    if(tile) applyTileColor(tile,idx);
+    if(tile){
+      applyTileColor(tile,idx);
+      // Subtle pressed-feel animation
+      tile.style.transition='transform 80ms ease-out';
+      tile.style.transform='scale(0.94)';
+      setTimeout(function(){
+        tile.style.transform='';
+        setTimeout(function(){ tile.style.transition=''; }, 100);
+      }, 90);
+    }
+    // Paint stroke sound — soft brushy noise burst with quick pitch sweep
+    if(AC && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)){
+      try{
+        var dest = window._sfxGain || AC.destination;
+        var t = AC.currentTime;
+        var dur = 0.085;
+        var sr = AC.sampleRate, nLen = Math.ceil(sr*dur);
+        var buf = AC.createBuffer(1, nLen, sr);
+        var d = buf.getChannelData(0);
+        for(var i=0;i<nLen;i++) d[i] = (Math.random()*2-1) * (1 - i/nLen);
+        var src = AC.createBufferSource(); src.buffer = buf;
+        var bp = AC.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.Q.setValueAtTime(2.5, t);
+        bp.frequency.setValueAtTime(2400 + Math.random()*600, t);
+        bp.frequency.exponentialRampToValueAtTime(700, t+dur);
+        var g = AC.createGain();
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.085, t+0.008);
+        g.gain.exponentialRampToValueAtTime(0.0008, t+dur);
+        src.connect(bp); bp.connect(g); g.connect(dest);
+        src.start(t); src.stop(t+dur+0.02);
+      }catch(e){}
+    }
   }
 
-  window._colorModeActive=function(){ return colorMode; };
+  window._colorModeActive=function(){ return colorMode || !!pickerOv; };
   window._colorModePaint=function(idx){ if(colorMode) paintTile(idx); };
 
   // Touch: _colorModeStart called from tile touchstart interceptor
   window._colorModeStart = function(idx, touchId, cx, cy){
-    if(!colorMode) return;
+    if(!colorMode && !pickerOv) return;
     painting=true; _paintId=touchId; lastPainted=-1;
     paintTile(idx);
   };
+
+  // Touch IDs of fingers currently on any scroll strip — exempted from the
+  // "two fingers = scroll" check so user can scroll with one finger and paint
+  // with another (or even hold both strips and paint with a third).
+  if(!window._stripTouchIds) window._stripTouchIds = {};
 
   // touchmove on the bank container — non-passive so we can preventDefault
   var bankEl=document.getElementById('bank');
   if(bankEl){
     bankEl.addEventListener('touchmove',function(e){
-      if(!colorMode||!painting) return;
-      if(e.touches.length >= 2) return; // two fingers = scroll
+      if((!colorMode && !pickerOv)||!painting) return;
+      // Count touches that are NOT on a scroll strip
+      var nonStripTouches = 0;
+      for(var ci=0; ci<e.touches.length; ci++){
+        if(!window._stripTouchIds[e.touches[ci].identifier]) nonStripTouches++;
+      }
+      if(nonStripTouches >= 2) return; // two-finger gesture = scroll
       e.preventDefault(); // stop page scroll while painting
       for(var i=0;i<e.touches.length;i++){
         if(e.touches[i].identifier===_paintId){
@@ -18702,7 +20710,8 @@ window._clampScrollTransition=function(anchorEl){
 
   // Mouse support for PC
   document.addEventListener('mousedown',function(e){
-    if(!colorMode) return;
+    if(!colorMode && !pickerOv) return;
+    if(painting) return; // touch already started — ignore synthetic mousedown
     var t=e.target;
     while(t&&t!==document.body){
       if(t.classList&&t.classList.contains('bt')){
@@ -18714,7 +20723,7 @@ window._clampScrollTransition=function(anchorEl){
     }
   });
   document.addEventListener('mousemove',function(e){
-    if(!colorMode||!painting) return;
+    if((!colorMode && !pickerOv)||!painting) return;
     var el=document.elementFromPoint(e.clientX,e.clientY);
     while(el&&el!==document.body){
       if(el.classList&&el.classList.contains('bt')){
@@ -19472,12 +21481,12 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     var grid = document.getElementById('seqSlotGrid');
     if(grid){
       grid.addEventListener('touchstart', function(e){
-        if(!colorMode) return;
+        if(!colorMode && !pickerOv) return;
         var t = e.target.closest('.seq-slot-btn');
         if(t){ e.preventDefault(); paintSlot(t); }
       }, {passive: false});
       grid.addEventListener('touchmove', function(e){
-        if(!colorMode) return;
+        if(!colorMode && !pickerOv) return;
         e.preventDefault();
         var touch = e.touches[0];
         var el = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -19488,7 +21497,7 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     // Mouse paint
     var painting = false;
     document.addEventListener('mousedown', function(e){
-      if(!colorMode) return;
+      if(!colorMode && !pickerOv) return;
       var b = e.target.closest('.seq-slot-btn');
       if(b){ painting = true; paintSlot(b); }
     });
@@ -19596,27 +21605,33 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
   // PADS bar SAVE/LOAD kit buttons
   (function(){
     var saveBtn=document.getElementById('padsBarSaveKit');
-    var loadBtn=document.getElementById('padsBarLoadKit');
+    var classicBtn=document.getElementById('padsBarClassic');
+
     if(saveBtn){
       saveBtn.addEventListener('click',function(e){
         e.stopPropagation();
+        if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool');
         if(window._showSaveKitModal) window._showSaveKitModal();
       });
     }
-    if(loadBtn){
-      loadBtn.addEventListener('click',function(e){
+
+    // CLASSIC button — shows current style name, tap = load kit picker
+    var _SNAMES={A:'Classic',B:'8-Bit',C:'Sci-Fi',D:'Nature',E:'Industrial',F:'Piano',G:'Violin',H:'Flute',I:'Guitar',J:'Bass'};
+    function _updateClassicLabel(name){
+      if(classicBtn) classicBtn.textContent=name||'CLASSIC';
+    }
+    if(classicBtn){
+      _updateClassicLabel(window._currentKitName||_SNAMES[SOUND_STYLE]||'Classic');
+      classicBtn.addEventListener('click',function(e){
         e.stopPropagation();
+        if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool');
         if(window._showKitPicker) window._showKitPicker();
       });
     }
-    // Show current style name
-    var sn=document.getElementById('padsBarStyleName');
-    var _SNAMES={A:'Classic',B:'8-Bit',C:'Sci-Fi',D:'Nature',E:'Industrial',F:'Piano',G:'Violin',H:'Flute',I:'Guitar',J:'Bass'};
-    if(sn) sn.textContent=window._currentKitName||_SNAMES[SOUND_STYLE]||'Classic';
+    // Keep label updated when style changes (same places that used to update padsBarStyleName)
+    window._padsBarUpdateClassic = _updateClassicLabel;
 
-    // ── EDIT button: tap to enter pad-edit mode, then tap a pad to open the
-    // sample editor for it. One-shot: auto-exits after a pad is picked.
-    // Tapping EDIT again cancels without opening anything.
+    // ── EDIT button ──────────────────────────────────────────────────────────
     var editBtn=document.getElementById('padsBarEdit');
     if(editBtn){
       function setEditMode(on){
@@ -19625,8 +21640,6 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
         if(bank) bank.classList.toggle('_padEditMode', !!on);
         editBtn.classList.toggle('active', !!on);
       }
-      // Helper called by tile handlers on tap when mode is active.
-      // Returns true if it consumed the tap (so callers should early-return).
       window._padEditModeConsume=function(idx){
         if(!window._padEditMode) return false;
         setEditMode(false);
@@ -19638,9 +21651,36 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
         if(window._btnFx) window._btnFx(window._padEditMode?'tool_off':'tool_on');
         setEditMode(!window._padEditMode);
       });
-      // Exit edit mode when the sample overlay actually opens (belt-and-
-      // suspenders — setEditMode(false) already ran in the consume path).
-      // Also exit if the user navigates away or a modal opens unrelated.
+    }
+
+    // ── HLD BTN mirror ───────────────────────────────────────────────────────
+    var padsBarHold=document.getElementById('padsBarHoldMode');
+    var toolbarHold=document.getElementById('btnHoldMode');
+    if(padsBarHold){
+      // Sync active state with toolbar button
+      function _syncHoldBar(active){
+        padsBarHold.classList.toggle('active', !!active);
+      }
+      window._padsBarSyncHold = _syncHoldBar;
+      padsBarHold.addEventListener('click',function(e){
+        e.stopPropagation();
+        // Delegate to the toolbar button click to keep shared logic in one place
+        if(toolbarHold) toolbarHold.click();
+      });
+    }
+
+    // ── COLOR mirror ─────────────────────────────────────────────────────────
+    var padsBarColorBtn=document.getElementById('padsBarColor');
+    var toolbarColorBtn=document.getElementById('colorTagBtnOld');
+    if(padsBarColorBtn){
+      function _syncColorBar(active){
+        padsBarColorBtn.classList.toggle('active', !!active);
+      }
+      window._padsBarSyncColor = _syncColorBar;
+      padsBarColorBtn.addEventListener('click',function(e){
+        e.stopPropagation();
+        if(toolbarColorBtn) toolbarColorBtn.click();
+      });
     }
   })();
   initSlimPanel('seqBankSlimPanel','seqBankPanelBar','slimSeqBank');
@@ -19888,9 +21928,10 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     hCol.appendChild(hR.row);
     topRow.appendChild(hCol);
 
-    // thin vertical divider between the two columns
+    // Wide transparent gap between H PAD and V PAD — gives the user a
+    // scrollable strip in the middle of the row to drag the page from.
     var vDiv=document.createElement('div');
-    vDiv.style.cssText='width:1px;background:rgba(0,217,255,0.12);flex-shrink:0;align-self:stretch;';
+    vDiv.style.cssText='width:60px;flex-shrink:0;align-self:stretch;';
     topRow.appendChild(vDiv);
 
     // ── V PAD column ──
@@ -19983,9 +22024,10 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     };
     botRow.appendChild(sizeCol);
 
-    // thin vertical divider
+    // Wide transparent gap between PAD SIZE and PAD GAP — matches the
+    // H PAD / V PAD row above so both rows have a scrollable middle strip.
     var bvDiv=document.createElement('div');
-    bvDiv.style.cssText='width:1px;background:rgba(0,217,255,0.12);flex-shrink:0;align-self:stretch;';
+    bvDiv.style.cssText='width:60px;flex-shrink:0;align-self:stretch;';
     botRow.appendChild(bvDiv);
 
     // GAP column
