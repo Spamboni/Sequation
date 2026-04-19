@@ -1,4 +1,4 @@
-<!-- Sequation v6.15 | Built: 2026-04-18 CT | github.com/Spamboni/Sequation -->
+<!-- Sequation v6.18 | Built: 2026-04-18 CT | github.com/Spamboni/sequation -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -494,9 +494,29 @@ window.onerror=function(msg,src,line,col,err){
   d.innerHTML="<b>JS ERROR:</b><br>"+msg+"<br>Line:"+line+"<br>"+src;
   return false;
 };
+// Hide selScreen until fonts are loaded to prevent the flash of unstyled
+// text (serif fallback) before Abril Fatface arrives from Google Fonts.
+// The sel-mast h1 was showing in the wrong font for ~100-500ms after page
+// load, then re-rendering in the correct font once the webfont finished
+// downloading. Revealing only after fonts are ready eliminates that flash.
+(function(){
+  function revealSel(){
+    var el=document.getElementById('selScreen');
+    if(el) el.style.visibility='';
+  }
+  // Safety timeout — reveal no matter what after 1.2s so the screen isn't
+  // stuck hidden if the fonts API is unreliable or fonts fail to load.
+  setTimeout(revealSel, 1200);
+  if(document.fonts && document.fonts.ready && document.fonts.ready.then){
+    document.fonts.ready.then(revealSel);
+  } else {
+    // Fallback for old browsers — reveal immediately.
+    revealSel();
+  }
+})();
 </script>
 <!-- SELECTION SCREEN -->
-<div class="sel-screen" id="selScreen">
+<div class="sel-screen" id="selScreen" style="visibility:hidden;">
   <div class="sel-mast">
     <h1>SEQ<span>UATION</span></h1>
     <p>The Daily Arithmetic Puzzle</p>
@@ -523,7 +543,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v6.15</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v6.18</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -7016,7 +7036,7 @@ window._updateSampleIcons=function(){
     // tiny) legible label rather than being cut off or hidden entirely.
     // Minimum width of 16px — below that, SVG rendering breaks down and
     // the label is noise anyway.
-    var shouldShow = showLabels && name && tileW>=16;
+    var shouldShow = showLabels && name && tileW>=16 && !!window._seqVisible;
     if(shouldShow){
       if(!existingLbl){
         existingLbl=document.createElement('span');
@@ -7093,7 +7113,9 @@ window._updateSampleIcons=function(){
     // synth sounds aren't pre-rendered to a buffer, so they don't draw.
     var existingWave=t.querySelector('.bt-wave');
     var buf=userSamples[idx]||(sampleMeta[idx]&&sampleMeta[idx]._stockSourceBuffer)||null;
-    var showWaveForThisPad = showWaves && buf;
+    // Only render waveforms in SEQ mode. In puzzle mode the pads are
+    // number tiles for gameplay — the waveform overlay just adds noise.
+    var showWaveForThisPad = showWaves && buf && !!window._seqVisible;
     if(showWaveForThisPad){
       if(!existingWave){
         existingWave=document.createElement('canvas');
@@ -12061,39 +12083,6 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     if(window._padWavesOn && window.prewarmStockWaveforms){
       window.prewarmStockWaveforms(false);
     }
-    // Auto-undock the scroll-lock pill on entry to SEQ mode so it's
-    // floating and visible by default, rather than requiring the user to
-    // long-press the toolbar dock button to pop it out. Skip if already
-    // floating (e.g., returning to SEQ from puzzle mode mid-session).
-    // Delayed by ~100ms (not just one frame) because iframe-nested
-    // environments like the Claude app can still be computing layout
-    // on the first animation frame — getBoundingClientRect returns zeros
-    // and the pill gets positioned off-screen. If the first attempt
-    // didn't produce a visible pill, retry once more after a longer
-    // delay.
-    if(!_floatLock && typeof makeFloatingLock === 'function'){
-      setTimeout(function(){
-        if(_floatLock) return;
-        makeFloatingLock();
-        // If that didn't work, retry. "Didn't work" means the pill is
-        // either missing, has zero size, or is positioned outside the
-        // viewport (which happens if the dock rect was zero and we
-        // placed the pill at ~(-19, -19) in an older code path).
-        setTimeout(function(){
-          if(_floatLock){
-            var r=_floatLock.getBoundingClientRect();
-            var onScreen = r.width>0 && r.height>0 &&
-              r.right > 8 && r.bottom > 8 &&
-              r.left < window.innerWidth - 8 && r.top < window.innerHeight - 8;
-            if(onScreen) return;
-            // Pill is missing, sized wrong, or positioned off-screen.
-            if(_floatLock.parentNode) _floatLock.parentNode.removeChild(_floatLock);
-            _floatLock = null;
-          }
-          if(!_floatLock) makeFloatingLock();
-        }, 300);
-      }, 100);
-    }
   }
 
   function hideSeq(){
@@ -12183,8 +12172,69 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
   // Unified SEQ/PUZ toggle — same button, icon swaps with mode
   var btnPuz=document.getElementById('seqPuz');
+
+  // First-load repositioning: on a fresh app install, the puz/seq toggle
+  // is placed at the lower-left of the tile bank (bank-outer) instead of
+  // its normal gscroll position. More discoverable for first-time users.
+  // After first press, the button returns to its original position and
+  // stays there forever (state persisted in localStorage).
+  var _seqPuzFirstLoad = false;
+  try{
+    // Key bumped to V2 in v6.18 — earlier testing iterations may have set
+    // the V1 flag without the onboarding actually firing as intended,
+    // which would silently skip the placement on every subsequent load.
+    // The V2 key gives anyone with the old flag a fresh first-load.
+    _seqPuzFirstLoad = (localStorage.getItem('seqPuzFirstSeenV2') !== '1');
+  }catch(e){}
+  // Stash original parent + inline style so we can restore later.
+  var _seqPuzOrigParent = btnPuz ? btnPuz.parentElement : null;
+  var _seqPuzOrigNextSibling = btnPuz ? btnPuz.nextSibling : null;
+  var _seqPuzOrigCssText = btnPuz ? btnPuz.style.cssText : '';
+
+  function _placeSeqPuzForFirstLoad(){
+    if(!btnPuz) return false;
+    var bankOuter = document.querySelector('.bank-outer');
+    if(!bankOuter) return false;
+    if(getComputedStyle(bankOuter).position === 'static'){
+      bankOuter.style.position = 'relative';
+    }
+    bankOuter.appendChild(btnPuz);
+    btnPuz.style.cssText = 'position:absolute;bottom:2px;left:2px;z-index:200;padding:0;width:20px;height:20px;overflow:hidden;border-radius:3px;box-shadow:0 0 10px rgba(0,217,255,0.55),0 0 20px rgba(0,217,255,0.25);';
+    return true;
+  }
+
+  function _restoreSeqPuzPosition(){
+    if(!btnPuz || !_seqPuzOrigParent) return;
+    if(_seqPuzOrigNextSibling && _seqPuzOrigNextSibling.parentNode === _seqPuzOrigParent){
+      _seqPuzOrigParent.insertBefore(btnPuz, _seqPuzOrigNextSibling);
+    } else {
+      _seqPuzOrigParent.appendChild(btnPuz);
+    }
+    btnPuz.style.cssText = _seqPuzOrigCssText;
+  }
+
+  if(_seqPuzFirstLoad){
+    // Retry escalation — first attempt fast, retry if bank-outer isn't
+    // laid out yet. Iframe-nested environments (Claude app) can be slow
+    // to settle. Three attempts at 80ms / 250ms / 600ms covers anything
+    // reasonable.
+    setTimeout(function(){
+      if(_placeSeqPuzForFirstLoad()) return;
+      setTimeout(function(){
+        if(_placeSeqPuzForFirstLoad()) return;
+        setTimeout(_placeSeqPuzForFirstLoad, 600);
+      }, 250);
+    }, 80);
+  }
+
   if(btnPuz) btnPuz.addEventListener('click',function(){
     btnFx('pro');
+    // First press — restore button position and flag first-load complete.
+    if(_seqPuzFirstLoad){
+      _seqPuzFirstLoad = false;
+      try{ localStorage.setItem('seqPuzFirstSeenV2','1'); }catch(e){}
+      _restoreSeqPuzPosition();
+    }
     if(!seqVisible){
       showSeq();
     } else {
