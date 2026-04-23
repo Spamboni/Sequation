@@ -1,4 +1,4 @@
-<!-- Sequation v7.83 | Built: 2026-04-18 CT | github.com/Spamboni/sequation -->
+<!-- Sequation v8.13 | Built: 2026-04-18 CT | github.com/Spamboni/sequation -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -184,6 +184,8 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
    The fill alpha is kept on the higher end so the lit state reads
    clearly on small pill-shaped buttons against the dark bg. */
 #padsBarEdit.active{background:rgba(34,197,94,0.4)!important;color:#86efac!important;border-color:#22c55e!important;box-shadow:0 0 10px rgba(34,197,94,0.7)!important;}
+#padsBarMultiHit{box-shadow:0 0 4px rgba(34,197,94,0.15);}
+#padsBarMultiHit.active{background:rgba(34,197,94,0.4)!important;color:#86efac!important;border-color:#22c55e!important;box-shadow:0 0 10px rgba(34,197,94,0.7)!important;}
 /* Hold-select mode — pulsing yellow outline on all pads to signal they're tappable for hold-tag toggling */
 #bank._holdSelectMode .bt{animation:_holdSelectPulse 1.2s ease-in-out infinite;border-color:rgba(251,191,36,0.7)!important;box-shadow:0 0 8px rgba(251,191,36,0.35)!important;cursor:pointer;}
 @keyframes _holdSelectPulse{
@@ -678,7 +680,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v7.83</div>
+  <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v8.13</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -808,7 +810,7 @@ window.onerror=function(msg,src,line,col,err){
     <!-- Pitch top dock -->
     <div id="_pitchTopDock" style="display:none;width:100%;background:var(--bg-secondary);padding:2px 4px;align-items:center;gap:4px;"></div>
     <!-- PADS slim panel -->
-    <div class="slim-panel" id="padSlimPanel"><div class="slim-panel-bar" id="padPanelBar" style="display:none;"><button class="slim-panel-bar-arrow" id="padPanelArrow">▲</button><span>PADS</span><span style="flex:1;"></span><button id="padsBarKitsToggle" style="font-family:monospace;font-size:8px;font-weight:700;padding:0 2px;height:16px;line-height:16px;border:1px solid rgba(0,217,255,0.35);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;min-width:48px;" title="Kits — tap to open swipe strip, long-press for kit menu">KITS</button><button id="padsBarToolsToggle" style="font-family:monospace;font-size:8px;font-weight:700;padding:0 2px;height:16px;line-height:16px;border:1px solid rgba(0,217,255,0.35);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:4px;min-width:48px;" title="Toggle pad tools drawer (CLASSIC · EDIT · HLD · COLOR · SAVE)">MENU</button><button id="padsBarAdjToggle" style="font-family:monospace;font-size:8px;font-weight:700;padding:0 2px;height:16px;line-height:16px;border:1px solid rgba(0,217,255,0.35);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:4px;min-width:80px;margin-right:4px;" title="Toggle pad adjustments drawer">ADJUSTMENTS</button></div><!-- Slide-down drawer for pad adjustments (ADJUSTMENTS). Placed ABOVE the tools drawer so when both are open, adjustments sit directly under the PADS bar with tools below. Wraps the existing #padAdjBody element so the slider-injection code (which queries #padAdjBody by id) still finds it. Collapses with the PADS panel via the CSS rule on .slim-panel.collapsed #padsBarAdjDrawer. The inner element is translated vertically in sync with the max-height transition so content appears to slide out from UNDER whatever's above the drawer (the bar or the other drawer) rather than just expanding in place. --><div id="padsBarAdjDrawer" style="display:none;overflow:hidden;max-height:0;opacity:0;transition:max-height 0.2s ease, opacity 0.2s ease;background:var(--bg-secondary);border-bottom:1px solid rgba(0,217,255,0.12);"><div id="padAdjBody" class="_drawer-inner" style="max-height:3000px;transform:translateY(-100%);transition:transform 0.2s ease;"><!-- Content injected by the pad-adjustments IIFE further down in this file --></div></div><!-- Slide-down drawer for pad tools (MENU). Sits BELOW the adjustments drawer. Collapses with the PADS panel via the same CSS rule. --><div id="padsBarToolsDrawer" style="display:none;overflow:hidden;max-height:0;opacity:0;transition:max-height 0.2s ease, opacity 0.2s ease;background:var(--bg-secondary);border-bottom:1px solid rgba(0,217,255,0.12);"><div class="_drawer-inner" style="display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:4px;padding:3px 8px;height:22px;box-sizing:border-box;transform:translateY(-100%);transition:transform 0.2s ease;"><button id="padsBarClassic" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 6px;height:16px;line-height:16px;border:1px solid rgba(0,217,255,0.35);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Current sound style — tap to load a style">CLASSIC</button><button id="padsBarEdit" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid rgba(34,197,94,0.35);border-radius:3px;background:transparent;color:#4ade80;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;" title="Edit a pad's sample — tap this, then tap a pad">EDIT</button><button id="padsBarHoldMode" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid rgba(34,197,94,0.35);border-radius:3px;background:transparent;color:#4ade80;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:2px;" title="Hold mode — tap to select which pads use hold behavior">HLD BTN</button><button id="padsBarColor" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid rgba(34,197,94,0.35);border-radius:3px;background:transparent;color:#4ade80;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:2px;" title="Color tiles">COLOR</button><button id="padsBarSaveKit" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid rgba(251,191,36,0.35);border-radius:3px;background:transparent;color:#fbbf24;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:4px;" title="Save current pad assignments as a sound style">SAVE</button><button id="padsBarDel" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid rgba(239,68,68,0.35);border-radius:3px;background:transparent;color:#f87171;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:4px;" title="Delete pads — tap to toggle, then tap pads to remove them. Long-press for undo/redo.">DEL</button></div></div><!-- Slide-down drawer for KITS — a swipeable strip showing the current kit sequence. Placed BELOW the tools (MENU) drawer so it sits last in the bar's drawer stack: ADJUSTMENTS → MENU → KITS. Collapses with the PADS panel via the same CSS rule. The strip itself shows kit name "buttons" and accepts horizontal swipes to change the active kit; the actual swipe handling will be wired up in a later iteration. For v7.32 this is just the empty-shell drawer with a placeholder. --><div id="padsBarKitsDrawer" style="display:none;overflow:hidden;max-height:0;opacity:0;transition:max-height 0.2s ease, opacity 0.2s ease;background:var(--bg-secondary);border-bottom:1px solid rgba(0,217,255,0.12);"><div id="padsBarKitsBody" class="_drawer-inner" style="display:block;padding:6px 8px;height:32px;box-sizing:border-box;transform:translateY(-100%);transition:transform 0.2s ease;overflow:hidden;touch-action:pan-y;position:relative;"><div id="padsBarKitsStrip" style="position:absolute;left:0;right:0;top:6px;bottom:6px;overflow:hidden;"><div id="padsBarKitsInner" style="position:absolute;left:0;top:0;display:flex;flex-direction:row;align-items:center;gap:8px;height:100%;will-change:transform;"></div></div><div id="padsBarKitsFadeLeft" style="position:absolute;left:0;top:0;bottom:0;width:24px;pointer-events:none;background:linear-gradient(to right, var(--bg-secondary), rgba(0,0,0,0));display:none;align-items:center;justify-content:flex-start;padding-left:2px;color:rgba(0,217,255,0.7);font-family:monospace;font-size:14px;font-weight:700;">&#x2039;</div><div id="padsBarKitsFadeRight" style="position:absolute;right:0;top:0;bottom:0;width:24px;pointer-events:none;background:linear-gradient(to left, var(--bg-secondary), rgba(0,0,0,0));display:none;align-items:center;justify-content:flex-end;padding-right:2px;color:rgba(0,217,255,0.7);font-family:monospace;font-size:14px;font-weight:700;">&#x203A;</div></div></div><div class="slim-panel-body" id="padPanelBody" style="max-height:3000px;"><div class="bank-row" style="position:relative;"><div id="_pitchLeftDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:var(--bg-secondary);"></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="display:none;width:0;height:0;padding:0;border:none;overflow:hidden;position:absolute;pointer-events:none;">SEQ</button><div class="bank"><div class="btiles" id="bank"></div></div><div id="_pitchRightDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:var(--bg-secondary);"></div></div><div id="_pitchBottomDock" style="display:none;width:100%;background:var(--bg-secondary);padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div id="_volBottomDock" style="display:none;width:100%;background:var(--bg-secondary);padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div></div></div>
+    <div class="slim-panel" id="padSlimPanel"><div class="slim-panel-bar" id="padPanelBar" style="display:none;"><button class="slim-panel-bar-arrow" id="padPanelArrow">▲</button><span>PADS</span><span style="flex:1;"></span><button id="padsBarKitsToggle" style="font-family:monospace;font-size:8px;font-weight:700;padding:0 2px;height:16px;line-height:16px;border:1px solid rgba(0,217,255,0.35);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;min-width:48px;" title="Kits — tap to open swipe strip, long-press for kit menu">KITS</button><button id="padsBarToolsToggle" style="font-family:monospace;font-size:8px;font-weight:700;padding:0 2px;height:16px;line-height:16px;border:1px solid rgba(0,217,255,0.35);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:4px;min-width:48px;" title="Toggle pad tools drawer (CLASSIC · EDIT · HLD · COLOR · SAVE)">MENU</button><button id="padsBarAdjToggle" style="font-family:monospace;font-size:8px;font-weight:700;padding:0 2px;height:16px;line-height:16px;border:1px solid rgba(0,217,255,0.35);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:4px;min-width:80px;margin-right:4px;" title="Toggle pad adjustments drawer">ADJUSTMENTS</button></div><!-- Slide-down drawer for pad adjustments (ADJUSTMENTS). Placed ABOVE the tools drawer so when both are open, adjustments sit directly under the PADS bar with tools below. Wraps the existing #padAdjBody element so the slider-injection code (which queries #padAdjBody by id) still finds it. Collapses with the PADS panel via the CSS rule on .slim-panel.collapsed #padsBarAdjDrawer. The inner element is translated vertically in sync with the max-height transition so content appears to slide out from UNDER whatever's above the drawer (the bar or the other drawer) rather than just expanding in place. --><div id="padsBarAdjDrawer" style="display:none;overflow:hidden;max-height:0;opacity:0;transition:max-height 0.2s ease, opacity 0.2s ease;background:var(--bg-secondary);border-bottom:1px solid rgba(0,217,255,0.12);"><div id="padAdjBody" class="_drawer-inner" style="max-height:3000px;transform:translateY(-100%);transition:transform 0.2s ease;"><!-- Content injected by the pad-adjustments IIFE further down in this file --></div></div><!-- Slide-down drawer for pad tools (MENU). Sits BELOW the adjustments drawer. Collapses with the PADS panel via the same CSS rule. --><div id="padsBarToolsDrawer" style="display:none;overflow:hidden;max-height:0;opacity:0;transition:max-height 0.2s ease, opacity 0.2s ease;background:var(--bg-secondary);border-bottom:1px solid rgba(0,217,255,0.12);"><div class="_drawer-inner" style="display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:4px;padding:3px 8px;height:22px;box-sizing:border-box;transform:translateY(-100%);transition:transform 0.2s ease;"><button id="padsBarClassic" style="display:none;font-family:monospace;font-size:7px;font-weight:700;padding:0 6px;height:16px;line-height:16px;border:1px solid rgba(0,217,255,0.35);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="Current sound style — tap to load a style">CLASSIC</button><button id="padsBarEdit" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid rgba(34,197,94,0.35);border-radius:3px;background:transparent;color:#4ade80;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;" title="Edit a pad's sample — tap this, then tap a pad">EDIT</button><button id="padsBarHoldMode" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid rgba(34,197,94,0.35);border-radius:3px;background:transparent;color:#4ade80;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:2px;" title="Hold mode — tap to select which pads use hold behavior">HLD BTN</button><button id="padsBarColor" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid rgba(34,197,94,0.35);border-radius:3px;background:transparent;color:#4ade80;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:2px;" title="Color tiles">COLOR</button><button id="padsBarSaveKit" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid rgba(251,191,36,0.35);border-radius:3px;background:transparent;color:#fbbf24;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:4px;" title="Save current pad assignments as a sound style">SAVE</button><button id="padsBarDel" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid rgba(239,68,68,0.35);border-radius:3px;background:transparent;color:#f87171;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:4px;" title="Delete pads — tap to toggle, then tap pads to remove them. Long-press for undo/redo.">DEL</button><button id="padsBarMultiHit" style="font-family:monospace;font-size:7px;font-weight:700;padding:0 5px;height:13px;line-height:13px;border:1px solid rgba(34,197,94,0.35);border-radius:3px;background:transparent;color:#4ade80;cursor:pointer;touch-action:manipulation;letter-spacing:0.5px;margin-left:auto;" title="Multi-hit — tap to toggle: pad fires twice per tap. Long-press for note-value menu.">MULTI-HIT</button></div></div><!-- Slide-down drawer for KITS — a swipeable strip showing the current kit sequence. Placed BELOW the tools (MENU) drawer so it sits last in the bar's drawer stack: ADJUSTMENTS → MENU → KITS. Collapses with the PADS panel via the same CSS rule. The strip itself shows kit name "buttons" and accepts horizontal swipes to change the active kit; the actual swipe handling will be wired up in a later iteration. For v7.32 this is just the empty-shell drawer with a placeholder. --><div id="padsBarKitsDrawer" style="display:none;overflow:hidden;max-height:0;opacity:0;transition:max-height 0.2s ease, opacity 0.2s ease;background:var(--bg-secondary);border-bottom:1px solid rgba(0,217,255,0.12);"><div id="padsBarKitsBody" class="_drawer-inner" style="display:block;padding:6px 8px;height:32px;box-sizing:border-box;transform:translateY(-100%);transition:transform 0.2s ease;overflow:hidden;touch-action:pan-y;position:relative;"><div id="padsBarKitsStrip" style="position:absolute;left:0;right:0;top:6px;bottom:6px;overflow:hidden;"><div id="padsBarKitsInner" style="position:absolute;left:0;top:0;display:flex;flex-direction:row;align-items:center;gap:8px;height:100%;will-change:transform;"></div></div><div id="padsBarKitsFadeLeft" style="position:absolute;left:0;top:0;bottom:0;width:24px;pointer-events:none;background:linear-gradient(to right, var(--bg-secondary), rgba(0,0,0,0));display:none;align-items:center;justify-content:flex-start;padding-left:2px;color:rgba(0,217,255,0.7);font-family:monospace;font-size:14px;font-weight:700;">&#x2039;</div><div id="padsBarKitsFadeRight" style="position:absolute;right:0;top:0;bottom:0;width:24px;pointer-events:none;background:linear-gradient(to left, var(--bg-secondary), rgba(0,0,0,0));display:none;align-items:center;justify-content:flex-end;padding-right:2px;color:rgba(0,217,255,0.7);font-family:monospace;font-size:14px;font-weight:700;">&#x203A;</div></div></div><div class="slim-panel-body" id="padPanelBody" style="max-height:3000px;"><div class="bank-row" style="position:relative;"><div id="_pitchLeftDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:var(--bg-secondary);"></div><button class="seq-btn seq-pro-btn seq-btn-sq" id="seqPro" title="Toggle Sequencer" style="display:none;width:0;height:0;padding:0;border:none;overflow:hidden;position:absolute;pointer-events:none;">SEQ</button><div class="bank"><div class="btiles" id="bank"></div></div><div id="_pitchRightDock" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:28px;background:var(--bg-secondary);"></div></div><div id="_pitchBottomDock" style="display:none;width:100%;background:var(--bg-secondary);padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div id="_volBottomDock" style="display:none;width:100%;background:var(--bg-secondary);padding:1px 4px;align-items:center;gap:4px;overflow:hidden;"></div><div style="display:none;"><div id="brightBar"></div><button id="seqStop"></button><div class="sizebar-lock" id="sizeBarLock"></div><div id="sizeBar_legacy"></div></div></div></div></div>
   </div></div></div></div>
 
 
@@ -2659,7 +2661,7 @@ function _escHtml(s){
 // ── Master audio chain — EQ → Saturation → Widener → Reverb Bus → Limiter → destination ──
 var masterEQ={};
 var masterEQInput=null;
-var _masterReverb={ wet:null, dry:null, conv:null, level:0.04 };
+var _masterReverb={ wet:null, dry:null, conv:null, level:0.04, mkIR:null, sizeSec:1.6, decayExp:2.8 };
 var _masterSat={ node:null, amount:0.35, bypass:null, input:null };
 var _masterWide={ enabled:true, splitter:null, merger:null, delayR:null, widthMs:12, input:null };
 var _masterLim={ node:null, threshold:-2, ratio:20, release:0.08 };
@@ -2688,8 +2690,9 @@ var _masterLim={ node:null, threshold:-2, ratio:20, release:0.08 };
     }
     return ir;
   }
+  _masterReverb.mkIR=mkIR;
   var conv=AC.createConvolver();
-  try{ conv.buffer=mkIR(1.6, 2.8); }catch(e){}
+  try{ conv.buffer=mkIR(_masterReverb.sizeSec, _masterReverb.decayExp); }catch(e){}
   _masterReverb.conv=conv;
 
   var wetGain=AC.createGain(); wetGain.gain.value=_masterReverb.level;
@@ -2987,6 +2990,18 @@ window._setMasterReverb=function(level){
   try{ _masterReverb.wet.gain.setTargetAtTime(_masterReverb.level, AC.currentTime, 0.02); }catch(e){}
 };
 window._getMasterReverb=function(){ return _masterReverb.level; };
+// Rebuild the convolver IR with new size (length in seconds) and
+// decay (exponent for the falloff curve — higher = faster falloff).
+// Called from the reverb panel sliders and from preset buttons.
+window._setMasterReverbIR=function(sizeSec, decayExp){
+  if(!_masterReverb.conv || !_masterReverb.mkIR) return;
+  sizeSec = Math.max(0.05, Math.min(10, sizeSec));
+  decayExp = Math.max(0.3, Math.min(8, decayExp));
+  _masterReverb.sizeSec = sizeSec;
+  _masterReverb.decayExp = decayExp;
+  try{ _masterReverb.conv.buffer = _masterReverb.mkIR(sizeSec, decayExp); }catch(e){}
+};
+window._getMasterReverbIR=function(){ return { sizeSec:_masterReverb.sizeSec, decayExp:_masterReverb.decayExp }; };
 window._setMasterSaturation=function(amount){
   if(!_masterSat.node||!_masterSat.mkCurve) return;
   _masterSat.amount=Math.max(0,Math.min(1,amount));
@@ -3271,7 +3286,10 @@ function setSoundStyle(s){
   // display both reflect the NEW style. Without this, indices whose buffers
   // were cached under the old style would keep playing the old sound in
   // hold mode and showing its waveform shape.
-  if(window._padWavesOn && window.prewarmStockWaveforms){
+  // Skip the prewarm during a kit swipe — it's a heavy multi-pad render
+  // pass that fires on every pill crossing and causes visible jumpiness.
+  // The prewarm happens once at swipe release via _commitDrag instead.
+  if(window._padWavesOn && window.prewarmStockWaveforms && !window._inKitSwap){
     window.prewarmStockWaveforms(true); // clearStale=true
   } else {
     // WAV off — just invalidate caches; we'll re-render on next WAV toggle
@@ -6266,18 +6284,19 @@ var EXPR_GRID_X=5; // number of vertical grid divisions (volume)
 var EXPR_GRID_Y=10; // number of horizontal grid divisions (pitch = semitones)
 var EXPR_PITCH_RANGE=5; // ±semitones
 var HIDE_NUMS_ON=false; // hide numbers on pads in sequencer mode
-var PRESSURE_BASE=3.1;
+var PRESSURE_BASE=0.375;
 var PRESSURE_RANGE=1.0;
 // Pressure jitter: ±_pressureJitter shift applied 50% of the time (25% each direction).
 // 0 = jitter off, 0.1 = original behavior, 0.3 = triple intensity.
 window._pressureJitter=0;
+window._pressureSmoothing=0.2375; // 25% slider position (of 0..0.95 range)
+window._sensRangePct=100; // range slider starts at max (100%)
 // Pressure smoothing: 0 = no smoothing (each tap independent),
 // up to ~0.95 = heavy smoothing (each tap drifts only slightly from the previous).
-window._pressureSmoothing=0.475;
 window._lastTapPressure=null; // remembered between taps for smoothing math
 
 // Sensitivity volume limits (updated by Range slider; hard = higher volume)
-window._sensVolMin=0.01; window._sensVolMax=6.0; // maxed-out defaults (slider at 100%)
+window._sensVolMin=0.01; window._sensVolMax=0.57; // range=100% with base=0.375 → hard ~380% (clamped by 1/_pBase=4 limit)
 
 // Sensitivity glow brightness limits — softest tap glows at glowMin (e.g. 0.5 = 50% as bright),
 // hardest tap glows at glowMax (e.g. 1.5 = 150%). Wired through window._padGlowScale().
@@ -6616,13 +6635,53 @@ function renderBank(){
         var _press=(window._tapPressure!==undefined)?window._tapPressure:0.5;
         var count=Math.round(8+_press*72+Math.random()*8);
         var LIFETIME=window._partLifeMult||55;
+        // Quads-mode particle isolation: when quads is on, particles
+        // only spawn from the two outer edges of the tapped quadrant
+        // (and only along the half of each edge closer to that
+        // quadrant), so the burst visibly emanates from one corner
+        // instead of the whole pad.
+        var _quadIsolate = !!(window._multiHitOn && window._multiHitQuadsOn);
+        var _qX = window._currentTapRelX;
+        var _qY = window._currentTapRelY;
+        var _qW = (_qX != null) ? (_qX < 0.5) : true;   // tap is in west half?
+        var _qN = (_qY != null) ? (_qY < 0.5) : true;   // tap is in north half?
         for(var p=0;p<count;p++){
-          var side=Math.floor(Math.random()*4);
+          var side;
+          if(_quadIsolate){
+            // Pick one of the two valid outer sides for the tapped
+            // quadrant. NW: top(0)+left(3); NE: top(0)+right(1);
+            // SW: bottom(2)+left(3); SE: bottom(2)+right(1).
+            if(_qN && _qW)       side = (Math.random()<0.5) ? 0 : 3;
+            else if(_qN && !_qW) side = (Math.random()<0.5) ? 0 : 1;
+            else if(!_qN && _qW) side = (Math.random()<0.5) ? 2 : 3;
+            else                 side = (Math.random()<0.5) ? 2 : 1;
+          } else {
+            side=Math.floor(Math.random()*4);
+          }
           var px,py,angle;
-          if(side===0){      px=tx+Math.random()*tw; py=ty;    angle=-Math.PI/2+(Math.random()-0.5)*Math.PI*0.85;}
-          else if(side===1){ px=tx+tw; py=ty+Math.random()*th; angle=(Math.random()-0.5)*Math.PI*0.85;}
-          else if(side===2){ px=tx+Math.random()*tw; py=ty+th; angle=Math.PI/2+(Math.random()-0.5)*Math.PI*0.85;}
-          else{              px=tx; py=ty+Math.random()*th;    angle=Math.PI+(Math.random()-0.5)*Math.PI*0.85;}
+          // Position along the chosen edge — restricted to the half
+          // closer to the tapped quadrant when isolation is on.
+          if(side===0){ // top edge
+            var _topRange = _quadIsolate ? (_qW ? [0, tw/2] : [tw/2, tw]) : [0, tw];
+            px = tx + _topRange[0] + Math.random() * (_topRange[1] - _topRange[0]);
+            py = ty;
+            angle = -Math.PI/2 + (Math.random()-0.5)*Math.PI*0.85;
+          } else if(side===1){ // right edge
+            var _rRange = _quadIsolate ? (_qN ? [0, th/2] : [th/2, th]) : [0, th];
+            px = tx + tw;
+            py = ty + _rRange[0] + Math.random() * (_rRange[1] - _rRange[0]);
+            angle = (Math.random()-0.5)*Math.PI*0.85;
+          } else if(side===2){ // bottom edge
+            var _bRange = _quadIsolate ? (_qW ? [0, tw/2] : [tw/2, tw]) : [0, tw];
+            px = tx + _bRange[0] + Math.random() * (_bRange[1] - _bRange[0]);
+            py = ty + th;
+            angle = Math.PI/2 + (Math.random()-0.5)*Math.PI*0.85;
+          } else { // left edge
+            var _lRange = _quadIsolate ? (_qN ? [0, th/2] : [th/2, th]) : [0, th];
+            px = tx;
+            py = ty + _lRange[0] + Math.random() * (_lRange[1] - _lRange[0]);
+            angle = Math.PI + (Math.random()-0.5)*Math.PI*0.85;
+          }
           // Scale speed with tile size: 1x at TILE_SCALE<=1.0, up to 2x at max (3.0)
           var speedMult=(TILE_SCALE<=1.0)?1.0:1.0+(TILE_SCALE-1.0)/2.0;
           var pressMult=0.2+_press*2.3;
@@ -6787,10 +6846,10 @@ function renderBank(){
         // Clamp the input to a sane 0..1 range first.
         var _pRaw=Math.max(0, Math.min(1, pressure));
 
-        // Map PRESSURE_BASE (slider can go 0.1..3.1; natural taps saturate around 1.6)
-        // to the same 0..1 scale as _pRaw (which uses 0.1..1.6). Since PRESSURE_BASE
-        // can exceed 1.6, we clamp its mapping to 1.0 in the reference volume calc.
-        var _pBase=Math.max(0, Math.min(1, (PRESSURE_BASE-0.1)/1.5));
+        // Map PRESSURE_BASE (slider can go 0.1..3.1; natural taps saturate
+        // around 1.2 on most devices). Use the same 0.1..1.2 scale as _pRaw.
+        // PRESSURE_BASE values above 1.2 clamp to 1.0 in the reference calc.
+        var _pBase=Math.max(0, Math.min(1, (PRESSURE_BASE-0.1)/1.1));
 
         // Apply PRESSURE_RANGE: scale both raw and base around 0.5 (neutral).
         //   RANGE=0 → no effect (always 0.5)
@@ -6831,11 +6890,92 @@ function renderBank(){
           // and fades on touchend. Falls back to one-shot for non-sample pads.
           _startHeldVoice(sndIdx, vol, window._currentTapPan, window._currentTapPanV);
         } else {
-          playBankSound(sndIdx,vol,window._currentTapPan,window._currentTapPanV);
+          // ── Multi-hit: resolve total hit count + delay ──
+          // In quads mode, the quadrant of the tap determines the
+          // pattern (NW=1, NE=2 at selected, SW=3 at triplet,
+          // SE=2 at next-faster). Outside quads mode, the menu's
+          // selected division decides everything.
+          var _mhPlan = window._multiHitResolvePlan
+            ? window._multiHitResolvePlan(window._currentTapRelX, window._currentTapRelY)
+            : null;
+          var _firstVol = vol;
+          if(window._multiHitOn && _mhPlan && _mhPlan.totalHits > 1){
+            var _N = _mhPlan.totalHits;
+            var _accent = (window._sfxSettings && typeof window._sfxSettings.multiHitAccent === 'number')
+              ? window._sfxSettings.multiHitAccent : 0;
+            if(_accent > 0){
+              _firstVol = vol * (1 + _accent * (_N - 1) / _N);
+              if(_firstVol > 4) _firstVol = 4;
+            }
+          }
+          playBankSound(sndIdx,_firstVol,window._currentTapPan,window._currentTapPanV);
+          // Quads-mode quadrant flash — faint red overlay on the
+          // tapped quadrant, fades out shortly after.
+          if(window._multiHitOn && window._multiHitQuadsOn && window._showQuadFlash && _mhPlan){
+            try{ window._showQuadFlash(el, _mhPlan.quadrant); }catch(_){}
+          }
         }
         window._lastActivePad=idx;
         window._lastTapPanVal=window._currentTapPan;
-        if(window._seqNoteOn) _seqNoteOn(sndIdx,idx,vol);
+        // Record the first hit. Use _firstVol so accent shows up in
+        // playback. Capture the quantized base time so multi-hit
+        // extras can anchor their precise offsets to the same point.
+        // For triplet-based multi-hit clusters, set a one-shot feel
+        // override so the first hit gets tagged feel=12 (triplet view)
+        // rather than the live FEEL — keeps the whole cluster visible
+        // under one grid family.
+        var _baseRecTime = null;
+        if(window._seqNoteOn){
+          var _firstRecVol = (window._multiHitOn && _mhPlan && _mhPlan.totalHits > 1) ? _firstVol : vol;
+          if(window._multiHitOn && _mhPlan && _mhPlan.isTriplet){
+            window._seqRecFeelOverride = 12;
+          }
+          _baseRecTime = _seqNoteOn(sndIdx, idx, _firstRecVol);
+        }
+        // Schedule extra pad fires per the resolved plan. Skipped for
+        // held pads (hold owns the voice while finger's down) and for
+        // beat-edit toggles (those return above before reaching here).
+        if(window._multiHitOn && !_holdTaggedPads[idx] && _mhPlan && _mhPlan.totalHits > 1){
+          var _mhPan  = window._currentTapPan;
+          var _mhPanV = window._currentTapPanV;
+          var _mhSnd  = sndIdx;
+          var _mhBank = idx;
+          var _mhDelayMs = _mhPlan.delayMs;
+          var _mhExtras  = _mhPlan.totalHits - 1;
+          var _mhAccent  = (window._sfxSettings && typeof window._sfxSettings.multiHitAccent === 'number')
+            ? window._sfxSettings.multiHitAccent : 0;
+          var _mhN = _mhPlan.totalHits;
+          var _mhExtraVol = vol;
+          if(_mhAccent > 0){
+            _mhExtraVol = vol * (1 - _mhAccent / _mhN);
+            if(_mhExtraVol < 0.001) _mhExtraVol = 0.001;
+          }
+          // Record each extra into the recording track immediately
+          // (with its precise time offset) so playback reproduces
+          // the multi-hit pattern. We record at trigger time rather
+          // than at fire time so all extras are present in the
+          // recording even if the user releases REC before they fire.
+          // Triplet-based patterns (SW quadrant in quads mode, or any
+          // *triplet division in standard mode) get tagged with feel=12
+          // so the events live under the triplet view of the beat-light
+          // grid — that way the user can see and edit them.
+          if(_baseRecTime !== null && window._seqRecExtraNote){
+            var _mhFeelOverride = (_mhPlan.isTriplet) ? 12 : undefined;
+            for(var _eRec = 1; _eRec <= _mhExtras; _eRec++){
+              var _offMs = _mhDelayMs * _eRec;
+              window._seqRecExtraNote(_mhSnd, _mhBank, _baseRecTime, _offMs, _mhExtraVol, _mhPan, _mhPanV, _mhFeelOverride);
+            }
+          }
+          if(_mhDelayMs > 0 && _mhDelayMs < 4000){
+            for(var _eh = 1; _eh <= _mhExtras; _eh++){
+              (function(_step){
+                setTimeout(function(){
+                  try{ playBankSound(_mhSnd, _mhExtraVol, _mhPan, _mhPanV); }catch(_){}
+                }, _mhDelayMs * _step);
+              })(_eh);
+            }
+          }
+        }
         // Pad tap haptic — scales with pressure when sens is on
         if(window._padHaptic) window._padHaptic(vol, false);
 
@@ -6928,7 +7068,7 @@ function renderBank(){
           // left-to-right synced to the waveform fill playhead, giving the
           // hold-pad press a dynamic "filling up" feel instead of an
           // all-at-once flash.
-          if(GLOW_ON){ var _gsH=window._padGlowScale?window._padGlowScale():1.0; var _aHh=Math.max(0,Math.min(1,0.7*_gsH)); var _aLh=Math.max(0,Math.min(1,0.25*_gsH)); el.style.boxShadow='0 0 28px 8px '+hexToRgba(_tapCol,_aHh)+',0 0 50px 12px '+hexToRgba(_tapCol,_aLh); } else { el.style.boxShadow='none'; }
+          if(GLOW_ON){ var _gsH=window._padGlowScale?window._padGlowScale():1.0; var _aHh=Math.max(0,Math.min(1,0.7*_gsH)); var _aLh=Math.max(0,Math.min(1,0.25*_gsH)); if(window._setPadGlow){ window._setPadGlow(el, hexToRgba(_tapCol,_aHh), hexToRgba(_tapCol,_aLh)); } else { el.style.boxShadow='0 0 28px 8px '+hexToRgba(_tapCol,_aHh)+',0 0 50px 12px '+hexToRgba(_tapCol,_aLh); } } else { if(window._clearPadGlow) window._clearPadGlow(el); else el.style.boxShadow='none'; }
           spawnParticles(el);
           if(window._flashPadWaveform) window._flashPadWaveform(el, idx);
           // No cleanup timeout — touchend/touchcancel will clear the glow.
@@ -6949,23 +7089,23 @@ function renderBank(){
           el.classList.remove('spinning');
           void el.offsetWidth;
           el.classList.add('spinning','active-flash');
-          var _gsS=window._padGlowScale?window._padGlowScale():1.0; var _aHs=Math.max(0,Math.min(1,0.7*_gsS)); var _aLs=Math.max(0,Math.min(1,0.25*_gsS)); var _aBs=Math.max(0.05,Math.min(1,1.0*_gsS)); el.style.border='1.5px solid '+hexToRgba(_tapCol,_aBs); if(GLOW_ON){ el.style.boxShadow='0 0 28px 8px '+hexToRgba(_tapCol,_aHs)+',0 0 50px 12px '+hexToRgba(_tapCol,_aLs); } else { el.style.boxShadow='none'; }
+          var _gsS=window._padGlowScale?window._padGlowScale():1.0; var _aHs=Math.max(0,Math.min(1,0.7*_gsS)); var _aLs=Math.max(0,Math.min(1,0.25*_gsS)); var _aBs=Math.max(0.05,Math.min(1,1.0*_gsS)); el.style.border='1.5px solid '+hexToRgba(_tapCol,_aBs); if(GLOW_ON){ if(window._setPadGlow){ window._setPadGlow(el, hexToRgba(_tapCol,_aHs), hexToRgba(_tapCol,_aLs)); } else { el.style.boxShadow='0 0 28px 8px '+hexToRgba(_tapCol,_aHs)+',0 0 50px 12px '+hexToRgba(_tapCol,_aLs); } } else { if(window._clearPadGlow) window._clearPadGlow(el); else el.style.boxShadow='none'; }
           spawnParticles(el);
           if(window._flashPadWaveform) window._flashPadWaveform(el, idx);
           // Cancel any previous cleanup timer — otherwise the old one fires
           // mid-rotation on rapid retriggers and kills the animation early.
           if(el._flashCleanupTimer){ clearTimeout(el._flashCleanupTimer); }
-          el._flashCleanupTimer = setTimeout(function(){ el._flashCleanupTimer=null; el.classList.remove('spinning','active-flash'); el.style.background=''; el.style.removeProperty('--tap-glow'); el.style.removeProperty('--tap-glow-soft'); applyTileColor(el,idx); },_spinDur);
+          el._flashCleanupTimer = setTimeout(function(){ el._flashCleanupTimer=null; el.classList.remove('spinning','active-flash'); el.style.background=''; el.style.removeProperty('--tap-glow'); el.style.removeProperty('--tap-glow-soft'); if(window._clearPadGlow) window._clearPadGlow(el); applyTileColor(el,idx); },_spinDur);
         } else {
           el.classList.add('pressed','active-flash');
-          var _gsP=window._padGlowScale?window._padGlowScale():1.0; var _aHp=Math.max(0,Math.min(1,0.7*_gsP)); var _aLp=Math.max(0,Math.min(1,0.25*_gsP)); var _aBp=Math.max(0.05,Math.min(1,1.0*_gsP)); el.style.border='1.5px solid '+hexToRgba(_tapCol,_aBp); if(GLOW_ON){ el.style.boxShadow='0 0 28px 8px '+hexToRgba(_tapCol,_aHp)+',0 0 50px 12px '+hexToRgba(_tapCol,_aLp); } else { el.style.boxShadow='none'; }
+          var _gsP=window._padGlowScale?window._padGlowScale():1.0; var _aHp=Math.max(0,Math.min(1,0.7*_gsP)); var _aLp=Math.max(0,Math.min(1,0.25*_gsP)); var _aBp=Math.max(0.05,Math.min(1,1.0*_gsP)); el.style.border='1.5px solid '+hexToRgba(_tapCol,_aBp); if(GLOW_ON){ if(window._setPadGlow){ window._setPadGlow(el, hexToRgba(_tapCol,_aHp), hexToRgba(_tapCol,_aLp)); } else { el.style.boxShadow='0 0 28px 8px '+hexToRgba(_tapCol,_aHp)+',0 0 50px 12px '+hexToRgba(_tapCol,_aLp); } } else { if(window._clearPadGlow) window._clearPadGlow(el); else el.style.boxShadow='none'; }
           spawnParticles(el);
           if(window._flashPadWaveform) window._flashPadWaveform(el, idx);
           var _spPf=Math.max(0,Math.min(1,pressure));
           var _fbd=window._flashBaseDur||180;
           // Same stale-timeout guard as the spin branch above.
           if(el._flashCleanupTimer){ clearTimeout(el._flashCleanupTimer); }
-          el._flashCleanupTimer = setTimeout(function(){ el._flashCleanupTimer=null; el.classList.remove('pressed','active-flash'); el.style.background=''; el.style.removeProperty('--tap-glow'); el.style.removeProperty('--tap-glow-soft'); applyTileColor(el,idx); },Math.round(_fbd*(0.5+_spPf)));
+          el._flashCleanupTimer = setTimeout(function(){ el._flashCleanupTimer=null; el.classList.remove('pressed','active-flash'); el.style.background=''; el.style.removeProperty('--tap-glow'); el.style.removeProperty('--tap-glow-soft'); if(window._clearPadGlow) window._clearPadGlow(el); applyTileColor(el,idx); },Math.round(_fbd*(0.5+_spPf)));
         }
       }
       // Long-press for sample recording — measured on touchend
@@ -7064,10 +7204,16 @@ function renderBank(){
           var _tapPanVal=null;
           var _tapRelX=0.5, _tapRelY=0.5;
           var _tapPanVVal=null;
-          if(PAD_PAN_ON && el.offsetWidth>=60){
+          // Always compute relative tap coordinates within the tile —
+          // these are used by both pan automation (gated on PAD_PAN_ON)
+          // and quads-mode quadrant detection (gated on
+          // window._multiHitQuadsOn).
+          if(el.offsetWidth >= 30){
             var _tileRect=el.getBoundingClientRect();
             _tapRelX=Math.max(0,Math.min(1,(_t.clientX-_tileRect.left)/_tileRect.width));
             _tapRelY=Math.max(0,Math.min(1,(_t.clientY-_tileRect.top)/_tileRect.height));
+          }
+          if(PAD_PAN_ON && el.offsetWidth>=60){
             _tapPanVal=(_tapRelX*2)-1;
             _tapPanVVal=(_tapRelY*2)-1;
           }
@@ -7115,8 +7261,15 @@ function renderBank(){
             // else keep _r as-is (50% chance)
           }
           _r=Math.max(0.1,_r); // floor at 0.1
-          // Normalize raw radius to 0..1 using the natural touchscreen range 0.1..1.6
-          var _p=Math.max(0,(_r-0.1)/1.5);
+          // Normalize raw radius to 0..1 using the REALISTIC touchscreen
+          // range 0.1..1.2. Most Android devices (including the S23)
+          // cap radiusX around 1.2 even on very firm thumb-squishes —
+          // the older 0.1..1.6 mapping made it physically impossible
+          // to reach _pRaw=1.0, so the sensitivity multiplier always
+          // topped out well below its theoretical max. With 1.2 as
+          // the effective max, a hard tap now actually hits the top
+          // of the curve.
+          var _p=Math.max(0,Math.min(1,(_r-0.1)/1.1));
           // Smoothing: pull this tap's pressure toward the previous tap's pressure.
           // At 0 smoothing → no effect. At ~0.95 → big change is heavily damped.
           var _sm=window._pressureSmoothing||0;
@@ -7147,7 +7300,8 @@ function renderBank(){
           el.style.background='';
           el.style.removeProperty('--tap-glow');
           el.style.removeProperty('--tap-glow-soft');
-          el.style.boxShadow='';
+          if(window._clearPadGlow) window._clearPadGlow(el);
+          else el.style.boxShadow='';
           applyTileColor(el, idx);
         }
         // Don't clear styles here — active-flash class handles visual state
@@ -7182,7 +7336,8 @@ function renderBank(){
           el.style.background='';
           el.style.removeProperty('--tap-glow');
           el.style.removeProperty('--tap-glow-soft');
-          el.style.boxShadow='';
+          if(window._clearPadGlow) window._clearPadGlow(el);
+          else el.style.boxShadow='';
           applyTileColor(el, idx);
         }
         _holdFired=false;
@@ -7274,6 +7429,9 @@ function renderBank(){
   if(window._updateSampleIcons) window._updateSampleIcons();
   if(window._updateExprGrid) window._updateExprGrid();
   if(window._updateHideNums) window._updateHideNums();
+  // Re-apply the multi-hit quads grid overlay if quads is on, since
+  // tile rebuild wipes child elements.
+  if(window._refreshQuadOverlays) window._refreshQuadOverlays();
 }
 
 // Re-render bank tile mic icons after sample load
@@ -7426,6 +7584,18 @@ function _flashPadWaveform(tile, bankIdx, gsOverride){
   var w = cv.width, h = cv.height;
   var ctx = cv.getContext('2d');
   ctx.clearRect(0, 0, w, h);
+  // In quads mode, redraw the dim resting waveform across the whole
+  // canvas first so the unlit portion stays visible behind/around
+  // the lit quadrant slice. Without this, clearRect would wipe the
+  // unlit half (since the lit pass below only covers the quadrant
+  // rect) and the waveform would appear to disappear in 3 quadrants.
+  // Standard mode skips this — the lit pass redraws the full waveform
+  // anyway so there's no need.
+  var quadsOnEarly = !!(window._multiHitOn && window._multiHitQuadsOn);
+  if(quadsOnEarly){
+    var dimCol0 = col ? alphaColor(col, 0.35) : 'rgba(0,217,255,0.35)';
+    _drawPadWaveform(cv, buf, dimCol0);
+  }
   var data = buf.getChannelData(0);
   var step = Math.max(1, Math.floor(data.length / w));
   var mid = h / 2;
@@ -7435,6 +7605,28 @@ function _flashPadWaveform(tile, bankIdx, gsOverride){
   var rr = parseInt(hh.substr(0,2),16) || 239;
   var gg = parseInt(hh.substr(2,2),16) || 68;
   var bb = parseInt(hh.substr(4,2),16) || 68;
+
+  // Quads-mode confinement: keep the waveform at full pad scale (so
+  // its shape matches the dim resting state — no rescaling), but
+  // only LIGHT UP the slice of waveform geometry that happens to
+  // fall inside the tapped quadrant. Other quadrants stay dark.
+  // Pads where most of the waveform lives in one half will only
+  // light up brightly when that half is tapped; quadrants with
+  // little signal will barely light up at all — that visual
+  // contrast is exactly the "where did I tap?" cue.
+  var quadsOn = !!(window._multiHitOn && window._multiHitQuadsOn);
+  var rx = window._currentTapRelX, ry = window._currentTapRelY;
+  var qWest  = (rx != null) ? (rx < 0.5) : true;
+  var qNorth = (ry != null) ? (ry < 0.5) : true;
+  var quadrant = qNorth ? (qWest ? 'NW' : 'NE') : (qWest ? 'SW' : 'SE');
+  // Quadrant rectangle in canvas pixel space. Always covers exactly
+  // half the canvas in each dimension, anchored to the quadrant's
+  // outer corner.
+  var quadW = Math.floor(w / 2);
+  var quadH = Math.floor(h / 2);
+  var quadX = qWest  ? 0 : (w - quadW);
+  var quadY = qNorth ? 0 : (h - quadH);
+
   // Saturated pixel-aligned waveform bars on pure black background.
   // Canvas stays transparent (just the cleared state), so the pad's
   // black interior shows through — only the waveform itself is red.
@@ -7454,12 +7646,25 @@ function _flashPadWaveform(tile, bankIdx, gsOverride){
   var glowBlur = Math.max(2, Math.min(200, 4 + gsQ * 40));
   var glowAlpha = Math.max(0.15, Math.min(1.0, 0.2 + gsQ * 0.6));
   ctx.save();
+  // In quads mode, clip drawing (and the soft glow halo around the
+  // bars) to the quadrant rect so neither bars nor glow appear
+  // outside the tapped quadrant.
+  if(quadsOn){
+    ctx.beginPath();
+    ctx.rect(quadX, quadY, quadW, quadH);
+    ctx.clip();
+  }
   ctx.shadowColor = 'rgba(' + rr + ',' + gg + ',' + bb + ',' + glowAlpha.toFixed(3) + ')';
   ctx.shadowBlur = glowBlur * dpr;
   // Fill color invisible so only the shadow shows (fully transparent
   // bars, but shadowBlur still renders a halo around their shape).
   ctx.fillStyle = 'rgba(' + rr + ',' + gg + ',' + bb + ',0.9)';
-  for(var x0 = 0; x0 < w; x0++){
+  // x-loop optimization in quads mode: skip the horizontal range
+  // outside the quadrant. We still iterate the full x range when
+  // quads is off so behavior is identical to before.
+  var xStart = quadsOn ? quadX : 0;
+  var xEnd   = quadsOn ? (quadX + quadW) : w;
+  for(var x0 = xStart; x0 < xEnd; x0++){
     var mn0 = 1, mx0 = -1;
     var s0 = x0 * step, e0 = Math.min(s0 + step, data.length);
     for(var i0 = s0; i0 < e0; i0++){
@@ -7473,8 +7678,14 @@ function _flashPadWaveform(tile, bankIdx, gsOverride){
   }
   ctx.restore();
   // Draw pass 2: solid saturated bars on top of the glow, no shadow.
+  ctx.save();
+  if(quadsOn){
+    ctx.beginPath();
+    ctx.rect(quadX, quadY, quadW, quadH);
+    ctx.clip();
+  }
   ctx.fillStyle = 'rgba(' + rr + ',' + gg + ',' + bb + ',' + barAlpha.toFixed(3) + ')';
-  for(var x = 0; x < w; x++){
+  for(var x = xStart; x < xEnd; x++){
     var mn = 1, mx = -1;
     var s = x * step, e = Math.min(s + step, data.length);
     for(var i = s; i < e; i++){
@@ -7486,20 +7697,75 @@ function _flashPadWaveform(tile, bankIdx, gsOverride){
     var yMax = Math.ceil(mid - mn * mid);
     ctx.fillRect(x, yMin, barW, Math.max(1, yMax - yMin));
   }
-  // Glow via box-shadow on the canvas element. Unlike the pad's
-  // outer border glow (which radiates into the gap between pads),
-  // this shadow will be partly clipped by the pad border rectangle
-  // containing it — but at high pressure it still adds a subtle
-  // red halo around the waveform edges inside the pad.
-  var glowBlur = Math.round(6 + gs * 10);
-  var glowSpread = Math.round(gs * 2);
+  ctx.restore();
+  // Glow via box-shadow. In standard mode this goes on the canvas
+  // itself, painting a halo around the full-pad waveform shape. In
+  // quads mode the canvas is full-pad even though only the
+  // quadrant slice lit up, so we route the bloom through a small
+  // overlay positioned at the quadrant's outer corner with
+  // clip-path so it only emanates outward from that corner.
+  var glowBlurSh = Math.round(6 + gs * 10);
+  var glowSpreadSh = Math.round(gs * 2);
   var glowA1 = Math.max(0.3, Math.min(0.9, 0.5 * gs));
-  cv.style.boxShadow = '0 0 ' + glowBlur + 'px ' + glowSpread + 'px '
-                     + hexToRgba(tapCol, glowA1);
+  var shadowVal = '0 0 ' + glowBlurSh + 'px ' + glowSpreadSh + 'px '
+                + hexToRgba(tapCol, glowA1);
+  // Clean up any prior overlay before applying the new flash.
+  var priorOv = tile.querySelector('._waveQuadGlow');
+  if(priorOv && priorOv.parentNode) priorOv.parentNode.removeChild(priorOv);
+  if(!quadsOn){
+    cv.style.boxShadow = shadowVal;
+  } else {
+    // Suppress the canvas's own box-shadow so the pad-wide halo
+    // doesn't fight the directional one.
+    cv.style.boxShadow = 'none';
+    var leftPct = qWest ? '0%' : '50%';
+    var topPct  = qNorth ? '0%' : '50%';
+    var EXT = '60px';
+    var clip;
+    if(quadrant === 'NW')      clip = 'inset(-'+EXT+' 0 0 -'+EXT+')';
+    else if(quadrant === 'NE') clip = 'inset(-'+EXT+' -'+EXT+' 0 0)';
+    else if(quadrant === 'SW') clip = 'inset(0 0 -'+EXT+' -'+EXT+')';
+    else                       clip = 'inset(0 -'+EXT+' -'+EXT+' 0)';
+    // Match the pad's outer corner radius so the overlay conforms
+    // to the pad's curved edge rather than sticking out as a square.
+    var padRadiusW = '';
+    try{
+      var csW = window.getComputedStyle(tile);
+      padRadiusW = csW.borderTopLeftRadius || '6px';
+    }catch(_){ padRadiusW = '6px'; }
+    var wRadii;
+    if(quadrant === 'NW')      wRadii = padRadiusW + ' 0 0 0';
+    else if(quadrant === 'NE') wRadii = '0 ' + padRadiusW + ' 0 0';
+    else if(quadrant === 'SE') wRadii = '0 0 ' + padRadiusW + ' 0';
+    else                       wRadii = '0 0 0 ' + padRadiusW;
+    var ov = document.createElement('div');
+    ov.className = '_waveQuadGlow';
+    ov.style.cssText =
+      'position:absolute;left:'+leftPct+';top:'+topPct+';'+
+      'width:50%;height:50%;pointer-events:none;z-index:0;'+
+      'background:transparent;'+
+      'border-radius:'+wRadii+';'+
+      'box-shadow:'+shadowVal+';'+
+      '-webkit-clip-path:'+clip+';clip-path:'+clip+';';
+    var prevPos = tile.style.position;
+    if(!prevPos || prevPos === 'static') tile.style.position = 'relative';
+    // Ensure overflow is visible so the directional bloom can escape
+    // the pad's bounds. _setPadGlow may have already done this for the
+    // border-glow effect; if not, do it here. _clearPadGlow's saved
+    // dataset._priorOverflow handles restoration on cleanup, so we
+    // only set _priorOverflow here if it's not already set.
+    if(tile.dataset._priorOverflow === undefined){
+      tile.dataset._priorOverflow = tile.style.overflow || '';
+    }
+    tile.style.overflow = 'visible';
+    tile.appendChild(ov);
+  }
   var fbd = (window._flashBaseDur || 180) * 2;
   tile._waveFlashTimer = setTimeout(function(){
     tile._waveFlashTimer = null;
     cv.style.boxShadow = '';
+    var stillOv = tile.querySelector('._waveQuadGlow');
+    if(stillOv && stillOv.parentNode) stillOv.parentNode.removeChild(stillOv);
     if(window._padWavePlays && window._padWavePlays[bankIdx]) return;
     var dimCol = col ? alphaColor(col, 0.35) : 'rgba(0,217,255,0.35)';
     _drawPadWaveform(cv, buf, dimCol);
@@ -9659,7 +9925,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var closeBtn=document.createElement('button');
     closeBtn.textContent='✕';
     closeBtn.style.cssText='background:transparent;border:1px solid rgba(0,217,255,0.4);border-radius:4px;color:var(--cyan);font-family:monospace;font-size:12px;width:26px;height:26px;cursor:pointer;line-height:1;';
-    closeBtn.addEventListener('click',function(){ ov.parentNode&&ov.parentNode.removeChild(ov); });
+    closeBtn.addEventListener('click',function(){ if(window._btnFx) window._btnFx('tool_off'); ov.parentNode&&ov.parentNode.removeChild(ov); });
     hdr.appendChild(title); hdr.appendChild(closeBtn);
     card.appendChild(hdr);
 
@@ -9889,6 +10155,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
 
     ov.appendChild(card);
     ov.addEventListener('click',function(){
+      if(window._btnFx) window._btnFx('tool_off');
       ov.parentNode&&ov.parentNode.removeChild(ov);
     });
     document.body.appendChild(ov);
@@ -9901,7 +10168,13 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   }
 
   var seqSettingsBtn=document.getElementById('seqSettingsBtn');
-  if(seqSettingsBtn) seqSettingsBtn.addEventListener('click', showSettingsModal);
+  if(seqSettingsBtn) seqSettingsBtn.addEventListener('click', function(){
+    // Re-tapping the gear toggles the modal closed; play the right
+    // chirp for whichever direction this click triggers.
+    var willClose = !!document.getElementById('_settingsModal');
+    if(window._btnFx) window._btnFx(willClose ? 'tool_off' : 'tool_on');
+    showSettingsModal();
+  });
 
   // ── Pad name labels toggle (ABC) ──
   // Reads/writes window._padLabelsOn; persisted in localStorage.
@@ -12996,7 +13269,16 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       var _panV=window._currentTapPanV||null;
       // Capture EXPR pitch if active
       var _exprP=(PAD_EXPR_ON && window._exprPitch!==null)?window._exprPitch:null;
-      var _ev={ sndIdx:sndIdx, bankIdx:bankIdx, time:qt, bpmAtRecord:bpm, feel:beatsPerBar, kitIdx:(window._activeKitIdx||0), vol:_vol, panH:_panH, panV:_panV, exprPitch:_exprP, pitchCurve:[[0,_pb]] };
+      // Honor a one-shot feel override (set by the multi-hit trigger
+      // when the cluster is triplet-based, so the first hit lives in
+      // the same feel family as its extras and the user sees the
+      // whole pattern together when switching FEEL views).
+      var _evFeel = (typeof window._seqRecFeelOverride === 'number' && window._seqRecFeelOverride > 0)
+        ? window._seqRecFeelOverride : beatsPerBar;
+      // Clear after consuming so the override only affects this one
+      // event — subsequent free taps go back to the live FEEL.
+      window._seqRecFeelOverride = null;
+      var _ev={ sndIdx:sndIdx, bankIdx:bankIdx, time:qt, bpmAtRecord:bpm, feel:_evFeel, kitIdx:(window._activeKitIdx||0), vol:_vol, panH:_panH, panV:_panV, exprPitch:_exprP, pitchCurve:[[0,_pb]] };
       recTrack.push(_ev);
       // Sample pitch every 40ms for 640ms to capture the bend curve
       var _ps=1;
@@ -13006,7 +13288,44 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
         if(_ps>16) clearInterval(_pSampler);
       },40);
       updateBeatDotActivity();
+      // Return the quantized base time so callers (multi-hit extras)
+      // can anchor their offsets to it instead of recomputing.
+      return qt;
     }
+    return null;
+  };
+
+  // Record an extra hit at `baseTime + offsetMs` — used by multi-hit
+  // to push the second/third/fourth notes onto the recording with
+  // precise sub-tap spacing. The offset is added AFTER quantization
+  // so triplet feel within a multi-hit cluster is preserved even when
+  // the global quantize grid is set to a straight value (e.g. 1/8).
+  // No-op when recording is inactive.
+  // `feelOverride` lets callers tag the event with a different feel
+  // family than the current live FEEL setting — needed for multi-hit
+  // triplet patterns: a quarter triplet recorded while FEEL=8 should
+  // be visible under the triplet view (FEEL=12), not pretend to align
+  // to the straight 1/8 grid.
+  window._seqRecExtraNote = function(sndIdx, bankIdx, baseTime, offsetMs, vol, panH, panV, feelOverride){
+    if(recTrack === null) return;
+    var loopMs = getLoopMs();
+    var t = baseTime + offsetMs;
+    if(t >= loopMs) t = t - loopMs; // wrap around if it crosses the loop boundary
+    if(t < 0) t = 0;
+    if(t > loopMs - 10) t = loopMs - 10;
+    var _evFeel = (typeof feelOverride === 'number' && feelOverride > 0) ? feelOverride : beatsPerBar;
+    var _ev = {
+      sndIdx: sndIdx, bankIdx: bankIdx, time: t,
+      bpmAtRecord: bpm, feel: _evFeel,
+      kitIdx: (window._activeKitIdx || 0),
+      vol: vol,
+      panH: (panH !== undefined ? panH : null),
+      panV: (panV !== undefined ? panV : null),
+      exprPitch: null,
+      pitchCurve: [[0, _pitchBend]]
+    };
+    recTrack.push(_ev);
+    updateBeatDotActivity();
   };
 
   // ── Beat clock ───────────────────────────────────────────
@@ -14384,6 +14703,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
   var TS_COLOR='#4b7bb5';
 
   // Menu slider drawing — same code as _drawMixerSlider (no timing dependency)
+  // Draw the track + fill portion of a menu slider. Handle is drawn
+  // separately by _drawMenuSliderHandle so the handle can live on
+  // its own canvas layered above any inline label text.
   function _drawMenuSlider(cv, pct, color){
     if(!cv) return;
     var _hexWithAlpha=window._hexWithAlpha||function(h,a){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return 'rgba('+r+','+g+','+b+','+a+')';};
@@ -14428,8 +14750,25 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       }
       ctx.globalAlpha=1; ctx.restore();
     }
-    // Handle
-    var hH=H+4, hX=Math.round(handleX-hW/2), hY=-2;
+  }
+
+  // Draw the handle (thumb) on a SEPARATE canvas. The handle canvas
+  // sits above the track canvas and the inline label text, so the
+  // handle appears to slide over the text. Where labelBounds is
+  // provided, we punch a translucent hole through the handle wherever
+  // it overlaps the label's glyph band — same trick used in pad
+  // adjustments — so the letters stay legible under the thumb.
+  function _drawMenuSliderHandle(cv, pct, labelBounds){
+    if(!cv) return;
+    var wrap=cv.parentElement; if(!wrap) return;
+    var W=Math.max(10,wrap.offsetWidth||160), H=Math.max(10,wrap.offsetHeight||22);
+    cv.width=W; cv.height=H+4;
+    cv.style.width=W+'px'; cv.style.height=(H+4)+'px';
+    var ctx=cv.getContext('2d');
+    ctx.clearRect(0,0,W,H+4);
+    var hW=10;
+    var handleX=Math.round(hW/2 + (W - hW) * pct);
+    var hH=H+4, hX=Math.round(handleX-hW/2), hY=0;
     ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=3; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1;
     ctx.fillStyle='#1a1a1a'; ctx.beginPath();
     ctx.moveTo(hX+2,hY); ctx.lineTo(hX+hW-2,hY);
@@ -14440,55 +14779,142 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0;
     ctx.strokeStyle='#000'; ctx.lineWidth=1; ctx.stroke();
     ctx.strokeStyle='#666'; ctx.lineWidth=1;
-    var cx2=hX+hW/2, cy=H/2;
+    var cy=(H+4)/2;
     [-3,0,3].forEach(function(dy){
       ctx.beginPath(); ctx.moveTo(hX+2,cy+dy); ctx.lineTo(hX+hW-2,cy+dy); ctx.stroke();
     });
+    // Punch translucency through the handle wherever it overlaps
+    // any of the supplied glyph bands. Can be a single bounds object
+    // or an array of them (e.g. both the inline label AND the inline
+    // value text on the same bar). `destination-out` at alpha 0.75
+    // erases 75% of the handle's alpha within each rect.
+    if(labelBounds){
+      var boundsList = Array.isArray(labelBounds) ? labelBounds : [labelBounds];
+      boundsList.forEach(function(lb){
+        if(!lb) return;
+        var ox1 = Math.max(hX, lb.left);
+        var ox2 = Math.min(hX+hW, lb.right);
+        var oy1 = Math.max(0, lb.top);
+        var oy2 = Math.min(hH, lb.bottom);
+        if(ox2 > ox1 && oy2 > oy1){
+          ctx.save();
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.globalAlpha = 0.75;
+          ctx.fillStyle = '#000';
+          ctx.fillRect(ox1, oy1, ox2-ox1, oy2-oy1);
+          ctx.restore();
+        }
+      });
+    }
   }
 
   // Build one labeled slider row; returns {row, sl, redraw}
+  // Build one menu slider row. The row is now a SINGLE full-width
+  // slider bar — the label is rendered INSIDE the bar (left end),
+  // the live value is rendered INSIDE the bar (right end), and the
+  // draggable handle sits above both on its own canvas layer with
+  // a transparency punch-through over any glyph band it overlaps.
+  // This gives every menu using _mkSliderRow the same compact row
+  // style and lets sliders run edge-to-edge. Based on the pattern
+  // from the pad-adjustments drawer (see _mkRow/_drawHandle).
   function _mkSliderRow(label, color, initPct, minV, maxV, fmtVal, onChange){
     var row=document.createElement('div');
-    row.style.cssText='display:flex;align-items:center;gap:4px;width:100%;';
-    if(label){
-      var lbl=document.createElement('span');
-      lbl.style.cssText='font-family:monospace;font-size:8px;color:#888;min-width:28px;flex-shrink:0;letter-spacing:.5px;';
-      lbl.textContent=label;
-      row.appendChild(lbl);
-    }
+    row.style.cssText='display:flex;align-items:center;width:100%;';
     var slWrap=document.createElement('div');
     slWrap.style.cssText='position:relative;flex:1;height:22px;touch-action:none;cursor:ew-resize;overflow:visible;filter:drop-shadow(0px 4px 8px '+_hexWithAlpha(color,0.7)+') drop-shadow(0px 2px 4px rgba(0,0,0,0.4));';
+    // Z-stack (bottom → top):
+    //   1. Track+fill canvas (cv)
+    //   2. Inline label span (left-aligned inside bar)
+    //   3. Inline value span (right-aligned inside bar)
+    //   4. Handle canvas (hcv) — punches through the label/value glyphs
+    //   5. Invisible native range input (captures input)
     var cv=document.createElement('canvas');
     cv.id='_tsmCv_'+(Math.random()*1e9|0);
     cv.dataset.slColor=color;
-    cv.style.cssText='position:absolute;left:0;top:0;pointer-events:none;z-index:2;display:block;';
+    cv.style.cssText='position:absolute;left:0;top:0;pointer-events:none;z-index:1;display:block;';
+    var lblEl=null;
+    if(label){
+      lblEl=document.createElement('span');
+      lblEl.style.cssText='position:absolute;left:6px;top:0;bottom:0;display:flex;align-items:center;pointer-events:none;z-index:2;font-family:monospace;font-size:8px;font-weight:700;color:'+color+';letter-spacing:1px;text-shadow:0 0 3px rgba(0,0,0,0.85),0 1px 2px rgba(0,0,0,0.85);user-select:none;white-space:nowrap;';
+      lblEl.textContent=label;
+    }
+    var valEl=document.createElement('span');
+    valEl.style.cssText='position:absolute;right:6px;top:0;bottom:0;display:flex;align-items:center;pointer-events:none;z-index:2;font-family:monospace;font-size:8px;font-weight:700;color:'+color+';letter-spacing:0.5px;text-shadow:0 0 3px rgba(0,0,0,0.85),0 1px 2px rgba(0,0,0,0.85);user-select:none;white-space:nowrap;';
+    var hcv=document.createElement('canvas');
+    hcv.style.cssText='position:absolute;left:0;top:0;pointer-events:none;z-index:3;display:block;';
     var sl=document.createElement('input');
     sl.type='range'; sl.min=minV; sl.max=maxV; sl.step=1;
     sl.value=Math.round(initPct*(maxV-minV)+minV);
     sl.style.cssText='position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ew-resize;z-index:5;-webkit-appearance:none;appearance:none;background:transparent;';
     sl.addEventListener('touchstart',function(e){e.stopPropagation();},{passive:true});
-    slWrap.appendChild(cv); slWrap.appendChild(sl);
+    slWrap.appendChild(cv);
+    if(lblEl) slWrap.appendChild(lblEl);
+    slWrap.appendChild(valEl);
+    slWrap.appendChild(hcv);
+    slWrap.appendChild(sl);
     row.appendChild(slWrap);
-    var vlbl=document.createElement('span');
-    vlbl.style.cssText='font-family:monospace;font-size:8px;color:'+color+';min-width:30px;text-align:right;flex-shrink:0;';
-    vlbl.textContent=fmtVal(parseFloat(sl.value));
-    row.appendChild(vlbl);
+    valEl.textContent=fmtVal(parseFloat(sl.value));
+    function _measureTextW(text, fontSpec){
+      var tmp=document.createElement('canvas').getContext('2d');
+      tmp.font=fontSpec;
+      return tmp.measureText(text||'').width;
+    }
     function redraw(){
       var pct=(parseFloat(sl.value)-minV)/(maxV-minV);
       _drawMenuSlider(cv,pct,color);
-      vlbl.textContent=fmtVal(parseFloat(sl.value));
+      // Update value text first so its bounds are accurate.
+      valEl.textContent=fmtVal(parseFloat(sl.value));
+      // Build combined label-bounds: the union of the label glyph band
+      // on the left and the value glyph band on the right, so the
+      // handle punches through WHICHEVER span it currently overlaps.
+      // We compute two separate bounds and pass them as an array so
+      // _drawMenuSliderHandle can handle each.
+      var wr=slWrap.getBoundingClientRect();
+      if(!wr.width){
+        _drawMenuSliderHandle(hcv, pct, null);
+        return;
+      }
+      var bandH=10;
+      var centerY=wr.height/2;
+      var bounds=[];
+      if(lblEl){
+        var lw=_measureTextW(label, '700 8px monospace');
+        bounds.push({
+          left: Math.floor(6 - 2),
+          right: Math.ceil(6 + lw + 2),
+          top: Math.floor(centerY - bandH/2),
+          bottom: Math.ceil(centerY + bandH/2)
+        });
+      }
+      var vw=_measureTextW(valEl.textContent, '700 8px monospace');
+      bounds.push({
+        left: Math.floor(wr.width - 6 - vw - 2),
+        right: Math.ceil(wr.width - 6 + 2),
+        top: Math.floor(centerY - bandH/2),
+        bottom: Math.ceil(centerY + bandH/2)
+      });
+      _drawMenuSliderHandle(hcv, pct, bounds);
     }
     sl.addEventListener('input',function(){
       redraw();
       onChange(parseFloat(sl.value));
     });
-    // initial draw triggered by _openMenu after DOM append
     if(typeof ResizeObserver!=='undefined'){
       var _ro=new ResizeObserver(function(){ redraw(); });
       _ro.observe(slWrap);
     }
-    return {row:row, sl:sl, redraw:redraw};
+    // Double-rAF so the DOM has been laid out with its real width
+    // before the first draw — matches the pad-adjustments pattern.
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ redraw(); }); });
+    return {row:row, sl:sl, redraw:redraw, slWrap:slWrap, lblEl:lblEl, valEl:valEl};
   }
+  // Export so other panels (like the tap sensitivity panel) can
+  // use the same canvas-style slider without duplicating the
+  // drawing + wiring code.
+  window._mkSliderRow = _mkSliderRow;
+  window._drawMenuSlider = _drawMenuSlider;
+  window._drawMenuSliderHandle = _drawMenuSliderHandle;
+  window._hexWithAlpha = _hexWithAlpha;
 
   // Placeholder chip shown when size/gap slider is docked out to toolbar
   function _mkChip(label, onDock){
@@ -14578,7 +15004,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       sizeWrap.innerHTML='';
       if(false){ void 0; } else {
         var curPct=(TILE_SCALE-0.3)/0.9*100;
-        var sr=_mkSliderRow('SIZE',TS_COLOR,curPct/100,0,100,function(v){return Math.round(v)+'%';},function(v){
+        var sr=window._mkSliderRow('SIZE',TS_COLOR,curPct/100,0,100,function(v){return Math.round(v)+'%';},function(v){
           if(window.applyPctH) window.applyPctH(v);
         });
         sr.sl.value=Math.round(curPct);
@@ -14597,7 +15023,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
       gapWrap.innerHTML='';
       if(false){ void 0; } else {
         var curGapPct=TILE_GAP_MULT*33.33;
-        var gr=_mkSliderRow('GAP',TS_COLOR,curGapPct/100,0,100,function(v){return Math.round(v)+'%';},function(v){
+        var gr=window._mkSliderRow('GAP',TS_COLOR,curGapPct/100,0,100,function(v){return Math.round(v)+'%';},function(v){
           if(window.applyGapPct) window.applyGapPct(v);
         });
         gr.sl.value=Math.round(curGapPct);
@@ -14635,7 +15061,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     hWrap.appendChild(hHdr);
 
     var initH=Math.round((BANK_PAD_L+BANK_PAD_R)/2);
-    var hR=_mkSliderRow('',TS_COLOR,initH/100,0,100,function(v){return Math.round(v)+'px';},function(v){
+    var hR=window._mkSliderRow('',TS_COLOR,initH/100,0,100,function(v){return Math.round(v)+'px';},function(v){
       var px=Math.round(v);
       if(_hLocked){BANK_PAD_L=px;BANK_PAD_R=px;}
       else if(_hSide==='l'){BANK_PAD_L=px;} else {BANK_PAD_R=px;}
@@ -14671,7 +15097,7 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     vWrap.appendChild(vHdr);
 
     var initV=Math.round((BANK_PAD_T+BANK_PAD_B)/2);
-    var vR=_mkSliderRow('',TS_COLOR,initV/100,0,100,function(v){return Math.round(v)+'px';},function(v){
+    var vR=window._mkSliderRow('',TS_COLOR,initV/100,0,100,function(v){return Math.round(v)+'px';},function(v){
       var px=Math.round(v);
       if(_vLocked){BANK_PAD_T=px;BANK_PAD_B=px;}
       else if(_vSide==='t'){BANK_PAD_T=px;} else {BANK_PAD_B=px;}
@@ -15957,6 +16383,7 @@ window._clampScrollTransition=function(anchorEl){
 
   // ── SAVE ────────────────────────────────────────────────
   if(btnSave) btnSave.addEventListener('click', function(){
+    if(window._btnFx) window._btnFx('tool_on');
     if(!window._seq){ alert('Not ready'); return; }
 
     var ts=new Date(), pad=function(n){return n<10?'0'+n:n;};
@@ -15993,12 +16420,13 @@ window._clampScrollTransition=function(anchorEl){
     var cancelBtn=document.createElement('button');
     cancelBtn.textContent='Cancel';
     cancelBtn.style.cssText='font-family:monospace;font-size:11px;padding:6px 14px;border:1.5px solid #00d9ff;border-radius:3px;background:transparent;color:#00d9ff;cursor:pointer;';
-    cancelBtn.onclick=function(){ ov.style.display='none'; };
+    cancelBtn.onclick=function(){ if(window._btnFx) window._btnFx('tool_off'); ov.style.display='none'; };
 
     var okBtn=document.createElement('button');
     okBtn.textContent='SAVE';
     okBtn.style.cssText='font-family:monospace;font-size:11px;padding:6px 14px;border:1.5px solid #00d9ff;border-radius:3px;background:rgba(0,217,255,0.15);color:#00d9ff;cursor:pointer;';
     okBtn.onclick=function(){
+      if(window._btnFx) window._btnFx('tool_off');
       var name=(inp.value||def).trim()||def;
       ov.style.display='none';
       var data=window._seq.getState();
@@ -16071,6 +16499,7 @@ window._clampScrollTransition=function(anchorEl){
 
   // ── LOAD ────────────────────────────────────────────────
   if(btnLoad) btnLoad.addEventListener('click', function(){
+    if(window._btnFx) window._btnFx('tool_on');
     if(!window._seq){ alert('Not ready'); return; }
     var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
@@ -16144,7 +16573,7 @@ window._clampScrollTransition=function(anchorEl){
     var cb=document.createElement('button');
     cb.textContent='Cancel';
     cb.style.cssText='font-family:monospace;font-size:11px;padding:6px 14px;margin-top:10px;border:1.5px solid #00d9ff;border-radius:3px;background:transparent;color:#00d9ff;cursor:pointer;';
-    cb.onclick=function(){ if(document.body.contains(ov)) document.body.removeChild(ov); };
+    cb.onclick=function(){ if(window._btnFx) window._btnFx('tool_off'); if(document.body.contains(ov)) document.body.removeChild(ov); };
     box.appendChild(cb); ov.appendChild(box); document.body.appendChild(ov);
   }
 
@@ -19029,185 +19458,355 @@ window._clampScrollTransition=function(anchorEl){
     if(_sensPanel){ _sensPanel.parentNode.removeChild(_sensPanel); _sensPanel=null; return; }
     var panel=document.createElement('div');
     _sensPanel=panel;
-    panel.style.cssText='position:fixed;z-index:900;background:#151515;border:1.5px solid #00d9ff;border-radius:8px;padding:10px 12px;min-width:270px;max-width:300px;box-shadow:0 0 16px rgba(0,217,255,0.3);display:flex;flex-direction:column;gap:7px;overflow-y:auto;max-height:80vh;';
-    var rect=anchorEl.getBoundingClientRect();
-    panel.style.left=Math.max(4,Math.min(rect.right-280,window.innerWidth-304))+'px';
-    panel.style.top='100px';
+    // Match the PAD DSPLY popup visual pattern — compact card,
+    // softer cyan border, centered cyan header, draggable so the
+    // user can reposition it, DONE button at the bottom. Narrower
+    // width (about half the previous) so it takes up less of the
+    // screen while adjusting settings.
+    panel.style.cssText='position:fixed;z-index:600;background:#151515;border:2px solid rgba(0,217,255,0.45);border-radius:8px;padding:10px;box-shadow:0 4px 20px rgba(0,0,0,0.6);min-width:160px;max-width:200px;display:flex;flex-direction:column;gap:6px;visibility:hidden;max-height:70vh;font-family:monospace;box-sizing:border-box;';
+    // Initial position — top-left, then the user can drag it via
+    // the header. Matches PAD DSPLY's initial placement.
+    panel.style.top='6px';
+    panel.style.left='6px';
 
-    function hdr(txt,col){ var d=document.createElement('div'); d.style.cssText='font-family:monospace;font-size:8px;font-weight:700;color:'+col+';letter-spacing:1px;margin-top:2px;border-bottom:1px solid rgba(0,217,255,0.15);padding-bottom:3px;'; d.textContent=txt; return d; }
+    // Header — centered title, no X button (DONE handles close).
+    // This row is also the drag handle (see _makeDraggableHeader below).
+    var hdrRow=document.createElement('div');
+    hdrRow.style.cssText='font-family:monospace;font-size:9px;color:var(--cyan);letter-spacing:2px;font-weight:700;text-align:center;flex-shrink:0;cursor:move;';
+    hdrRow.textContent='TAP SENSITIVITY';
+    panel.appendChild(hdrRow);
 
-    var title=document.createElement('div');
-    title.style.cssText='font-family:monospace;font-size:9px;font-weight:700;color:#fff;letter-spacing:1px;';
-    title.textContent='TAP SENSITIVITY SETTINGS';
-    panel.appendChild(title);
+    // Scrollable body wrapped in a container that sports top/bottom
+    // fade gradients — like the KITS strip's side fades. The fades
+    // only show when content actually overflows in that direction,
+    // giving a subtle visual cue that there's more to scroll to.
+    var bodyWrap=document.createElement('div');
+    bodyWrap.style.cssText='position:relative;flex:1;min-height:0;display:flex;flex-direction:column;';
+    var body=document.createElement('div');
+    body.style.cssText='display:flex;flex-direction:column;gap:6px;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;min-height:0;padding:2px;';
+    bodyWrap.appendChild(body);
+    // Fade overlay at the top of the scroll area.
+    var fadeTop=document.createElement('div');
+    fadeTop.style.cssText='position:absolute;left:0;right:0;top:0;height:18px;pointer-events:none;background:linear-gradient(to bottom, #151515, rgba(21,21,21,0));opacity:0;transition:opacity 120ms ease;z-index:2;';
+    bodyWrap.appendChild(fadeTop);
+    // Fade overlay at the bottom of the scroll area.
+    var fadeBot=document.createElement('div');
+    fadeBot.style.cssText='position:absolute;left:0;right:0;bottom:0;height:18px;pointer-events:none;background:linear-gradient(to top, #151515, rgba(21,21,21,0));opacity:0;transition:opacity 120ms ease;z-index:2;';
+    bodyWrap.appendChild(fadeBot);
+    panel.appendChild(bodyWrap);
+    function _updateFades(){
+      var st=body.scrollTop, sh=body.scrollHeight, ch=body.clientHeight;
+      fadeTop.style.opacity=(st > 4) ? '1' : '0';
+      fadeBot.style.opacity=(st + ch < sh - 4) ? '1' : '0';
+    }
+    body.addEventListener('scroll', _updateFades, {passive:true});
+    // Evaluate once after initial layout so the bottom fade shows if
+    // the sliders overflow at open time.
+    requestAnimationFrame(function(){ requestAnimationFrame(_updateFades); });
+
+    function hdr(txt,col){ var d=document.createElement('div'); d.style.cssText='font-family:monospace;font-size:7px;font-weight:700;color:'+col+';letter-spacing:1px;margin-top:3px;border-bottom:1px solid rgba(0,217,255,0.15);padding-bottom:2px;'; d.textContent=txt; return d; }
 
     // PRESSURE
-    panel.appendChild(hdr('PRESSURE','#7c3aed'));
+    body.appendChild(hdr('PRESSURE','#7c3aed'));
 
-    // Base slider: 0-100% maps to radius 0.1-3.1
-    // Default 1.6 radius sits at 50% (center), giving room to go softer or harder from there.
-    function baseToRadius(pct){ return 0.1+(pct/100)*3.0; }
-    function radiusToBase(r){ return (r-0.1)/3.0*100; }
+    // Base slider: 0-100% maps to radius 0.1-1.2
+    function baseToRadius(pct){ return 0.1+(pct/100)*1.1; }
+    function radiusToBase(r){ return (r-0.1)/1.1*100; }
     var _basePct=radiusToBase(PRESSURE_BASE);
-    var baseRow=mkRow('Base (100% vol point)', '_spBase', 0, 100, 1, _basePct, '%→'+PRESSURE_BASE.toFixed(2)+'r', '#7c3aed');
-    baseRow.sl.addEventListener('_sync',function(){
-      var pct=parseFloat(baseRow.sl.value);
-      PRESSURE_BASE=parseFloat(baseToRadius(pct).toFixed(2));
-      baseRow.vl.textContent=pct.toFixed(0)+'%→'+PRESSURE_BASE.toFixed(2)+'r';
-    });
-    panel.appendChild(baseRow.row);
+    var baseRow=window._mkSliderRow('BASE','#7c3aed', _basePct/100, 0, 100,
+      function(v){ return Math.round(v)+'%'; },
+      function(v){
+        PRESSURE_BASE=parseFloat(baseToRadius(v).toFixed(2));
+        // Re-clamp range limits against the new base so the
+        // hard-factor math stays valid.
+        var rpct = parseFloat(rangeRow.sl.value);
+        var lim=rangeToLimits(rpct);
+        window._sensVolMin=lim.vMin; window._sensVolMax=lim.vMax;
+        var f=_rangeToFactors(rpct);
+        rangeRow.redraw();
+        // Manually update range label since base change affects what
+        // the range slider's current position actually delivers.
+        var rWrap = rangeRow.row.querySelector('span:last-child');
+        if(rWrap) rWrap.textContent = Math.round(f.softFactor*100)+'→'+Math.round(f.hardFactor*100)+'%';
+      });
+    body.appendChild(baseRow.row);
 
-    // Range slider: 0-100%
-    // At 0%:   vMin 0.75, vMax 1.25 (narrow)
-    // At 50%:  vMin 0.05, vMax 3.00 (the old maximum — now the default)
-    // At 100%: vMin 0.01, vMax 6.00 (extreme, for hunting even more dynamics)
-    // Piecewise-linear in each half.
-    function rangeToLimits(pct){
+    // Range slider — produces factors describing soft vs hard tap volume.
+    function _rangeToFactorsRaw(pct){
       var t=pct/100;
       if(t<=0.5){
         var u=t/0.5;
-        return { vMin:0.75-0.70*u, vMax:1.25+1.75*u };
+        return { softFactor:0.75-0.70*u, hardFactor:1.25+1.75*u };
       } else {
         var u2=(t-0.5)/0.5;
-        return { vMin:0.05-0.04*u2, vMax:3.0+3.0*u2 };
+        return { softFactor:0.05-0.04*u2, hardFactor:3.0+6.0*u2 };
       }
+    }
+    function _rangeToFactors(pct){
+      var f = _rangeToFactorsRaw(pct);
+      var _pBase = Math.max(0.01, Math.min(0.99, (PRESSURE_BASE - 0.1) / 1.1));
+      var maxHard = (1 / _pBase) * 0.95;
+      if(f.hardFactor > maxHard) f.hardFactor = maxHard;
+      return f;
+    }
+    function rangeToLimits(pct){
+      var f=_rangeToFactors(pct);
+      var _pBase = Math.max(0.01, Math.min(0.99, (PRESSURE_BASE - 0.1) / 1.1));
+      var denom = 1 - f.hardFactor * _pBase;
+      var vMin, vMax;
+      if(denom > 0.001){
+        vMin = f.softFactor;
+        vMax = f.hardFactor * f.softFactor * (1 - _pBase) / denom;
+      } else {
+        vMin = 0.001;
+        vMax = 1000;
+      }
+      return { vMin: vMin, vMax: vMax };
     }
     function limitsToRange(vMin,vMax){
-      // Use vMax to infer position (monotonic in both halves).
-      if(vMax<=3.0){
-        var t=Math.max(0,Math.min(1,(vMax-1.25)/1.75));
-        return t*50;
+      var ratio = (vMin > 0) ? (vMax / vMin) : 1000;
+      if(ratio <= 1.67) return 0;
+      if(ratio >= 600) return 100;
+      var logR = Math.log(ratio);
+      var log0 = Math.log(1.67), log50 = Math.log(60), log100 = Math.log(600);
+      if(logR <= log50){
+        return ((logR - log0) / (log50 - log0)) * 50;
       } else {
-        var t2=Math.max(0,Math.min(1,(vMax-3.0)/3.0));
-        return 50+t2*50;
+        return 50 + ((logR - log50) / (log100 - log50)) * 50;
       }
     }
-    var _rangePct=limitsToRange(window._sensVolMin||0.75, window._sensVolMax||1.25);
+    // The range slider now persists its percentage directly as
+    // window._sensRangePct. Previously we tried to reverse-engineer
+    // the slider position from the stored vMin/vMax on re-open, but
+    // vMin/vMax depend on both the slider pct AND the current
+    // PRESSURE_BASE — so the stored values don't have a stable
+    // mapping back to a unique percentage. Result: every time the
+    // panel opened, the range drifted toward 55→153%. Storing the
+    // pct directly fixes that; vMin/vMax are a pure function of
+    // (pct, PRESSURE_BASE) and get recomputed on every open and on
+    // every base-slider change.
+    var _rangePct = (typeof window._sensRangePct === 'number')
+      ? window._sensRangePct
+      : 100;
     var _rLim=rangeToLimits(_rangePct);
     window._sensVolMin=_rLim.vMin; window._sensVolMax=_rLim.vMax;
-    var rangeRow=mkRow('Range (soft→hard vol)', '_spRange', 0, 100, 1, _rangePct, '%', '#ef4444');
-    rangeRow.sl.addEventListener('_sync',function(){
-      var lim=rangeToLimits(parseFloat(rangeRow.sl.value));
-      window._sensVolMin=lim.vMin; window._sensVolMax=lim.vMax;
-      rangeRow.vl.textContent=Math.round(lim.vMin*100)+'→'+Math.round(lim.vMax*100)+'%';
-    });
-    // Show initial labels
-    rangeRow.vl.textContent=Math.round(_rLim.vMin*100)+'→'+Math.round(_rLim.vMax*100)+'%';
-    panel.appendChild(rangeRow.row);
+    var rangeRow=window._mkSliderRow('RANGE','#ef4444', _rangePct/100, 0, 100,
+      function(v){ var f=_rangeToFactors(v); return Math.round(f.softFactor*100)+'→'+Math.round(f.hardFactor*100)+'%'; },
+      function(v){
+        window._sensRangePct = v;
+        var lim=rangeToLimits(v);
+        window._sensVolMin=lim.vMin; window._sensVolMax=lim.vMax;
+      });
+    body.appendChild(rangeRow.row);
 
     // Jitter slider: 0-100% maps to amount 0..0.3
-    // 0% = no jitter, 33% = 0.1 (original), 100% = 0.3 (triple)
     function jitterToAmount(pct){ return (pct/100)*0.3; }
     function amountToJitter(amt){ return Math.max(0,Math.min(100,(amt/0.3)*100)); }
     var _jAmt=(window._pressureJitter!==undefined)?window._pressureJitter:0.1;
     var _jPct=amountToJitter(_jAmt);
-    var jitterRow=mkRow('Jitter (random variation)', '_spJitter', 0, 100, 1, _jPct, _jAmt<0.005?'OFF':'±'+_jAmt.toFixed(2)+'r', '#f59e0b');
-    jitterRow.sl.addEventListener('_sync',function(){
-      var pct=parseFloat(jitterRow.sl.value);
-      window._pressureJitter=jitterToAmount(pct);
-      jitterRow.vl.textContent=window._pressureJitter<0.005?'OFF':'±'+window._pressureJitter.toFixed(2)+'r';
-    });
-    panel.appendChild(jitterRow.row);
+    var jitterRow=window._mkSliderRow('JITTER','#f59e0b', _jPct/100, 0, 100,
+      function(v){ var a=jitterToAmount(v); return a<0.005?'OFF':'±'+a.toFixed(2); },
+      function(v){ window._pressureJitter=jitterToAmount(v); });
+    body.appendChild(jitterRow.row);
 
     // Smoothing slider: 0-100% maps to factor 0..0.95
-    // 0% = each tap fully independent, 100% = each tap heavily anchored to the previous
     function smoothToFactor(pct){ return (pct/100)*0.95; }
     function factorToSmooth(f){ return Math.max(0,Math.min(100,(f/0.95)*100)); }
     var _smF=(window._pressureSmoothing!==undefined)?window._pressureSmoothing:0;
     var _smPct=factorToSmooth(_smF);
-    var smoothRow=mkRow('Smoothing (tap-to-tap drift)', '_spSmooth', 0, 100, 1, _smPct, _smF<0.005?'OFF':Math.round(_smF*100)+'%', '#10b981');
-    smoothRow.sl.addEventListener('_sync',function(){
-      var pct=parseFloat(smoothRow.sl.value);
-      window._pressureSmoothing=smoothToFactor(pct);
-      smoothRow.vl.textContent=window._pressureSmoothing<0.005?'OFF':Math.round(window._pressureSmoothing*100)+'%';
-    });
-    panel.appendChild(smoothRow.row);
+    var smoothRow=window._mkSliderRow('SMOOTH','#10b981', _smPct/100, 0, 100,
+      function(v){ var f=smoothToFactor(v); return f<0.005?'OFF':Math.round(f*100)+'%'; },
+      function(v){ window._pressureSmoothing=smoothToFactor(v); });
+    body.appendChild(smoothRow.row);
 
-    // (ANIMATION and PARTICLES sliders moved to the PAD FX long-press menu.)
+    // GLOW BRIGHTNESS
+    body.appendChild(hdr('GLOW BRIGHTNESS','#00d9ff'));
 
-    // ── GLOW BRIGHTNESS ─────────────────────────────────────
-    // Two sliders that scale the pad-tap border / box-shadow
-    // glow alpha with tap pressure. Soft taps glow at glowMin
-    // (e.g. 0.5 = 50% as bright as the unscaled default), hard
-    // taps glow at glowMax (e.g. 1.5 = 150%). When sensitivity
-    // is OFF, the scale is fixed at 1.0 (no effect).
-    panel.appendChild(hdr('GLOW BRIGHTNESS', '#00d9ff'));
+    var _gMin0 = (typeof window._sensGlowMin==='number')?window._sensGlowMin:0.0;
+    var _gMax0 = (typeof window._sensGlowMax==='number')?window._sensGlowMax:5.0;
+    var glowMinRow, glowMaxRow;
+    glowMinRow = window._mkSliderRow('SOFT GLOW','#7c3aed', Math.min(1, _gMin0), 0, 100,
+      function(v){ return Math.round(v)+'%'; },
+      function(v){
+        window._sensGlowMin = v/100;
+        if(window._sensGlowMin > window._sensGlowMax){
+          window._sensGlowMax = window._sensGlowMin;
+          if(glowMaxRow){ glowMaxRow.sl.value = Math.round(window._sensGlowMax*100); glowMaxRow.redraw(); }
+        }
+      });
+    body.appendChild(glowMinRow.row);
 
-    var _gMin0 = (typeof window._sensGlowMin==='number')?window._sensGlowMin:0.5;
-    var _gMax0 = (typeof window._sensGlowMax==='number')?window._sensGlowMax:1.5;
-    // Slider value is the percentage directly: 10..100% for the
-    // softest-tap brightness, 100..300% for the hardest-tap.
-    var glowMinRow = mkRow('Soft tap glow', '_spGlowMin', 0, 100, 1,
-                           Math.round(_gMin0*100), '%', '#7c3aed');
-    glowMinRow.sl.addEventListener('_sync', function(){
-      window._sensGlowMin = parseFloat(glowMinRow.sl.value)/100;
-      // Don't allow soft to exceed hard.
-      if(window._sensGlowMin > window._sensGlowMax){
-        window._sensGlowMax = window._sensGlowMin;
-        glowMaxRow.sl.value = Math.round(window._sensGlowMax*100);
-        glowMaxRow.vl.textContent = Math.round(window._sensGlowMax*100)+'%';
-      }
-    });
-    panel.appendChild(glowMinRow.row);
+    glowMaxRow = window._mkSliderRow('HARD GLOW','#ef4444', (_gMax0-1)/4, 100, 500,
+      function(v){ return Math.round(v)+'%'; },
+      function(v){
+        window._sensGlowMax = v/100;
+        if(window._sensGlowMax < window._sensGlowMin){
+          window._sensGlowMin = window._sensGlowMax;
+          if(glowMinRow){ glowMinRow.sl.value = Math.round(window._sensGlowMin*100); glowMinRow.redraw(); }
+        }
+      });
+    body.appendChild(glowMaxRow.row);
 
-    var glowMaxRow = mkRow('Hard tap glow', '_spGlowMax', 100, 500, 1,
-                           Math.round(_gMax0*100), '%', '#ef4444');
-    glowMaxRow.sl.addEventListener('_sync', function(){
-      window._sensGlowMax = parseFloat(glowMaxRow.sl.value)/100;
-      // Don't allow hard to dip below soft.
-      if(window._sensGlowMax < window._sensGlowMin){
-        window._sensGlowMin = window._sensGlowMax;
-        glowMinRow.sl.value = Math.round(window._sensGlowMin*100);
-        glowMinRow.vl.textContent = Math.round(window._sensGlowMin*100)+'%';
-      }
-    });
-    panel.appendChild(glowMaxRow.row);
+    // DONE row with strip-toggle buttons flanking the DONE button
+    // — matches the PAD FX popup layout. The left/right toggles
+    // send the panel's contents flying off to the respective screen
+    // edges as side-anchored strips, which lets the user clear the
+    // pad area while keeping settings reachable.
+    var doneRow=document.createElement('div');
+    doneRow.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px;flex-shrink:0;';
+    function _mkStripToggle(side){
+      var b=document.createElement('button');
+      b.style.cssText='font-family:monospace;font-size:11px;font-weight:700;width:22px;height:22px;border:1.5px solid var(--cyan);border-radius:4px;background:rgba(0,217,255,0.08);color:var(--cyan);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;text-shadow:0 0 4px rgba(0,217,255,0.8);box-shadow:0 0 6px rgba(0,217,255,0.35),inset 0 0 4px rgba(0,217,255,0.2);transition:all 120ms;';
+      b.dataset.side=side;
+      return b;
+    }
+    var leftToggle=_mkStripToggle('left');
+    var rightToggle=_mkStripToggle('right');
+    doneRow.appendChild(leftToggle);
 
-    var closeBtn=document.createElement('button');
-    closeBtn.textContent='✕  CLOSE';
-    closeBtn.style.cssText='font-family:monospace;font-size:9px;padding:6px;border:1.5px solid #555;border-radius:4px;background:transparent;color:#888;cursor:pointer;width:100%;margin-top:2px;';
-    closeBtn.onclick=function(){ if(_sensPanel){_sensPanel.parentNode.removeChild(_sensPanel);_sensPanel=null;} };
-    panel.appendChild(closeBtn);
+    var doneBtn=document.createElement('button');
+    doneBtn.textContent='DONE';
+    doneBtn.style.cssText='font-family:monospace;font-size:9px;font-weight:700;padding:5px 14px;border:1.5px solid #22c55e;border-radius:4px;background:rgba(34,197,94,0.1);color:#22c55e;cursor:pointer;letter-spacing:1.5px;';
+    doneBtn.onclick=function(e){ e.stopPropagation(); if(window._btnFx) window._btnFx('tool_off'); if(_sensPanel){if(_sensPanel._cleanup)_sensPanel._cleanup();_sensPanel.parentNode.removeChild(_sensPanel);_sensPanel=null;} };
+    doneRow.appendChild(doneBtn);
+    doneRow.appendChild(rightToggle);
+    panel.appendChild(doneRow);
 
     document.body.appendChild(panel);
-    setTimeout(function(){
-      function _c(e){ if(_sensPanel&&!_sensPanel.contains(e.target)&&e.target!==anchorEl){ if(_sensPanel.parentNode)_sensPanel.parentNode.removeChild(_sensPanel);_sensPanel=null; document.removeEventListener('touchstart',_c,true); document.removeEventListener('mousedown',_c,true); } }
-      document.addEventListener('touchstart',_c,true);
-      document.addEventListener('mousedown',_c,true);
-    },50);
+    // Reveal after initial positioning so the user doesn't see
+    // a flash at the wrong location.
+    panel.style.visibility='visible';
+    // Wire up the side scroll strips + arrow toggles. The strips
+    // live outside the panel (anchored to the screen edge) and
+    // use the panel as their reference for positioning. Clicking
+    // a toggle button slides the strip out from / back into the
+    // edge. onAnimEnd refreshes the arrow glyphs so they reflect
+    // the current state.
+    function refreshArrows(){
+      if(!stripRight || !stripLeft) return;
+      rightToggle.textContent=(stripRight.getState()==='out')?'◀':'▶';
+      leftToggle.textContent =(stripLeft.getState() ==='out')?'▶':'◀';
+    }
+    var stripRight=null, stripLeft=null, draggable=null;
+    if(typeof window._makeScrollStrip==='function'){
+      stripRight=window._makeScrollStrip('right', panel, { onAnimEnd: function(){ refreshArrows(); } });
+      stripLeft =window._makeScrollStrip('left',  panel, { onAnimEnd: function(){ refreshArrows(); } });
+      leftToggle.addEventListener('click', function(e){
+        e.stopPropagation();
+        stripLeft.toggle();
+      });
+      rightToggle.addEventListener('click', function(e){
+        e.stopPropagation();
+        stripRight.toggle();
+      });
+      refreshArrows();
+      stripRight.position();
+      stripLeft.position();
+    } else {
+      // No strip factory available — hide the toggles rather than
+      // leaving non-functional buttons in the UI.
+      leftToggle.style.display='none';
+      rightToggle.style.display='none';
+    }
+    // Make the header a drag handle so the user can move the panel
+    // to a more convenient spot. Matches PAD FX's draggable behavior.
+    if(typeof window._makeDraggableHeader === 'function'){
+      draggable=window._makeDraggableHeader(panel, {
+        topPadding: 16,
+        onMove: function(){
+          if(stripRight) stripRight.position();
+          if(stripLeft) stripLeft.position();
+        }
+      });
+    }
+    // Cleanup on close so the side-strips get removed and the
+    // drag-tab event listeners are detached.
+    panel._cleanup=function(){
+      if(stripRight) stripRight.cleanup();
+      if(stripLeft)  stripLeft.cleanup();
+      if(draggable)  draggable.cleanup();
+    };
+    // Trigger initial redraw of all sliders now that they're laid out.
+    [baseRow, rangeRow, jitterRow, smoothRow, glowMinRow, glowMaxRow].forEach(function(r){
+      if(r && r.redraw) r.redraw();
+    });
+    // Outside-tap close behavior intentionally REMOVED. The panel
+    // now stays open while the user taps pads to audition the
+    // settings they're adjusting. Closes only via the DONE button
+    // or the × in the header.
   }
 
   var sensBtn=document.getElementById('btnSensToggle');
   if(sensBtn){
-    var _sensLongFired=false,_sensTouch=false;
-    sensBtn.addEventListener('touchstart',function(e){
-      e.stopPropagation(); _sensTouch=true; _sensLongFired=false;
-      _sensTimer=setTimeout(function(){ _sensTimer=null; _sensLongFired=true; showSensPanel(sensBtn); },500);
-    },{passive:true});
-    sensBtn.addEventListener('touchend',function(e){
-      e.stopPropagation(); e.preventDefault();
-      if(_sensTimer){ clearTimeout(_sensTimer); _sensTimer=null; }
-      if(!_sensLongFired){
+    // Defer the wiring so it runs AFTER all IIFEs in this file have
+    // executed. window._attachLongPress is defined further down in
+    // the file (around the reusable long-press helper section), so
+    // when this IIFE runs inline it's not yet available — causing
+    // the code to silently fall through to the legacy hand-rolled
+    // timer path (which has no long-press sound). setTimeout(..., 0)
+    // schedules the attach for after the current synchronous script
+    // execution finishes, by which point _attachLongPress is defined.
+    setTimeout(function(){_wireSensBtn();}, 0);
+  }
+
+  function _wireSensBtn(){
+    // Use the standard _attachLongPress helper so this button gets
+    // the same ring-charge glow buildup and pop-on-fire audio as
+    // the PAD FX / PAD DSPLY / UNDO toolbar buttons. Short tap
+    // toggles sensitivity on/off; long press opens the settings
+    // panel. Falls back to the previous hand-rolled timer path if
+    // for some reason the helper isn't loaded.
+    if(window._attachLongPress){
+      window._attachLongPress(sensBtn, {
+        duration: 500,
+        onTap: function(){
+          if(typeof resumeAC==='function') resumeAC();
+          SENS_ON=!SENS_ON; updateSensBtn();
+          if(window._btnFx) window._btnFx(SENS_ON?'tool_on':'tool_off');
+        },
+        onLongPress: function(){
+          if(typeof resumeAC==='function') resumeAC();
+          // Audible confirmation chirp. The _pulseRingCharge buildup
+          // tone from _attachLongPress is quiet (peaks around gain
+          // 0.03), so an explicit tool_on chirp at ~0.11 gain makes
+          // the long-press action clearly audible.
+          if(window._btnFx && (!window._sfxSettings || window._sfxSettings.buttonFx !== false)){
+            window._btnFx('tool_on');
+          }
+          showSensPanel(sensBtn);
+        }
+      });
+    } else {
+      var _sensLongFired=false,_sensTouch=false;
+      sensBtn.addEventListener('touchstart',function(e){
+        e.stopPropagation(); _sensTouch=true; _sensLongFired=false;
+        _sensTimer=setTimeout(function(){ _sensTimer=null; _sensLongFired=true; showSensPanel(sensBtn); },500);
+      },{passive:true});
+      sensBtn.addEventListener('touchend',function(e){
+        e.stopPropagation(); e.preventDefault();
+        if(_sensTimer){ clearTimeout(_sensTimer); _sensTimer=null; }
+        if(!_sensLongFired){
+          SENS_ON=!SENS_ON; updateSensBtn();
+          if(window._btnFx) window._btnFx(SENS_ON?'tool_on':'tool_off');
+        }
+        _sensLongFired=false; _sensTouch=false;
+      },{passive:false});
+      sensBtn.addEventListener('touchcancel',function(){ if(_sensTimer){clearTimeout(_sensTimer);_sensTimer=null;} _sensLongFired=false; _sensTouch=false; },{passive:true});
+      sensBtn.addEventListener('touchmove',function(){ if(_sensTimer){clearTimeout(_sensTimer);_sensTimer=null;} },{passive:true});
+      sensBtn.addEventListener('click',function(e){
+        if(_sensTouch){e.stopPropagation();return;}
         SENS_ON=!SENS_ON; updateSensBtn();
         if(window._btnFx) window._btnFx(SENS_ON?'tool_on':'tool_off');
-      }
-      _sensLongFired=false; _sensTouch=false;
-    },{passive:false});
-    sensBtn.addEventListener('touchcancel',function(){ if(_sensTimer){clearTimeout(_sensTimer);_sensTimer=null;} _sensLongFired=false; _sensTouch=false; },{passive:true});
-    sensBtn.addEventListener('touchmove',function(){ if(_sensTimer){clearTimeout(_sensTimer);_sensTimer=null;} },{passive:true});
-    sensBtn.addEventListener('click',function(e){
-      if(_sensTouch){e.stopPropagation();return;}
-      SENS_ON=!SENS_ON; updateSensBtn();
-      if(window._btnFx) window._btnFx(SENS_ON?'tool_on':'tool_off');
-    });
-    sensBtn.addEventListener('mousedown',function(){ _sensTimer=setTimeout(function(){ _sensTimer=null; showSensPanel(sensBtn); },500); });
-    sensBtn.addEventListener('mouseup',function(){
-      if(_sensTimer){
-        clearTimeout(_sensTimer);_sensTimer=null;
-        SENS_ON=!SENS_ON;updateSensBtn();
-        if(window._btnFx) window._btnFx(SENS_ON?'tool_on':'tool_off');
-      }
-    });
+      });
+      sensBtn.addEventListener('mousedown',function(){ _sensTimer=setTimeout(function(){ _sensTimer=null; showSensPanel(sensBtn); },500); });
+      sensBtn.addEventListener('mouseup',function(){
+        if(_sensTimer){
+          clearTimeout(_sensTimer);_sensTimer=null;
+          SENS_ON=!SENS_ON;updateSensBtn();
+          if(window._btnFx) window._btnFx(SENS_ON?'tool_on':'tool_off');
+        }
+      });
+    }
   }
   window._getSensOn=function(){ return SENS_ON; };
   updateSensBtn();
@@ -19263,14 +19862,11 @@ window._clampScrollTransition=function(anchorEl){
 
     function _mkSlider(label, key, min, max, step, suffix){
       var initial = (typeof s[key] === 'number') ? s[key] : min;
-      // Header row: label on left, value on right (using styled slider's vlbl)
-      var wrap = document.createElement('div');
-      wrap.style.cssText = 'display:flex;flex-direction:column;gap:2px;';
-      var head = document.createElement('div');
-      head.style.cssText = 'display:flex;justify-content:space-between;align-items:center;font-family:monospace;font-size:9px;color:#bbb;letter-spacing:0.5px;';
-      var lbl = document.createElement('span'); lbl.textContent = label;
-      head.appendChild(lbl);
+      // Label + live value now render inside the slider bar itself
+      // (inline-label style), so just return the slider row directly
+      // — no outer wrapper needed.
       var styled = window._mkStyledSlider({
+        label: label,
         color: '#00d9ff',
         min: min, max: max, step: step, value: initial,
         format: function(v){ return v + suffix; },
@@ -19279,10 +19875,7 @@ window._clampScrollTransition=function(anchorEl){
           if(window._saveSfxSettings) window._saveSfxSettings();
         }
       });
-      head.appendChild(styled.vlbl);
-      wrap.appendChild(head);
-      wrap.appendChild(styled.row);
-      return wrap;
+      return styled.row;
     }
 
     hapPopup.appendChild(_mkSlider('Tap min', 'padHapticTapMin', 1, 20, 1, 'ms'));
@@ -21293,6 +21886,11 @@ window._clampScrollTransition=function(anchorEl){
       playStripSound(toState);
     }
 
+    // Fwoosh sound for strip extend/retract. White noise through a
+    // bandpass filter whose center frequency sweeps up (going out)
+    // or down (coming in). The trailing sine "thud" that used to
+    // play when the strip hit either endpoint has been removed —
+    // this is just the airy sweep now.
     function playStripSound(toState){
       if(!AC || !window._sfxSettings || window._sfxSettings.padBarBtns === false) return;
       try{
@@ -21325,22 +21923,6 @@ window._clampScrollTransition=function(anchorEl){
         }
         src.connect(bp); bp.connect(g); g.connect(dest);
         src.start(t); src.stop(t + dur + 0.02);
-        // Subtle thud at end (low sine + bit of noise) instead of high blip
-        var t2 = t + dur - 0.03;
-        var thudG = AC.createGain(); thudG.connect(dest);
-        thudG.gain.setValueAtTime(0, t2);
-        thudG.gain.linearRampToValueAtTime(0.085, t2 + 0.012);
-        thudG.gain.exponentialRampToValueAtTime(0.0008, t2 + 0.18);
-        var thudO = AC.createOscillator(); thudO.type = 'sine';
-        // Slightly different pitch per direction so they're distinguishable
-        thudO.frequency.setValueAtTime(toState === 'out' ? 110 : 75, t2);
-        thudO.frequency.exponentialRampToValueAtTime(toState === 'out' ? 78 : 55, t2 + 0.16);
-        // LP filter for body
-        var thudLp = AC.createBiquadFilter();
-        thudLp.type = 'lowpass';
-        thudLp.frequency.setValueAtTime(280, t2);
-        thudO.connect(thudLp); thudLp.connect(thudG);
-        thudO.start(t2); thudO.stop(t2 + 0.2);
       }catch(e){}
     }
 
@@ -21474,6 +22056,16 @@ window._clampScrollTransition=function(anchorEl){
       document.addEventListener('mouseup', mu);
     });
 
+    // Keep the thumb visually in sync with the actual scroll position.
+    // Without this the thumb stays frozen while the page scrolls —
+    // including during drag-to-scroll, where the user moves the thumb
+    // but nothing inside _makeScrollStrip pushes the thumb's top back
+    // out. Running on the window scroll / resize events gives every
+    // consumer of the factory working thumb animation for free.
+    function _onWinChange(){ updateThumb(); positionStrip(); }
+    window.addEventListener('scroll', _onWinChange, {passive:true});
+    window.addEventListener('resize', _onWinChange, {passive:true});
+
     return {
       el: strip,
       toggle: toggleStrip,
@@ -21484,6 +22076,8 @@ window._clampScrollTransition=function(anchorEl){
       cleanup: function(){
         if(stripAnimRaf) cancelAnimationFrame(stripAnimRaf);
         if(stripEaseRaf) cancelAnimationFrame(stripEaseRaf);
+        window.removeEventListener('scroll', _onWinChange);
+        window.removeEventListener('resize', _onWinChange);
         if(strip.parentNode) strip.parentNode.removeChild(strip);
       }
     };
@@ -21859,12 +22453,24 @@ window._clampScrollTransition=function(anchorEl){
 
     fxPopup = document.createElement('div');
     fxPopup.id = '_padFxPopup';
-    fxPopup.style.cssText = 'position:fixed;z-index:600;background:#151515;border:2px solid rgba(0,217,255,0.45);border-radius:8px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,.6);max-width:260px;min-width:240px;display:flex;flex-direction:column;gap:6px;visibility:hidden;max-height:90vh;overflow-y:auto;';
+    // The outer popup stays non-scrolling and is height-bounded by
+    // its children so the drag tab added by _makeDraggableHeader
+    // sits cleanly above the top edge — overflow:auto on the popup
+    // itself would clip the tab. Scrolling lives on the inner body
+    // wrapper (bodyWrap) instead.
+    fxPopup.style.cssText = 'position:fixed;z-index:600;background:#151515;border:2px solid rgba(0,217,255,0.45);border-radius:8px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,.6);max-width:260px;min-width:240px;display:flex;flex-direction:column;gap:6px;visibility:hidden;max-height:90vh;';
 
     var hdr = document.createElement('div');
-    hdr.style.cssText = 'font-family:monospace;font-size:9px;color:var(--cyan);letter-spacing:2px;font-weight:700;text-align:center;';
+    hdr.style.cssText = 'font-family:monospace;font-size:9px;color:var(--cyan);letter-spacing:2px;font-weight:700;text-align:center;flex-shrink:0;';
     hdr.textContent = 'PAD FX';
     fxPopup.appendChild(hdr);
+
+    // Scrollable inner body — gets the overflow:auto so the header
+    // and DONE row at the bottom stay pinned. Same structure used
+    // by the TAP SENSITIVITY panel.
+    var bodyWrap = document.createElement('div');
+    bodyWrap.style.cssText = 'display:flex;flex-direction:column;gap:6px;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;min-height:0;';
+    fxPopup.appendChild(bodyWrap);
 
     // ── Toggle row (Spin / Particle / Glow side by side) ──
     var togRow = document.createElement('div');
@@ -21891,18 +22497,16 @@ window._clampScrollTransition=function(anchorEl){
       refresh();
       togRow.appendChild(b);
     });
-    fxPopup.appendChild(togRow);
+    bodyWrap.appendChild(togRow);
 
     // ── Slider rows ──
+    // The label and live value now render INSIDE the slider bar
+    // (inline-label style), so we no longer need a separate header
+    // row. Just append the slider row directly.
     SLIDERS.forEach(function(s){
       var initial = (typeof window[s.key] === 'number') ? window[s.key] : s.def;
-      var wrap = document.createElement('div');
-      wrap.style.cssText = 'display:flex;flex-direction:column;gap:2px;';
-      var head = document.createElement('div');
-      head.style.cssText = 'display:flex;justify-content:space-between;align-items:center;font-family:monospace;font-size:9px;color:#bbb;letter-spacing:0.3px;';
-      var lbl = document.createElement('span'); lbl.textContent = s.label;
-      head.appendChild(lbl);
       var styled = window._mkStyledSlider({
+        label: s.label,
         color: s.color,
         min: s.min, max: s.max, step: s.step, value: initial,
         format: function(v){
@@ -21915,16 +22519,13 @@ window._clampScrollTransition=function(anchorEl){
           window[s.key] = (s.cast === 'int') ? Math.round(v) : v;
         }
       });
-      head.appendChild(styled.vlbl);
-      wrap.appendChild(head);
-      wrap.appendChild(styled.row);
-      fxPopup.appendChild(wrap);
+      bodyWrap.appendChild(styled.row);
     });
 
     var hint = document.createElement('div');
     hint.style.cssText = 'font-family:monospace;font-size:8px;color:#888;text-align:center;letter-spacing:0.3px;line-height:1.4;margin-top:2px;';
     hint.textContent = 'Tap pads below to test FX live';
-    fxPopup.appendChild(hint);
+    bodyWrap.appendChild(hint);
 
     // DONE row with strip toggles
     var doneRow = document.createElement('div');
@@ -21992,19 +22593,16 @@ window._clampScrollTransition=function(anchorEl){
     if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool_on');
   }
 
-  if(window._attachLongPress){
-    window._attachLongPress(fxBtn, {
-      duration: 500,
-      onTap: function(){
-        if(fxPopup) _closeFx();
-        else _openFx();
-      },
-      onLongPress: function(){
-        if(fxPopup) _closeFx();
-        else _openFx();
-      }
-    });
-  }
+  // Plain click handler — tap toggles the menu. No long-press
+  // wrapper (and no associated buildup tone / pop sound), because
+  // the button has no separate short-tap behavior to distinguish
+  // from long-press; the buildup suggested a second action that
+  // doesn't exist.
+  fxBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    if(fxPopup) _closeFx();
+    else _openFx();
+  });
 })();
 
 // ── PAD DSPLY MENU ──────────────────────────────────────────
@@ -22027,11 +22625,25 @@ window._clampScrollTransition=function(anchorEl){
 
   // Items: [label, underlying-button-id, sourceOfTruth fn]
   // sourceOfTruth returns the current active boolean for that item
+  // Item may also use `toggle` instead of `btnId` for inline state
+  // toggles that don't have a corresponding toolbar button.
   var ITEMS = [
     { label:'ABC',      btnId:'padLabelsBtn',   isOn:function(){ return !!window._padLabelsOn; } },
     { label:'123',      btnId:'btnHideNums',    isOn:function(){ return !!window._userShowNums; } },
     { label:'1,2,3',    btnId:'btnSeqNums',     isOn:function(){ return !!window._seqNumsOn; } },
-    { label:'Waveform', btnId:'btnWaveToggle',  isOn:function(){ return !!window._padWavesOn; } }
+    { label:'Waveform', btnId:'btnWaveToggle',  isOn:function(){ return !!window._padWavesOn; } },
+    { label:'Quad crosshair',
+      isOn: function(){ return window._quadCrosshairOn !== false; },
+      toggle: function(){
+        // Default true if previously unset, then flip.
+        if(typeof window._quadCrosshairOn === 'undefined') window._quadCrosshairOn = true;
+        window._quadCrosshairOn = !window._quadCrosshairOn;
+        try{ localStorage.setItem('_quadCrosshairOn', window._quadCrosshairOn ? '1' : '0'); }catch(_){}
+        // Re-render the quads overlay so the change takes effect on
+        // every visible pad immediately.
+        if(window._refreshQuadOverlays) window._refreshQuadOverlays();
+      }
+    }
   ];
 
   function _refreshAll(){
@@ -22081,10 +22693,16 @@ window._clampScrollTransition=function(anchorEl){
       }
       b.addEventListener('click', function(e){
         e.stopPropagation();
-        // Delegate to underlying toolbar button — preserves all existing
-        // state, persistence, mutex, and side-effect logic
-        var src = document.getElementById(item.btnId);
-        if(src) src.click();
+        // Prefer an inline toggle function (for items that don't
+        // delegate to a toolbar button). Otherwise click the
+        // underlying toolbar button to preserve existing state +
+        // persistence + side-effect logic.
+        if(typeof item.toggle === 'function'){
+          item.toggle();
+        } else {
+          var src = document.getElementById(item.btnId);
+          if(src) src.click();
+        }
         // Refresh ALL items because of the 123 ↔ 1,2,3 mutex side effects
         _refreshAll();
       });
@@ -22093,18 +22711,11 @@ window._clampScrollTransition=function(anchorEl){
       dsplyPopup.appendChild(b);
     });
 
-    // DONE row with strip toggles (matches haptic popup pattern)
+    // DONE button row — simple centered small green button.
+    // No strip toggles and no draggable header: this popup is a
+    // fixed compact anchor above the PAD DSPLY toolbar button.
     var doneRow = document.createElement('div');
-    doneRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px;';
-    function _mkStripToggle(side){
-      var b=document.createElement('button');
-      b.style.cssText='font-family:monospace;font-size:11px;font-weight:700;width:22px;height:22px;border:1.5px solid var(--cyan);border-radius:4px;background:rgba(0,217,255,0.08);color:var(--cyan);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;text-shadow:0 0 4px rgba(0,217,255,0.8);box-shadow:0 0 6px rgba(0,217,255,0.35),inset 0 0 4px rgba(0,217,255,0.2);transition:all 120ms;';
-      b.dataset.side = side;
-      return b;
-    }
-    var leftToggle = _mkStripToggle('left');
-    var rightToggle = _mkStripToggle('right');
-    doneRow.appendChild(leftToggle);
+    doneRow.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-top:4px;';
 
     var done = document.createElement('button');
     done.textContent = 'DONE';
@@ -22114,68 +22725,31 @@ window._clampScrollTransition=function(anchorEl){
       _closeDsply();
     });
     doneRow.appendChild(done);
-    doneRow.appendChild(rightToggle);
     dsplyPopup.appendChild(doneRow);
 
     document.body.appendChild(dsplyPopup);
 
-    dsplyPopup.style.top = '6px';
-    dsplyPopup.style.left = '6px';
+    // Fixed position in the upper-left corner of the viewport.
+    // Small inset (8px) so it's not flush against the edge.
+    dsplyPopup.style.top  = '8px';
+    dsplyPopup.style.left = '8px';
     dsplyPopup.style.visibility = 'visible';
 
-    var draggable = window._makeDraggableHeader(dsplyPopup, {
-      topPadding: 16,
-      onMove: function(){
-        if(stripRight) stripRight.position();
-        if(stripLeft) stripLeft.position();
-      }
-    });
-
-    function refreshArrows(){
-      rightToggle.textContent = (stripRight.getState() === 'out') ? '◀' : '▶';
-      leftToggle.textContent  = (stripLeft.getState()  === 'out') ? '▶' : '◀';
-    }
-    var stripRight = window._makeScrollStrip('right', dsplyPopup, { onAnimEnd: function(){ refreshArrows(); } });
-    var stripLeft  = window._makeScrollStrip('left',  dsplyPopup, { onAnimEnd: function(){ refreshArrows(); } });
-    leftToggle.addEventListener('click', function(e){
-      e.stopPropagation();
-      stripLeft.toggle();
-    });
-    rightToggle.addEventListener('click', function(e){
-      e.stopPropagation();
-      stripRight.toggle();
-    });
-    refreshArrows();
-    stripRight.position();
-    stripLeft.position();
-
-    dsplyPopup._cleanup = function(){
-      stripRight.cleanup();
-      stripLeft.cleanup();
-      draggable.cleanup();
-    };
+    // Simple cleanup — no strip or draggable to tear down.
+    dsplyPopup._cleanup = function(){};
 
     dsplyBtn.classList.add('active');
     if(window._btnFx && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)) window._btnFx('tool_on');
   }
 
-  // Wire long-press: short tap = toggle popup, long-press = open popup
-  // Both behaviors converge to "open if closed, close if open" — the
-  // long-press just adds the buildup glow + audio feedback.
-  if(window._attachLongPress){
-    window._attachLongPress(dsplyBtn, {
-      duration: 500,
-      onTap: function(){
-        if(dsplyPopup) _closeDsply();
-        else _openDsply();
-      },
-      onLongPress: function(){
-        // Long-press always opens (and toggles closed if already open)
-        if(dsplyPopup) _closeDsply();
-        else _openDsply();
-      }
-    });
-  }
+  // Plain click handler — tap toggles the menu. See PAD FX for the
+  // reasoning: no distinct short-tap vs long-press behavior here,
+  // so the long-press buildup was misleading.
+  dsplyBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    if(dsplyPopup) _closeDsply();
+    else _openDsply();
+  });
 })();
 
 // ── REUSABLE STYLED SLIDER ───────────────────────────────────
@@ -22254,43 +22828,47 @@ window._clampScrollTransition=function(anchorEl){
     var format = opts.format || function(v){ return v + ''; };
     var onChange = opts.onChange || function(){};
 
-    var row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:2px;width:100%;';
-    if(opts.label){
-      var lbl = document.createElement('span');
-      lbl.style.cssText = 'font-family:monospace;font-size:8px;color:#888;min-width:32px;flex-shrink:0;letter-spacing:.5px;';
-      lbl.textContent = opts.label;
-      row.appendChild(lbl);
+    // Delegate to the canonical _mkSliderRow factory so this slider
+    // inherits the same in-bar label + punch-through-thumb styling
+    // used by the tap sensitivity panel, tile spacing menu, and
+    // pad adjustments. That means one edit to _mkSliderRow or
+    // _drawMenuSliderHandle propagates everywhere.
+    //
+    // _mkSliderRow uses initPct (0..1) and integer min/max for its
+    // underlying range input. We map the styled-slider's continuous
+    // min/max/step into that by scaling through a 1000-step range —
+    // preserves enough precision for sub-integer steps like 0.01
+    // without overflowing the input.
+    var STEPS = 1000;
+    function _toPct(v){ return (v - min) / (max - min); }
+    function _fromPct(p){
+      var raw = min + p * (max - min);
+      if(step && step > 0){
+        raw = Math.round(raw / step) * step;
+      }
+      return raw;
     }
-    var slWrap = document.createElement('div');
-    slWrap.style.cssText = 'position:relative;flex:1;height:22px;touch-action:none;cursor:ew-resize;overflow:visible;filter:drop-shadow(0px 4px 8px '+window._hexWithAlpha(color,0.7)+') drop-shadow(0px 2px 4px rgba(0,0,0,0.4));';
-    var cv = document.createElement('canvas');
-    cv.style.cssText = 'position:absolute;left:0;top:0;pointer-events:none;z-index:2;display:block;';
-    var sl = document.createElement('input');
-    sl.type = 'range'; sl.min = min; sl.max = max; sl.step = step;
-    sl.value = value;
-    sl.style.cssText = 'position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:ew-resize;z-index:5;-webkit-appearance:none;appearance:none;background:transparent;';
-    sl.addEventListener('touchstart', function(e){ e.stopPropagation(); }, {passive:true});
-    slWrap.appendChild(cv); slWrap.appendChild(sl);
-    row.appendChild(slWrap);
+    var sliderRow = window._mkSliderRow(
+      opts.label || '',
+      color,
+      _toPct(value),
+      0,
+      STEPS,
+      function(sliderVal){ return format(_fromPct(sliderVal / STEPS)); },
+      function(sliderVal){ onChange(_fromPct(sliderVal / STEPS)); }
+    );
 
-    var vlbl = document.createElement('span');
-    vlbl.style.cssText = 'font-family:monospace;font-size:7px;color:'+color+';margin-left:auto;flex-shrink:0;';
-    vlbl.textContent = format(parseFloat(sl.value));
-
-    function redraw(){
-      var pct = (parseFloat(sl.value) - min) / (max - min);
-      _drawStyledSlider(cv, pct, color);
-      vlbl.textContent = format(parseFloat(sl.value));
-    }
-    sl.addEventListener('input', function(){ redraw(); onChange(parseFloat(sl.value)); });
-    if(typeof ResizeObserver !== 'undefined'){
-      var _ro = new ResizeObserver(function(){ redraw(); });
-      _ro.observe(slWrap);
-    }
-    requestAnimationFrame(function(){ requestAnimationFrame(function(){ redraw(); }); });
-
-    return { row: row, sl: sl, vlbl: vlbl, redraw: redraw };
+    // Preserve the old API surface — callers expect `row`, `sl`,
+    // `vlbl`, and `redraw`. `vlbl` is now the inline span inside
+    // the bar; exposing it lets old call sites append it to a header
+    // row without error (though it'll just be a no-op in the new
+    // layout since the value is already rendered inline).
+    return {
+      row: sliderRow.row,
+      sl: sliderRow.sl,
+      vlbl: sliderRow.valEl || document.createElement('span'),
+      redraw: sliderRow.redraw
+    };
   };
 })();
 
@@ -23055,6 +23633,9 @@ window._clampScrollTransition=function(anchorEl){
         setTimeout(function(){ tile.style.transition=''; }, 100);
       }, 90);
     }
+    // If the QUADS crosshair overlay is currently shown, refresh it
+    // so the new tile color propagates to the crosshair lines.
+    if(window._refreshQuadOverlays) window._refreshQuadOverlays();
     // Paint stroke sound — soft brushy noise burst with quick pitch sweep
     if(AC && (!window._sfxSettings || window._sfxSettings.padBarBtns!==false)){
       try{
@@ -24509,6 +25090,515 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
         if(toolbarColorBtn) toolbarColorBtn.click();
       });
     }
+
+    // ── MULTI-HIT button ─────────────────────────────────────────────────────
+    // Toggle: short tap turns the multi-hit feature on/off so each pad tap
+    // fires twice (original tap + one extra at the configured note interval).
+    // Long-press: opens a stationary popup menu to the LEFT of the button
+    // with note-value choices (1/4, 1/4T, 1/8, 1/8T, 1/16, 1/16T) plus a
+    // green DONE button at the bottom. The interval the multi-hit waits
+    // before firing the second pad sound is computed at trigger time from
+    // the current BPM (read from #proBpm) and the selected division.
+    var padsBarMultiHit = document.getElementById('padsBarMultiHit');
+    if(padsBarMultiHit){
+      // Initial state defaults: off, eighth note, quads off.
+      if(typeof window._multiHitOn === 'undefined') window._multiHitOn = false;
+      if(typeof window._multiHitDivision === 'undefined') window._multiHitDivision = '1/8';
+      if(typeof window._multiHitQuadsOn === 'undefined') window._multiHitQuadsOn = false;
+      // Quad-crosshair display preference — controls whether the
+      // colored midpoint cross lines render over each pad in quads
+      // mode. Defaults to ON; persisted across sessions in
+      // localStorage and toggled from PAD DSPLY menu.
+      if(typeof window._quadCrosshairOn === 'undefined'){
+        try{
+          var _qcStored = localStorage.getItem('_quadCrosshairOn');
+          window._quadCrosshairOn = (_qcStored === null) ? true : (_qcStored === '1');
+        }catch(_){
+          window._quadCrosshairOn = true;
+        }
+      }
+      // Helper: convert a note division + current BPM to a delay in ms.
+      // Triplets are 2/3 of the straight value (3 notes per the same span
+      // as 2 straight notes of the same denominator).
+      function _divToMs(d){
+        var bpmEl = document.getElementById('proBpm');
+        var bpm = parseFloat(bpmEl && bpmEl.value);
+        if(!bpm || isNaN(bpm) || bpm < 20) bpm = 120;
+        var quarter = 60000 / bpm;
+        switch(d){
+          case '1/4':   return quarter;
+          case '1/4t':  return quarter * 2/3;
+          case '1/8':   return quarter / 2;
+          case '1/8t':  return quarter / 3;
+          case '1/16':  return quarter / 4;
+          case '1/16t': return quarter / 6;
+          default:      return quarter / 2;
+        }
+      }
+      // Public delay helper — kept for backward compat with anything
+      // that still calls it directly.
+      window._multiHitDelayMs = function(){ return _divToMs(window._multiHitDivision || '1/8'); };
+
+      // Resolve the multi-hit plan for a given tap. Returns:
+      //   { totalHits, delayMs, quadrant }
+      //   quadrant ∈ {'NW','NE','SW','SE'} when quads is on, else null.
+      // In quads mode the quadrant determines the pattern:
+      //   NW = 1 hit (single)
+      //   NE = 2 hits at the selected straight division
+      //   SW = 3 hits at the triplet version of the selected straight division
+      //   SE = 2 hits at the next-faster straight division
+      // (Only straight divisions 1/4 and 1/8 are user-selectable in quads
+      // mode, so the "next-faster" mapping is well-defined.)
+      // Outside quads mode, the selected division decides everything:
+      //   triplet = 3 hits (2 extras), straight = 2 hits (1 extra).
+      window._multiHitResolvePlan = function(relX, relY){
+        if(!window._multiHitOn) return null;
+        var div = window._multiHitDivision || '1/8';
+        if(window._multiHitQuadsOn){
+          // Detect quadrant from tap coordinates.
+          var west = (relX != null) ? (relX < 0.5) : true;
+          var north = (relY != null) ? (relY < 0.5) : true;
+          var quad = (north ? (west ? 'NW' : 'NE') : (west ? 'SW' : 'SE'));
+          // Force a straight division in quads mode (defensive — UI also
+          // disables triplet selection while quads is on).
+          if(div === '1/4t') div = '1/4';
+          else if(div === '1/8t' || div === '1/16t') div = '1/8';
+          // SE pattern uses the next-faster straight value.
+          var fasterDiv = (div === '1/4') ? '1/8' : '1/16';
+          // Triplet equivalent of the straight selection for SW.
+          var tripletDiv = (div === '1/4') ? '1/4t' : '1/8t';
+          switch(quad){
+            case 'NW': return { totalHits:1, delayMs:0,                        quadrant:'NW', isTriplet:false };
+            case 'NE': return { totalHits:2, delayMs:_divToMs(div),            quadrant:'NE', isTriplet:false };
+            case 'SW': return { totalHits:3, delayMs:_divToMs(tripletDiv),     quadrant:'SW', isTriplet:true  };
+            case 'SE': return { totalHits:4, delayMs:_divToMs(fasterDiv),      quadrant:'SE', isTriplet:false };
+          }
+        }
+        // Standard multi-hit (no quads).
+        var isTriplet = (div === '1/4t' || div === '1/8t' || div === '1/16t');
+        return {
+          totalHits: isTriplet ? 3 : 2,
+          delayMs: _divToMs(div),
+          quadrant: null,
+          isTriplet: isTriplet
+        };
+      };
+
+      // Faint-red quadrant flash overlay. Spawns a div over the tapped
+      // quadrant of the pad element, fades out shortly. Cheap one-shot
+      // — no animation framework, just CSS transition.
+      window._showQuadFlash = function(padEl, quadrant){
+        if(!padEl || !quadrant) return;
+        var ov = document.createElement('div');
+        var leftPct = (quadrant === 'NW' || quadrant === 'SW') ? '0%' : '50%';
+        var topPct  = (quadrant === 'NW' || quadrant === 'NE') ? '0%' : '50%';
+        // Only the corner the quadrant SHARES with the pad's outer
+        // border gets rounded (matches the pad's own rounding); the
+        // three inner corners stay square so the flash visibly traces
+        // the quadrant boundary rather than blooming as a soft pill.
+        // Read the pad's own border-radius once so the rounded corner
+        // matches whatever the tile uses.
+        var padRadius = '';
+        try{
+          var cs = window.getComputedStyle(padEl);
+          padRadius = cs.borderTopLeftRadius || '6px';
+        }catch(_){ padRadius = '6px'; }
+        var radii = {top:'0', right:'0', bottom:'0', left:'0'};
+        // Map shared-corner radius — the diagonal opposite the pad
+        // center for that quadrant.
+        if(quadrant === 'NW') radii.top    = padRadius + ' 0 0 0';
+        else if(quadrant === 'NE') radii.top   = '0 ' + padRadius + ' 0 0';
+        else if(quadrant === 'SE') radii.top   = '0 0 ' + padRadius + ' 0';
+        else if(quadrant === 'SW') radii.top   = '0 0 0 ' + padRadius;
+        // Quadrant geometry — each fill sits flush at the pad
+        // center on its two inner sides, exactly meeting the
+        // crosshair lines without overhang or gap.
+        var flashLeft, flashTop, flashW, flashH;
+        if(quadrant === 'NW'){
+          flashLeft = '0%';   flashTop = '0%';
+          flashW    = '50%';  flashH   = '50%';
+        } else if(quadrant === 'NE'){
+          flashLeft = '50%';  flashTop = '0%';
+          flashW    = '50%';  flashH   = '50%';
+        } else if(quadrant === 'SW'){
+          flashLeft = '0%';   flashTop = '50%';
+          flashW    = '50%';  flashH   = '50%';
+        } else { // SE
+          flashLeft = '50%';  flashTop = '50%';
+          flashW    = '50%';  flashH   = '50%';
+        }
+        ov.style.cssText = 'position:absolute;left:'+flashLeft+';top:'+flashTop+';width:'+flashW+';height:'+flashH+';background:rgba(239,68,68,0.32);pointer-events:none;border-radius:'+radii.top+';opacity:1;transition:opacity 320ms ease-out;z-index:5;';
+        // Pad needs position:relative for our absolute child to anchor;
+        // most tile elements already have it, but set it defensively.
+        var prevPos = padEl.style.position;
+        if(!prevPos || prevPos === 'static') padEl.style.position = 'relative';
+        padEl.appendChild(ov);
+        // Trigger fade on next frame so the transition takes effect.
+        requestAnimationFrame(function(){ ov.style.opacity = '0'; });
+        setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 380);
+      };
+
+      // Apply a tap glow to a pad. In standard mode this is the
+      // pre-existing pad-wide boxShadow. In quads mode it's a
+      // quadrant-only overlay so the bloom emanates from one corner
+      // of the pad instead of all four sides — fixes the "looks weird
+      // when you only tap one quadrant" problem.
+      //
+      // Quadrant overlay implementation: 50%×50% div positioned at
+      // the quadrant's outer corner, carrying the same box-shadow
+      // recipe as the original (`0 0 28px 8px <hi>, 0 0 50px 12px <lo>`)
+      // but with clip-path extending outward beyond the overlay's
+      // outer sides while clipping at the inner sides — so the bloom
+      // escapes outward from the corner the quadrant shares with
+      // the pad, but doesn't bleed across the rest of the pad.
+      //
+      // Caller passes pre-computed hi/lo rgba strings so this stays
+      // independent of the GLOW_ON / _padGlowScale logic.
+      window._setPadGlow = function(padEl, hiRgba, loRgba){
+        if(!padEl) return;
+        var quadsOn = !!(window._multiHitOn && window._multiHitQuadsOn);
+        if(!quadsOn){
+          // Standard pad-wide glow.
+          padEl.style.boxShadow = '0 0 28px 8px '+hiRgba+',0 0 50px 12px '+loRgba;
+          return;
+        }
+        // Resolve quadrant from current tap position.
+        var rx = window._currentTapRelX, ry = window._currentTapRelY;
+        var west = (rx != null) ? (rx < 0.5) : true;
+        var north = (ry != null) ? (ry < 0.5) : true;
+        var quadrant = north ? (west ? 'NW' : 'NE') : (west ? 'SW' : 'SE');
+        // Cleanup any existing quad-glow first to avoid stacking.
+        var prev = padEl.querySelector('._quadGlow');
+        if(prev && prev.parentNode) prev.parentNode.removeChild(prev);
+        // Suppress the pad-wide boxShadow so only the quadrant
+        // overlay glows — without this, both effects stack.
+        padEl.style.boxShadow = 'none';
+        var leftPct = (quadrant === 'NW' || quadrant === 'SW') ? '0%' : '50%';
+        var topPct  = (quadrant === 'NW' || quadrant === 'NE') ? '0%' : '50%';
+        // clip-path inset: top right bottom left.
+        // Negative values extend beyond the element where the bloom
+        // should go (outward away from pad center). The two inner
+        // sides facing pad center use a tiny negative value (-1px)
+        // instead of exactly 0 so the bloom overlaps the crosshair
+        // by one pixel — eliminates a subpixel-rendering seam that
+        // otherwise leaves a small dark wedge at the quadrant's
+        // inner corner. The 1px overlap is invisible in motion.
+        var EXT = '120px';
+        var clip;
+        if(quadrant === 'NW')      clip = 'inset(-'+EXT+' 0 0 -'+EXT+')';
+        else if(quadrant === 'NE') clip = 'inset(-'+EXT+' -'+EXT+' 0 0)';
+        else if(quadrant === 'SW') clip = 'inset(0 0 -'+EXT+' -'+EXT+')';
+        else                       clip = 'inset(0 -'+EXT+' -'+EXT+' 0)';
+        // Round the overlay's outer corner to match the pad's own
+        // border-radius — without this, the square overlay corner
+        // sticks out beyond the pad's curved corner, leaving a small
+        // triangular gap between the overlay and the pad's rounded
+        // outline that shows through as a dark wedge against the bloom.
+        var padRadius = '';
+        try{
+          var cs2 = window.getComputedStyle(padEl);
+          padRadius = cs2.borderTopLeftRadius || '6px';
+        }catch(_){ padRadius = '6px'; }
+        var glowRadii;
+        if(quadrant === 'NW')      glowRadii = padRadius + ' 0 0 0';
+        else if(quadrant === 'NE') glowRadii = '0 ' + padRadius + ' 0 0';
+        else if(quadrant === 'SE') glowRadii = '0 0 ' + padRadius + ' 0';
+        else                       glowRadii = '0 0 0 ' + padRadius;
+        var ov = document.createElement('div');
+        ov.className = '_quadGlow';
+        ov.style.cssText =
+          'position:absolute;left:'+leftPct+';top:'+topPct+';'+
+          'width:50%;height:50%;pointer-events:none;z-index:3;'+
+          'background:transparent;'+
+          'border-radius:'+glowRadii+';'+
+          'box-shadow:0 0 28px 8px '+hiRgba+',0 0 50px 12px '+loRgba+';'+
+          '-webkit-clip-path:'+clip+';clip-path:'+clip+';';
+        // Pad needs overflow:visible so the shadow can escape; save
+        // prior overflow so cleanup can restore it.
+        if(padEl.dataset._priorOverflow === undefined){
+          padEl.dataset._priorOverflow = padEl.style.overflow || '';
+        }
+        padEl.style.overflow = 'visible';
+        var prevPos = padEl.style.position;
+        if(!prevPos || prevPos === 'static') padEl.style.position = 'relative';
+        padEl.appendChild(ov);
+      };
+      // Universal cleanup — removes any quadrant glow overlay AND
+      // clears the pad-wide boxShadow. Safe to call regardless of
+      // whether quads mode was active when the glow was applied.
+      window._clearPadGlow = function(padEl){
+        if(!padEl) return;
+        var ov = padEl.querySelector('._quadGlow');
+        if(ov && ov.parentNode) ov.parentNode.removeChild(ov);
+        if(padEl.dataset._priorOverflow !== undefined){
+          padEl.style.overflow = padEl.dataset._priorOverflow;
+          delete padEl.dataset._priorOverflow;
+        }
+        padEl.style.boxShadow = '';
+      };
+
+      // Persistent overlay grid: divides every pad into four quadrants
+      // when quads mode is on. The crosshair lines are colored per-tile
+      // using the assigned tile color (falls back to cyan), and can be
+      // hidden via the PAD DSPLY → Quad crosshair toggle. Even when the
+      // crosshair is hidden, quads logic still runs — only the visual
+      // grid disappears.
+      function _refreshQuadOverlays(){
+        var bank = document.getElementById('bank');
+        if(!bank) return;
+        var tiles = bank.querySelectorAll('.bt');
+        var crosshairOn = (window._quadCrosshairOn !== false);
+        if(window._multiHitOn && window._multiHitQuadsOn && crosshairOn){
+          tiles.forEach(function(tile){
+            var prevPos = tile.style.position;
+            if(!prevPos || prevPos === 'static') tile.style.position = 'relative';
+            // Resolve color from per-tile assignment. Falls back to
+            // cyan if no color is set or the tile has 'none'.
+            var idx = parseInt(tile.dataset.bankIdx);
+            var tc = (typeof tileColors !== 'undefined' && !isNaN(idx)) ? tileColors[idx] : null;
+            var color = (tc && tc !== 'none') ? tc : '#00d9ff';
+            // Build rgba from hex so we can apply alpha for softness.
+            function _rgba(hex, a){
+              var h = hex.replace('#','');
+              if(h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+              var r = parseInt(h.substr(0,2),16) || 0;
+              var g = parseInt(h.substr(2,2),16) || 0;
+              var b = parseInt(h.substr(4,2),16) || 0;
+              return 'rgba('+r+','+g+','+b+','+a+')';
+            }
+            var lineCol = _rgba(color, 0.7);
+            var existing = tile.querySelector('._quadOverlay');
+            if(!existing){
+              existing = document.createElement('div');
+              existing.className = '_quadOverlay';
+              existing.style.cssText = 'position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:4;';
+              tile.appendChild(existing);
+            }
+            // Refresh the crosshair lines (background) every time so
+            // tile color changes via COLOR mode propagate immediately.
+            existing.style.background =
+              'linear-gradient(to right, transparent calc(50% - 0.5px), '+lineCol+' calc(50% - 0.5px), '+lineCol+' calc(50% + 0.5px), transparent calc(50% + 0.5px)),' +
+              'linear-gradient(to bottom, transparent calc(50% - 0.5px), '+lineCol+' calc(50% - 0.5px), '+lineCol+' calc(50% + 0.5px), transparent calc(50% + 0.5px))';
+          });
+        } else {
+          // Either quads is off, or the crosshair is hidden. Strip
+          // any existing overlay divs.
+          tiles.forEach(function(tile){
+            var existing = tile.querySelector('._quadOverlay');
+            if(existing) existing.parentNode.removeChild(existing);
+          });
+        }
+      }
+      window._refreshQuadOverlays = _refreshQuadOverlays;
+
+      // Reflect current state visually.
+      function _syncMultiHitBar(){
+        padsBarMultiHit.classList.toggle('active', !!window._multiHitOn);
+        _refreshQuadOverlays();
+      }
+      _syncMultiHitBar();
+
+      // ── Long-press menu ──
+      var _mhMenu = null;
+      function _closeMhMenu(){
+        if(!_mhMenu) return;
+        if(window._btnFx) window._btnFx('tool_off');
+        if(_mhMenu.parentNode) _mhMenu.parentNode.removeChild(_mhMenu);
+        _mhMenu = null;
+      }
+      function _openMhMenu(){
+        if(_mhMenu){ _closeMhMenu(); return; }
+        var btnRect = padsBarMultiHit.getBoundingClientRect();
+        _mhMenu = document.createElement('div');
+        _mhMenu.style.cssText = 'position:fixed;z-index:600;background:#151515;border:2px solid rgba(0,217,255,0.45);border-radius:8px;padding:10px;box-shadow:0 4px 20px rgba(0,0,0,0.6);min-width:180px;display:flex;flex-direction:column;gap:5px;font-family:monospace;visibility:hidden;';
+        // Header
+        var hdr = document.createElement('div');
+        hdr.style.cssText = 'font-family:monospace;font-size:9px;color:var(--cyan);letter-spacing:2px;font-weight:700;text-align:center;';
+        hdr.textContent = 'MULTI-HIT NOTE';
+        _mhMenu.appendChild(hdr);
+        // Note-value options
+        var OPTIONS = [
+          {key:'1/4',   label:'QUARTER'},
+          {key:'1/4t',  label:'QUARTER TRIPLET'},
+          {key:'1/8',   label:'EIGHTH'},
+          {key:'1/8t',  label:'EIGHTH TRIPLET'},
+          {key:'1/16',  label:'SIXTEENTH'},
+          {key:'1/16t', label:'SIXTEENTH TRIPLET'}
+        ];
+        var optBtns = {};
+        function _isOptDisabledInQuads(key){
+          // In quads mode, disallow triplets (the SW quadrant
+          // generates the triplet automatically) and the sixteenth
+          // family (would push the SE "next-faster" beyond useful
+          // limits).
+          if(!window._multiHitQuadsOn) return false;
+          if(key === '1/4t' || key === '1/8t' || key === '1/16t') return true;
+          if(key === '1/16') return true;
+          return false;
+        }
+        function _refreshOpts(){
+          OPTIONS.forEach(function(o){
+            var b = optBtns[o.key];
+            if(!b) return;
+            var disabled = _isOptDisabledInQuads(o.key);
+            var on = (window._multiHitDivision === o.key);
+            if(disabled){
+              // Dim and visually mark as unavailable.
+              b.style.background  = 'transparent';
+              b.style.borderColor = 'rgba(120,120,120,0.25)';
+              b.style.color       = 'rgba(180,180,180,0.35)';
+              b.style.boxShadow   = 'none';
+              b.style.cursor      = 'not-allowed';
+            } else {
+              b.style.background  = on ? 'rgba(34,197,94,0.18)' : 'transparent';
+              b.style.borderColor = on ? '#22c55e' : 'rgba(34,197,94,0.4)';
+              b.style.color       = on ? '#86efac' : '#ccc';
+              b.style.boxShadow   = on ? '0 0 8px rgba(34,197,94,0.45)' : 'none';
+              b.style.cursor      = 'pointer';
+            }
+          });
+        }
+        OPTIONS.forEach(function(o){
+          var b = document.createElement('button');
+          b.textContent = o.label;
+          b.style.cssText = 'font-family:monospace;font-size:9px;font-weight:700;padding:6px 8px;border:1.5px solid rgba(34,197,94,0.4);border-radius:4px;background:transparent;color:#ccc;cursor:pointer;letter-spacing:0.5px;text-align:left;';
+          b.addEventListener('click', function(e){
+            e.stopPropagation();
+            // Refuse selection if disabled in current quads mode.
+            if(_isOptDisabledInQuads(o.key)) return;
+            window._multiHitDivision = o.key;
+            _refreshOpts();
+            if(window._btnFx) window._btnFx('tool_on');
+          });
+          optBtns[o.key] = b;
+          _mhMenu.appendChild(b);
+        });
+        _refreshOpts();
+
+        // ── QUADS toggle button ────────────────────────────
+        // When on: each pad is divided into four quadrants by a
+        // faint red overlay. The tapped quadrant determines the
+        // multi-hit pattern (NW=1, NE=2 selected, SW=3 triplet,
+        // SE=2 next-faster). Triplet and sixteenth options are
+        // grayed out while quads is on.
+        var quadsBtn = document.createElement('button');
+        function _refreshQuadsBtn(){
+          var on = !!window._multiHitQuadsOn;
+          quadsBtn.textContent = 'QUADS' + (on ? '  ●' : '');
+          quadsBtn.style.background  = on ? 'rgba(34,197,94,0.18)' : 'transparent';
+          quadsBtn.style.borderColor = on ? '#22c55e' : 'rgba(34,197,94,0.4)';
+          quadsBtn.style.color       = on ? '#86efac' : '#ccc';
+          quadsBtn.style.boxShadow   = on ? '0 0 8px rgba(34,197,94,0.45)' : 'none';
+        }
+        quadsBtn.style.cssText = 'font-family:monospace;font-size:9px;font-weight:700;padding:6px 8px;border:1.5px solid rgba(34,197,94,0.4);border-radius:4px;background:transparent;color:#ccc;cursor:pointer;letter-spacing:0.5px;text-align:left;margin-top:4px;';
+        quadsBtn.addEventListener('click', function(e){
+          e.stopPropagation();
+          window._multiHitQuadsOn = !window._multiHitQuadsOn;
+          // If turning quads on, snap the division to a valid one.
+          if(window._multiHitQuadsOn){
+            if(_isOptDisabledInQuads(window._multiHitDivision)){
+              window._multiHitDivision = '1/8';
+            }
+          }
+          _refreshQuadsBtn();
+          _refreshOpts();
+          _refreshQuadOverlays();
+          if(window._btnFx) window._btnFx(window._multiHitQuadsOn ? 'tool_on' : 'tool_off');
+        });
+        _refreshQuadsBtn();
+        _mhMenu.appendChild(quadsBtn);
+
+        // ── ACCENT slider ───────────────────────────────────
+        // Controls how much louder the first tap is vs. the
+        // subsequent extra hits, averaged so the overall perceived
+        // loudness stays the same as a single tap. Stored as
+        // window._sfxSettings.multiHitAccent (0..1). Persisted via
+        // _saveSfxSettings so the value survives reloads.
+        if(window._sfxSettings && typeof window._sfxSettings.multiHitAccent !== 'number'){
+          window._sfxSettings.multiHitAccent = 0;
+        }
+        var initAccent = (window._sfxSettings && window._sfxSettings.multiHitAccent) || 0;
+        var accentWrap = document.createElement('div');
+        accentWrap.style.cssText = 'margin-top:4px;padding-top:6px;border-top:1px solid rgba(0,217,255,0.15);';
+        var accentSlider = window._mkSliderRow(
+          'ACCENT',
+          '#22c55e',
+          initAccent,
+          0, 100,
+          function(v){ return '+'+Math.round(v)+'%'; },
+          function(v){
+            if(!window._sfxSettings) window._sfxSettings = {};
+            window._sfxSettings.multiHitAccent = v / 100;
+            if(window._saveSfxSettings) window._saveSfxSettings();
+          }
+        );
+        accentWrap.appendChild(accentSlider.row);
+        _mhMenu.appendChild(accentWrap);
+        // DONE row (small green button, centered)
+        var doneRow = document.createElement('div');
+        doneRow.style.cssText = 'display:flex;justify-content:center;margin-top:4px;';
+        var doneBtn = document.createElement('button');
+        doneBtn.textContent = 'DONE';
+        doneBtn.style.cssText = 'font-family:monospace;font-size:9px;font-weight:700;padding:5px 14px;border:1.5px solid #22c55e;border-radius:4px;background:rgba(34,197,94,0.1);color:#22c55e;cursor:pointer;letter-spacing:1.5px;';
+        doneBtn.addEventListener('click', function(e){ e.stopPropagation(); _closeMhMenu(); });
+        doneRow.appendChild(doneBtn);
+        _mhMenu.appendChild(doneRow);
+        // Append + position
+        document.body.appendChild(_mhMenu);
+        var menuW = _mhMenu.offsetWidth;
+        var menuH = _mhMenu.offsetHeight;
+        // To the LEFT of the button, vertically aligned to the button's
+        // bottom edge (since the button is in a thin top drawer, the menu
+        // hangs down beside it). Falls back to right side if there's no
+        // room on the left.
+        var top = btnRect.bottom - menuH;
+        if(top < 8) top = 8;
+        if(top + menuH > window.innerHeight - 8) top = window.innerHeight - menuH - 8;
+        var left = btnRect.left - menuW - 6;
+        if(left < 8){
+          // No room on the left — place to the right of the button.
+          left = btnRect.right + 6;
+          if(left + menuW > window.innerWidth - 8){
+            left = window.innerWidth - menuW - 8;
+          }
+        }
+        _mhMenu.style.top  = top  + 'px';
+        _mhMenu.style.left = left + 'px';
+        _mhMenu.style.visibility = 'visible';
+      }
+
+      // Wire short-tap (toggle) and long-press (menu) via the standard
+      // helper if available so we get the buildup glow + chirp pop. Falls
+      // back to a hand-rolled timer if the helper isn't loaded yet at
+      // attach time. We defer the attach with setTimeout(..., 0) so any
+      // helper defined later in the file is available — same pattern as
+      // the tap-sensitivity button.
+      setTimeout(function(){
+        if(window._attachLongPress){
+          window._attachLongPress(padsBarMultiHit, {
+            duration: 500,
+            onTap: function(){
+              if(typeof resumeAC==='function') resumeAC();
+              window._multiHitOn = !window._multiHitOn;
+              _syncMultiHitBar();
+              if(window._btnFx) window._btnFx(window._multiHitOn ? 'tool_on' : 'tool_off');
+            },
+            onLongPress: function(){
+              if(typeof resumeAC==='function') resumeAC();
+              if(window._btnFx) window._btnFx('tool_on');
+              _openMhMenu();
+            }
+          });
+        } else {
+          padsBarMultiHit.addEventListener('click', function(e){
+            e.stopPropagation();
+            window._multiHitOn = !window._multiHitOn;
+            _syncMultiHitBar();
+            if(window._btnFx) window._btnFx(window._multiHitOn ? 'tool_on' : 'tool_off');
+          });
+        }
+      }, 0);
+    }
   })();
   initSlimPanel('seqBankSlimPanel','seqBankPanelBar','slimSeqBank');
   initSlimPanel('seqCtrlSlimPanel','seqCtrlBar','slimSeqCtrl');
@@ -25439,24 +26529,136 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
   });
 
   // ── REVERB PANEL ──
-  var _revRow;
+  var _revRow, _revSizeRow, _revDecayRow;
+  // Map slider 0-100 to actual IR params and back. Keeping these
+  // helpers near the panel so the preset buttons can use the same
+  // mapping when programmatically setting slider values.
+  function _revSizeFromSlider(v){ return 0.2 + (v/100) * 5.8; }     // 0.2s..6s
+  function _revSizeToSlider(s){ return Math.round((s - 0.2) / 5.8 * 100); }
+  function _revDecayFromSlider(v){ return 0.5 + (v/100) * 5.5; }    // 0.5..6.0
+  function _revDecayToSlider(d){ return Math.round((d - 0.5) / 5.5 * 100); }
+  function _revMixFromSlider(v){ return v * 0.0015; }                // 0..0.15
+  function _revMixToSlider(m){ return Math.round(m / 0.0015); }
+  // Built-in room-type presets. {sizeSec, decayExp, mixPct}.
+  var _revBuiltInPresets = [
+    { name:'ROOM',   sizeSec:0.6, decayExp:3.5, mixPct:30 },
+    { name:'HALL',   sizeSec:3.2, decayExp:2.0, mixPct:50 },
+    { name:'PLATE',  sizeSec:1.4, decayExp:4.5, mixPct:45 },
+    { name:'CAVE',   sizeSec:5.0, decayExp:1.2, mixPct:60 },
+    { name:'SPRING', sizeSec:0.9, decayExp:5.5, mixPct:40 }
+  ];
+  function _revLoadUserPresets(){
+    try{ return JSON.parse(localStorage.getItem('reverbUserPresets')||'[]'); }
+    catch(e){ return []; }
+  }
+  function _revSaveUserPresets(arr){
+    try{ localStorage.setItem('reverbUserPresets', JSON.stringify(arr)); }catch(e){}
+  }
+  function _applyRevPreset(p){
+    if(!p) return;
+    if(_revSizeRow){
+      _revSizeRow.sl.value = _revSizeToSlider(p.sizeSec);
+      _revSizeRow.sl.dispatchEvent(new Event('input'));
+    }
+    if(_revDecayRow){
+      _revDecayRow.sl.value = _revDecayToSlider(p.decayExp);
+      _revDecayRow.sl.dispatchEvent(new Event('input'));
+    }
+    if(_revRow && typeof p.mixPct === 'number'){
+      _revRow.sl.value = p.mixPct;
+      _revRow.sl.dispatchEvent(new Event('input'));
+    }
+  }
   var revObj=_makeFxPanel({
     id:'revSlimPanel', label:'REVERB', color:'#c400ff', storageKey:'slimRev',
     buildBody:function(body){
+      // MIX slider — wet/dry balance.
       _revRow=_mkFxCanvasSlider({
         label:'MIX', prefix:'DRY', suffix:'WET',
-        min:0, max:100, step:1, value:4, color:'#c400ff',
+        min:0, max:100, step:1, value:40, color:'#c400ff',
         fmt:function(v){return Math.round(v)+'%';},
-        onInput:function(v){ if(!revObj||!revObj.isBypassed||!revObj.isBypassed()){ if(window._setMasterReverb) window._setMasterReverb(v/100); } _revRow._userVal=v/100; },
-        resetValue:4
+        onInput:function(v){ if(!revObj||!revObj.isBypassed||!revObj.isBypassed()){ if(window._setMasterReverb) window._setMasterReverb(_revMixFromSlider(v)); } _revRow._userVal=_revMixFromSlider(v); },
+        resetValue:40
       });
-      _revRow._userVal=0.04;
+      _revRow._userVal=0.06;
       body.appendChild(_revRow.row);
+      // SIZE slider — controls IR length (0.2s..6s).
+      _revSizeRow=_mkFxCanvasSlider({
+        label:'SIZE',
+        min:0, max:100, step:1, value:_revSizeToSlider(1.6), color:'#c400ff',
+        fmt:function(v){ return _revSizeFromSlider(v).toFixed(1)+'s'; },
+        onInput:function(v){ if(window._setMasterReverbIR) window._setMasterReverbIR(_revSizeFromSlider(v), _revDecayFromSlider(_revDecayRow ? +_revDecayRow.sl.value : 42)); },
+        resetValue:_revSizeToSlider(1.6)
+      });
+      body.appendChild(_revSizeRow.row);
+      // DECAY slider — controls how fast the tail falls off.
+      // Higher value = sharper falloff = tighter tail.
+      _revDecayRow=_mkFxCanvasSlider({
+        label:'DECAY',
+        min:0, max:100, step:1, value:_revDecayToSlider(2.8), color:'#c400ff',
+        fmt:function(v){ return _revDecayFromSlider(v).toFixed(1); },
+        onInput:function(v){ if(window._setMasterReverbIR) window._setMasterReverbIR(_revSizeFromSlider(_revSizeRow ? +_revSizeRow.sl.value : 24), _revDecayFromSlider(v)); },
+        resetValue:_revDecayToSlider(2.8)
+      });
+      body.appendChild(_revDecayRow.row);
+      // Preset row — built-in room types as small buttons.
+      var presetRow = document.createElement('div');
+      presetRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:3px;padding:4px 0 2px 0;';
+      function _mkPresetBtn(p, isUser){
+        var b = document.createElement('button');
+        b.textContent = p.name;
+        b.style.cssText = 'flex:1;min-width:42px;font-family:monospace;font-size:8px;font-weight:700;padding:4px 4px;border:1px solid '+(isUser?'rgba(251,191,36,0.5)':'rgba(196,0,255,0.5)')+';border-radius:3px;background:transparent;color:'+(isUser?'#fbbf24':'#c400ff')+';cursor:pointer;letter-spacing:0.5px;touch-action:manipulation;';
+        b.addEventListener('click', function(ev){ ev.stopPropagation(); _applyRevPreset(p); });
+        // Long-press on user presets to delete
+        if(isUser && window._attachLongPress){
+          window._attachLongPress(b, {
+            duration:500,
+            onLongPress:function(){
+              if(!confirm('Delete preset "'+p.name+'"?')) return;
+              var arr = _revLoadUserPresets();
+              var idx = arr.findIndex(function(x){ return x.name===p.name; });
+              if(idx >= 0){ arr.splice(idx, 1); _revSaveUserPresets(arr); _rebuildPresetRow(); }
+            },
+            onTap:function(){ b.click(); }
+          });
+        }
+        return b;
+      }
+      function _rebuildPresetRow(){
+        presetRow.innerHTML = '';
+        _revBuiltInPresets.forEach(function(p){ presetRow.appendChild(_mkPresetBtn(p, false)); });
+        var users = _revLoadUserPresets();
+        users.forEach(function(p){ presetRow.appendChild(_mkPresetBtn(p, true)); });
+        // SAVE button — captures current SIZE/DECAY/MIX as a new user preset
+        var saveBtn = document.createElement('button');
+        saveBtn.textContent = '+ SAVE';
+        saveBtn.style.cssText = 'flex:1;min-width:42px;font-family:monospace;font-size:8px;font-weight:700;padding:4px 4px;border:1px solid rgba(34,197,94,0.5);border-radius:3px;background:transparent;color:#4ade80;cursor:pointer;letter-spacing:0.5px;touch-action:manipulation;';
+        saveBtn.addEventListener('click', function(ev){
+          ev.stopPropagation();
+          var name = (prompt('Name this reverb preset:', 'MY VERB')||'').trim().toUpperCase().slice(0, 8);
+          if(!name) return;
+          var p = {
+            name: name,
+            sizeSec: _revSizeFromSlider(+_revSizeRow.sl.value),
+            decayExp: _revDecayFromSlider(+_revDecayRow.sl.value),
+            mixPct: +_revRow.sl.value
+          };
+          var arr = _revLoadUserPresets();
+          // Replace if same name exists
+          var idx = arr.findIndex(function(x){ return x.name===name; });
+          if(idx >= 0) arr[idx] = p; else arr.push(p);
+          _revSaveUserPresets(arr);
+          _rebuildPresetRow();
+        });
+        presetRow.appendChild(saveBtn);
+      }
+      _rebuildPresetRow();
+      body.appendChild(presetRow);
     },
     applyBypass:function(b){
       if(!window._setMasterReverb) return;
       if(b) window._setMasterReverb(0);
-      else if(_revRow) window._setMasterReverb(_revRow._userVal||0.04);
+      else if(_revRow) window._setMasterReverb(_revRow._userVal||0.06);
     }
   });
 
@@ -25575,7 +26777,18 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
   function _styleName(s){ return STYLE_NAMES[s] || s; }
 
   if(!window._kitsList){
-    window._kitsList = [{type:'stock', style: (typeof SOUND_STYLE!=='undefined'?SOUND_STYLE:'A'), name:_styleName(typeof SOUND_STYLE!=='undefined'?SOUND_STYLE:'A')}];
+    // Seed with ALL stock styles so they all show up in the KITS
+    // strip by default. Users can delete ones they don't want from
+    // the kit menu (long-press KITS), and add saved kits alongside.
+    // The currently-active SOUND_STYLE becomes the active kit so the
+    // initial selection matches what's playing.
+    var _stockOrder = ['A','B','C','D','E','F','G','H','I','J'];
+    window._kitsList = _stockOrder.map(function(s){
+      return { type:'stock', style:s, name:_styleName(s) };
+    });
+    var _curStyle = (typeof SOUND_STYLE!=='undefined' ? SOUND_STYLE : 'A');
+    var _curIdx = _stockOrder.indexOf(_curStyle);
+    window._activeKitIdx = (_curIdx >= 0) ? _curIdx : 0;
   }
   if(typeof window._activeKitIdx !== 'number') window._activeKitIdx = 0;
 
@@ -25609,6 +26822,34 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
       inner.innerHTML = '';
       return;
     }
+    // Fast path: if the existing pill DOM matches the current kit
+    // list (same count, same names), don't rebuild — just update
+    // which pill has the active highlight. The full rebuild path
+    // (else branch below) only runs when the kit list ITSELF
+    // changed (add/delete) or on first render. This makes per-hop
+    // kit switches during momentum cheap — no DOM teardown, no
+    // layout recalc, no transition reset.
+    var canFastPath = preserveTransform && inner.children.length === kits.length;
+    if(canFastPath){
+      for(var fi = 0; fi < kits.length; fi++){
+        var pillEl = inner.children[fi];
+        if(!pillEl || pillEl.textContent !== _kitDisplayName(kits[fi])){
+          canFastPath = false;
+          break;
+        }
+      }
+    }
+    if(canFastPath){
+      for(var ai = 0; ai < kits.length; ai++){
+        var p = inner.children[ai];
+        var isActiveAi = (ai === active);
+        p.style.borderColor = isActiveAi ? 'var(--cyan)' : 'rgba(0,217,255,0.35)';
+        p.style.background = isActiveAi ? 'rgba(0,217,255,0.1)' : 'transparent';
+        p.style.color = isActiveAi ? 'var(--cyan)' : 'rgba(0,217,255,0.7)';
+        p.style.boxShadow = isActiveAi ? '0 0 8px rgba(0,217,255,0.4)' : '';
+      }
+      return;
+    }
     // Preserve the previous transform ONLY when called from a
     // swap path (so the bank and pills can animate together from
     // the prior position). For kit-list mutations (add/delete) or
@@ -25633,8 +26874,31 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
         + 'background:'+(isActive?'rgba(0,217,255,0.1)':'transparent')+';'
         + 'color:'+(isActive?'var(--cyan)':'rgba(0,217,255,0.7)')+';'
         + 'letter-spacing:0.5px;'
+        + 'cursor:pointer;'
+        + 'touch-action:manipulation;'
         + (isActive?'box-shadow:0 0 8px rgba(0,217,255,0.4);':'')
         + 'transition:border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;';
+      // Tap → shortcut to that kit. Calculates the steps/dir
+      // needed to reach the tapped pill and routes through
+      // _momentumSwap so the motion looks identical to a swipe
+      // ending exactly on this kit. _dragJustEnded suppression
+      // prevents the synthetic click after a drag from triggering
+      // a duplicate jump on whichever pill the finger lifted over.
+      pill.addEventListener('click', function(){
+        if(window._dragJustEnded) return;
+        if(_swiping) return;
+        var targetIdx = parseInt(this.dataset.kitIdx, 10);
+        if(isNaN(targetIdx)) return;
+        var curIdx = window._activeKitIdx || 0;
+        if(targetIdx === curIdx) return;
+        var dir = (targetIdx > curIdx) ? 1 : -1;
+        var steps = Math.abs(targetIdx - curIdx);
+        if(steps === 1){
+          _animatedKitSwap(dir);
+        } else {
+          _momentumSwap(dir, steps);
+        }
+      });
       inner.appendChild(pill);
     });
     // If no previous transform existed (initial render), snap
@@ -25670,19 +26934,15 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     var stripRect = stripEl.getBoundingClientRect();
     var stripCenter = stripRect.width / 2;
     var pillCenter = targetPill.offsetLeft + targetPill.offsetWidth / 2;
-    var translateX;
-    var totalW = inner.scrollWidth;
-    if(totalW <= stripRect.width){
-      // Whole list fits — center the group.
-      translateX = (stripRect.width - totalW) / 2;
-    } else {
-      // List overflows — keep active pill centered when possible,
-      // clamp so we don't show empty space past either end.
-      translateX = stripCenter - pillCenter;
-      var minX = stripRect.width - totalW;
-      if(translateX > 0) translateX = 0;
-      if(translateX < minX) translateX = minX;
-    }
+    // Always center the active pill regardless of queue position.
+    // Earlier versions clamped translateX so empty space wouldn't
+    // show past the ends, but that put the active pill off-center
+    // at the queue's ends and made the live-drag picker math
+    // inconsistent (it always picks the pill nearest strip center,
+    // which wasn't the active one in clamped state). Allowing
+    // empty space past the ends keeps the active pill anchored
+    // and the picker math correct everywhere.
+    var translateX = stripCenter - pillCenter;
     if(animated){
       inner.style.transition = 'transform 320ms cubic-bezier(0.34, 1.2, 0.64, 1)';
     } else {
@@ -25690,17 +26950,27 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     }
     inner.style.transform = 'translateX(' + translateX + 'px)';
     // ── Edge fade/chevron indicators ────────────────────────
-    // Show left fade when content is shifted left (kits hidden
-    // off the left edge); show right fade when content isn't
-    // clamped to the right edge (kits hidden off the right).
+    // Show fade chevrons only when actual pills are clipped off
+    // the visible strip on that side. Checks each pill's screen
+    // position against the strip viewport bounds — using neighbor
+    // existence alone (active>0 / active<n-1) flagged the fades on
+    // even when the neighboring pills were still fully visible
+    // inside the strip viewport.
     var fadeL = document.getElementById('padsBarKitsFadeLeft');
     var fadeR = document.getElementById('padsBarKitsFadeRight');
     if(fadeL && fadeR){
       var showL = false, showR = false;
-      if(totalW > stripRect.width){
-        var _minX = stripRect.width - totalW;
-        showL = (translateX < -1);
-        showR = (translateX > _minX + 1);
+      var stripLeft = 0;
+      var stripRight = stripRect.width;
+      for(var fi = 0; fi < pills.length; fi++){
+        var fp = pills[fi];
+        var pLeft  = fp.offsetLeft + translateX;
+        var pRight = pLeft + fp.offsetWidth;
+        // Treat a pill as "clipped" only when more than 4px of it
+        // is past the strip edge — keeps the chevron from flickering
+        // on for a sub-pixel sliver during settle animations.
+        if(pRight < stripLeft + 4) showL = true;
+        if(pLeft > stripRight - 4) showR = true;
       }
       fadeL.style.display = showL ? 'flex' : 'none';
       fadeR.style.display = showR ? 'flex' : 'none';
@@ -25709,18 +26979,22 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
   window._positionKitsStrip = _positionKitsStrip;
 
   // Apply a kit reference to the running pad bank. Stock kits route
-  // through setSoundStyle(); custom kits would restore saved sample
-  // data. v7.33 only supports stock kits — custom-kit application
-  // arrives when we wire up loading from .kit / .seq files.
+  // through setSoundStyle(); custom kits route through _loadKit
+  // which restores samples, overrides, colors, and hold-tags.
   function _applyKit(kit, preserveTransform){
     if(!kit) return;
     if(kit.type === 'stock'){
       if(typeof setSoundStyle === 'function'){
         setSoundStyle(kit.style);
       }
-    } else {
-      // TODO v7.34+: restore custom kit data (samples, meta, colors)
-      // For now, custom kits in the list are placeholders.
+    } else if(kit.type === 'custom' && kit.data){
+      // Restore the saved kit data — samples, meta, colors, hold tags,
+      // stock style baseline. _loadKit handles all of this and triggers
+      // a renderBank, so the pad bank reflects the loaded kit.
+      if(typeof window._loadKit === 'function'){
+        try{ window._loadKit(kit.data); }
+        catch(e){ try{ console.warn('[Sequation] failed to apply custom kit:', e); }catch(_){} }
+      }
     }
     _refreshKitsStrip(preserveTransform);
   }
@@ -25853,10 +27127,104 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     if(!_menuEl) return;
     var addBtn = _menuEl.querySelector('._kitAddBtn');
     if(addBtn) addBtn.onclick = function(){ _openAddKitPicker(addBtn); };
+    var libBtn = _menuEl.querySelector('._kitLibBtn');
+    if(libBtn) libBtn.onclick = function(){ _openLibraryPicker(); };
+    var browseBtn = _menuEl.querySelector('._kitBrowseBtn');
+    if(browseBtn) browseBtn.onclick = function(){ _openFileBrowse(); };
     var closeBtn = _menuEl.querySelector('._kitCloseBtn');
     if(closeBtn) closeBtn.onclick = _closeKitMenu;
     var doneBtn = _menuEl.querySelector('._kitDoneBtn');
     if(doneBtn) doneBtn.onclick = _closeKitMenu;
+  }
+
+  // Open a sub-picker showing the user's saved kit library so they
+  // can append a previously-saved kit to the queue without making
+  // it active immediately. Saved kits live in window._savedKits
+  // (also persisted to localStorage). Selecting one pushes a
+  // 'custom' kit reference onto _kitsList that carries the saved
+  // kit data so the kit can be applied later when the user swipes
+  // or taps it.
+  function _openLibraryPicker(){
+    if(!_menuEl) return;
+    var bodyEl = _menuEl.querySelector('._kitMenuBody');
+    if(!bodyEl) return;
+    var prevHTML = bodyEl.innerHTML;
+    bodyEl.innerHTML = '';
+    var back = document.createElement('button');
+    back.textContent = '← BACK';
+    back.style.cssText = 'font-family:monospace;font-size:9px;font-weight:700;padding:4px 8px;border:1.5px solid rgba(0,217,255,0.35);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;letter-spacing:0.5px;margin-bottom:8px;';
+    back.addEventListener('click', function(){
+      bodyEl.innerHTML = prevHTML;
+      _renderKitList();
+      _attachMenuHandlers();
+    });
+    bodyEl.appendChild(back);
+    var ttl = document.createElement('div');
+    ttl.textContent = 'PICK FROM LIBRARY';
+    ttl.style.cssText = 'font-family:monospace;font-size:9px;font-weight:700;color:var(--text-muted);letter-spacing:1px;margin-bottom:6px;';
+    bodyEl.appendChild(ttl);
+    var saved = window._savedKits || [];
+    if(saved.length === 0){
+      var empty = document.createElement('div');
+      empty.style.cssText = 'font-family:monospace;font-size:9px;color:#888;padding:12px 8px;text-align:center;line-height:1.5;';
+      empty.innerHTML = 'No saved kits yet.<br>Use the SAVE button on the<br>pads tools drawer to save<br>your current pads as a kit.';
+      bodyEl.appendChild(empty);
+      return;
+    }
+    var list = document.createElement('div');
+    list.style.cssText = 'display:flex;flex-direction:column;gap:4px;max-height:240px;overflow-y:auto;';
+    saved.forEach(function(savedKit){
+      var b = document.createElement('button');
+      b.textContent = savedKit.name || 'UNNAMED';
+      b.style.cssText = 'font-family:monospace;font-size:10px;font-weight:700;padding:7px 8px;border:1.5px solid rgba(251,191,36,0.4);border-radius:3px;background:transparent;color:#fbbf24;cursor:pointer;letter-spacing:0.5px;text-align:left;';
+      b.addEventListener('click', function(){
+        // Append a custom kit reference to the queue. The kit data
+        // is stored on the reference itself so we can apply it
+        // later without needing to re-fetch from _savedKits.
+        window._kitsList.push({ type:'custom', name:savedKit.name||'CUSTOM', data:savedKit });
+        bodyEl.innerHTML = prevHTML;
+        _renderKitList();
+        _attachMenuHandlers();
+        _refreshKitsStrip();
+      });
+      list.appendChild(b);
+    });
+    bodyEl.appendChild(list);
+  }
+
+  // Open a file picker for .kit files. Loads the kit data from
+  // disk and appends it to the queue as a custom kit reference,
+  // same as the LIBRARY picker — without applying immediately.
+  function _openFileBrowse(){
+    var fi = document.createElement('input');
+    fi.type = 'file';
+    fi.accept = '.kit,.json,application/json,application/octet-stream';
+    fi.style.cssText = 'position:fixed;top:-200px;left:-200px;opacity:0.01;width:1px;height:1px;';
+    document.body.appendChild(fi);
+    fi.onchange = function(){
+      var file = fi.files && fi.files[0];
+      if(document.body.contains(fi)) document.body.removeChild(fi);
+      if(!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        try{
+          var kit = JSON.parse(ev.target.result);
+          if(!kit.name){ kit.name = file.name.replace(/\.(kit|json)$/i, ''); }
+          // Append to queue without applying. The data is stored
+          // on the kit reference so it can be applied later.
+          window._kitsList.push({ type:'custom', name:kit.name, data:kit });
+          _renderKitList();
+          _refreshKitsStrip();
+        }catch(e){
+          alert('Could not read kit file: ' + e.message);
+        }
+      };
+      reader.onerror = function(){ alert('Error reading file'); };
+      reader.readAsText(file);
+    };
+    // Fire click synchronously inside the user-gesture stack so
+    // mobile browsers don't block it.
+    fi.click();
   }
 
   function _openKitMenu(){
@@ -25890,8 +27258,12 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
       + '</div>'
       + '<div class="_kitMenuBody">'
       +   '<div class="_kitListBody" style="display:flex;flex-direction:column;gap:0;margin-bottom:10px;max-height:240px;overflow-y:auto;"></div>'
+      +   '<div style="display:flex;gap:6px;margin-bottom:6px;">'
+      +     '<button class="_kitAddBtn" style="flex:1;font-family:monospace;font-size:10px;font-weight:700;padding:6px 8px;border:1.5px solid rgba(34,197,94,0.5);border-radius:3px;background:transparent;color:#4ade80;cursor:pointer;letter-spacing:0.5px;">+ STOCK</button>'
+      +     '<button class="_kitLibBtn" style="flex:1;font-family:monospace;font-size:10px;font-weight:700;padding:6px 8px;border:1.5px solid rgba(251,191,36,0.5);border-radius:3px;background:transparent;color:#fbbf24;cursor:pointer;letter-spacing:0.5px;">+ LIBRARY</button>'
+      +   '</div>'
       +   '<div style="display:flex;gap:6px;margin-bottom:8px;">'
-      +     '<button class="_kitAddBtn" style="flex:1;font-family:monospace;font-size:10px;font-weight:700;padding:6px 8px;border:1.5px solid rgba(34,197,94,0.5);border-radius:3px;background:transparent;color:#4ade80;cursor:pointer;letter-spacing:0.5px;">+ ADD KIT</button>'
+      +     '<button class="_kitBrowseBtn" style="flex:1;font-family:monospace;font-size:10px;font-weight:700;padding:6px 8px;border:1.5px solid rgba(0,217,255,0.5);border-radius:3px;background:transparent;color:var(--cyan);cursor:pointer;letter-spacing:0.5px;">📂 BROWSE FILES</button>'
       +   '</div>'
       +   '<button class="_kitDoneBtn" style="width:100%;font-family:monospace;font-size:11px;font-weight:700;padding:8px 8px;border:1.5px solid var(--cyan);border-radius:3px;background:rgba(0,217,255,0.12);color:var(--cyan);cursor:pointer;letter-spacing:1px;">DONE</button>'
       + '</div>';
@@ -25973,6 +27345,7 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
   var _dragLastX = 0;           // last clientX for instantaneous velocity
   var _dragLastT = 0;
   var _dragInstVel = 0;          // recent px/ms (positive = right, negative = left)
+  var _dragVelSamples = [];     // rolling window of {t,x} samples for averaged release velocity
   var _draggingMode = false;    // true once we've started moving the strip live
   var _dragLastActiveIdx = 0;   // most recent active kit during drag
   var _dragInitialActiveIdx = 0; // active kit at drag start (for "did it change?" check)
@@ -25995,7 +27368,7 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     var m = /translateX\(\s*(-?[\d.]+)px\s*\)/.exec(t);
     var innerX = m ? parseFloat(m[1]) : 0;
     // Find the pill whose center (after translateX) is closest
-    // to the strip's center.
+    // to the strip's center marker.
     var bestIdx = -1, bestDist = Infinity;
     for(var i = 0; i < pills.length; i++){
       var p = pills[i];
@@ -26015,10 +27388,13 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     // so the unified swipe tone is what plays.
     window._inKitSwap = true;
     if((window._activeKitIdx || 0) !== kitIdx){
+      var prevIdx = window._activeKitIdx || 0;
       window._activeKitIdx = kitIdx;
       var kit = kits[kitIdx];
       if(kit && kit.type === 'stock' && typeof setSoundStyle === 'function'){
         setSoundStyle(kit.style);
+      } else if(kit && kit.type === 'custom' && kit.data && typeof window._loadKit === 'function'){
+        try{ window._loadKit(kit.data); }catch(_){}
       }
       // Update pill highlights DIRECTLY rather than rebuilding
       // the inner DOM. Toggling inline styles in place is way
@@ -26039,28 +27415,21 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
           pill.style.boxShadow = '';
         }
       }
-      // Refresh beat lights for the new kit.
-      if(typeof window.updateBeatDotActivity === 'function'){
-        window.updateBeatDotActivity();
-      }
-      if(typeof window.applyBeatEditHighlights === 'function'){
-        window.applyBeatEditHighlights();
-      }
       // Per-pill swipe sound.
       if(typeof _kitSwipeTone === 'function'){
         _kitSwipeTone(0);
       }
-      // Bank bounce-in animation. Each pill-crossing during the
-      // drag triggers the bank to fly in from the side opposite
-      // the drag direction, with a bouncy overshoot — matches
-      // the feel of a single _quickKitSwap. Skipped for the very
-      // first transition if the finger has barely moved (no
-      // velocity yet) to avoid a weird pop on the initial commit.
-      if(typeof _bankBounceIn === 'function' && Math.abs(_dragInstVel) > 0.05){
-        // Direction: finger moving LEFT (negative vel) means user
-        // is pulling new pads in from the right side.
-        var bounceDir = (_dragInstVel < 0) ? 1 : -1;
-        _bankBounceIn(bounceDir);
+      // Bank overshoot bounce on each kit crossing — gives the
+      // satisfying pop-into-place feel during slow drags. For
+      // rapid drags (high finger velocity), use the fast linear
+      // variant so consecutive bounces don't stack and choke the
+      // CPU on lower-end devices. The cutoff is roughly the same
+      // velocity above which the user is clearly flicking through
+      // kits, not deliberately picking one.
+      if(typeof _bankBounceIn === 'function'){
+        var crossDir = (kitIdx > prevIdx) ? 1 : -1;
+        var fastBounce = (Math.abs(_dragInstVel) > 0.6); // px/ms
+        _bankBounceIn(crossDir, fastBounce);
       }
     }
     window._inKitSwap = false;
@@ -26070,7 +27439,11 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
   // live drag when the active kit crosses to a new pill.
   // Shorter than the full swap (no fly-off phase) since the
   // pads are already showing the correct kit visually.
-  function _bankBounceIn(dir){
+  // The `fast` flag swaps the bouncy overshoot for a short
+  // linear slide — used during rapid drags where multiple
+  // bouncy transforms back-to-back stack up and cause
+  // choppiness. Slow drags (default) keep the bounce.
+  function _bankBounceIn(dir, fast){
     var bank = document.getElementById('bank');
     if(!bank) return;
     // If a previous bounce is still in flight, cancel it so
@@ -26080,17 +27453,23 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
       bank._kitBounceTimer = null;
     }
     var bw = bank.offsetWidth || 320;
-    var inFromX = (dir > 0) ? bw + 40 : -(bw + 40);
+    // Fast mode comes in from a smaller offset and uses a shorter
+    // linear-out curve so consecutive crossings can chain without
+    // the cubic-bezier overshoot fighting itself across hops.
+    var fromMult = fast ? 0.35 : 1.0;
+    var inFromX = (dir > 0) ? (bw * fromMult + 40) : -(bw * fromMult + 40);
+    var dur = fast ? 90 : 280;
+    var curve = fast ? 'cubic-bezier(0.2, 0.7, 0.4, 1)' : 'cubic-bezier(0.34, 1.2, 0.64, 1)';
     bank.style.transition = 'none';
     bank.style.transform = 'translateX(' + inFromX + 'px)';
     void bank.offsetWidth;
-    bank.style.transition = 'transform 280ms cubic-bezier(0.34, 1.2, 0.64, 1)';
+    bank.style.transition = 'transform ' + dur + 'ms ' + curve;
     bank.style.transform = 'translateX(0)';
     bank._kitBounceTimer = setTimeout(function(){
       bank.style.transition = '';
       bank.style.transform = '';
       bank._kitBounceTimer = null;
-    }, 300);
+    }, dur + 20);
   }
   window._bankBounceIn = _bankBounceIn;
   function _wireKitsSwipe(){
@@ -26098,14 +27477,37 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     if(!strip || strip._swipeWired) return false;
     strip._swipeWired = true;
 
-    // Read inner's current translateX from its inline style (we
-    // always set it via translateX()); fall back to 0 if unset.
+    // Read inner's current translateX from the live computed
+    // transform matrix. Using getComputedStyle returns the actual
+    // current visual position even during an in-flight transition
+    // — reading the inline style would give us the animation's
+    // FINAL target, not its current rendered position, which made
+    // the drag baseline wrong when a touchstart interrupted a
+    // settle animation (the strip would visibly snap to the inline
+    // target's offset on first touchmove).
     function _readInnerX(){
       var inner = document.getElementById('padsBarKitsInner');
       if(!inner) return 0;
+      var cs;
+      try{ cs = window.getComputedStyle(inner); }catch(e){}
+      if(cs && cs.transform && cs.transform !== 'none'){
+        // matrix(a,b,c,d,tx,ty) — translateX is index 4
+        var m = /matrix\(\s*([^)]+)\)/.exec(cs.transform);
+        if(m){
+          var parts = m[1].split(',');
+          if(parts.length >= 6) return parseFloat(parts[4]) || 0;
+        }
+        // matrix3d(...) — translateX is the 13th value (index 12)
+        var m3 = /matrix3d\(\s*([^)]+)\)/.exec(cs.transform);
+        if(m3){
+          var parts3 = m3[1].split(',');
+          if(parts3.length >= 13) return parseFloat(parts3[12]) || 0;
+        }
+      }
+      // Fallback: parse inline translateX(...) style.
       var t = inner.style.transform || '';
-      var m = /translateX\(\s*(-?[\d.]+)px\s*\)/.exec(t);
-      return m ? parseFloat(m[1]) : 0;
+      var inlineM = /translateX\(\s*(-?[\d.]+)px\s*\)/.exec(t);
+      return inlineM ? parseFloat(inlineM[1]) : 0;
     }
     // Estimate average pill width (incl. gap) so a full pill stride
     // is the natural snap distance. Falls back to 60px if no pills.
@@ -26125,8 +27527,19 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
       _dragLastX = _swipeStartX;
       _dragLastT = _swipeStartT;
       _dragInstVel = 0;
+      _dragVelSamples = [{t: _swipeStartT, x: _swipeStartX}];
       _swipeActive = true;
       _draggingMode = false;
+      // Kill any in-flight settle/momentum animation by snapping
+      // the inline transform to the live computed position. Without
+      // this, an unfinished animation keeps running underneath the
+      // drag and the strip appears to "jump" on first touchmove.
+      var _innerNow = document.getElementById('padsBarKitsInner');
+      if(_innerNow){
+        var _liveX = _readInnerX();
+        _innerNow.style.transition = 'none';
+        _innerNow.style.transform = 'translateX(' + _liveX + 'px)';
+      }
       _dragBaselineX = _readInnerX();
       _dragPillStride = _measurePillStride();
       _dragLastActiveIdx = window._activeKitIdx || 0;
@@ -26164,12 +27577,24 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
         }
         // Live-update the active kit based on finger position.
         _liveUpdateActiveFromDrag();
-        // Track recent velocity for the release decision (last
-        // ~50ms window approximated by per-event deltas).
+        // Track velocity over a rolling window. _dragInstVel is the
+        // raw last-two-samples delta (noisy, may drop to ~0 right
+        // before touchend if the finger was lifting). _dragVelSamples
+        // keeps the last few samples so _commitDrag can compute an
+        // average velocity over the recent window — much more
+        // representative of actual swipe speed.
         var nowT = Date.now();
         var ddx = x - _dragLastX;
         var ddt = Math.max(1, nowT - _dragLastT);
         _dragInstVel = ddx / ddt;
+        if(!_dragVelSamples) _dragVelSamples = [];
+        _dragVelSamples.push({t: nowT, x: x});
+        // Keep only samples within the last 80ms — older ones are
+        // dropped so the rolling window stays current.
+        var cutoff = nowT - 80;
+        while(_dragVelSamples.length > 0 && _dragVelSamples[0].t < cutoff){
+          _dragVelSamples.shift();
+        }
         _dragLastX = x;
         _dragLastT = nowT;
       }
@@ -26231,37 +27656,73 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     // commit additional momentum if the user flicked at the
     // end — advancing PAST the kit currently under their finger.
     function _commitDrag(dx, dt){
-      dt = Math.max(1, dt);
-      var absdx = Math.abs(dx);
-      var overallVel = absdx / dt;
-      var instAbs = Math.abs(_dragInstVel);
+      // If the user actually moved their finger (not just tapped),
+      // suppress the synthetic click that fires after touchend so
+      // it doesn't trigger a pill tap on whichever pill the finger
+      // lifted over. The flag clears on the next tick.
+      var actuallyDragged = _draggingMode || (Math.abs(dx) > 4);
       _draggingMode = false;
-      // Decide if there's momentum to commit beyond the current
-      // pill — using BOTH overall velocity and end-flick velocity.
-      // A long fast drag without an end-flick should still advance
-      // a few extra kits (like flicking through a list and pulling
-      // back at the end). A slow controlled drag should just settle.
-      var hasMomentum = (instAbs > 0.5) || (overallVel > 0.6 && absdx > 50);
-      if(hasMomentum){
-        // Direction: prefer end-flick if strong, else overall.
-        var dir;
-        if(instAbs > 0.4){
-          dir = (_dragInstVel < 0) ? 1 : -1;
-        } else {
-          dir = (dx < 0) ? 1 : -1;
+      if(actuallyDragged){
+        window._dragJustEnded = true;
+        setTimeout(function(){ window._dragJustEnded = false; }, 50);
+      }
+      // Compute average velocity over the last ~80ms of touchmove
+      // samples. Using the noisy last-two-samples instantaneous
+      // velocity (_dragInstVel) was unreliable — it could drop to
+      // near zero on the final touchmove if the finger was already
+      // lifting, swallowing momentum even on hard swipes. The
+      // rolling-window average reflects actual swipe speed.
+      var avgVel = 0;
+      if(_dragVelSamples && _dragVelSamples.length >= 2){
+        var first = _dragVelSamples[0];
+        var last  = _dragVelSamples[_dragVelSamples.length - 1];
+        var dtSamples = last.t - first.t;
+        if(dtSamples > 0){
+          avgVel = (last.x - first.x) / dtSamples;
         }
-        // Step count blends instantaneous flick + overall
-        // velocity so a deliberate drag with deceleration still
-        // adds a couple steps, while a hard flick adds more.
-        var bonus = Math.min(5, Math.max(1, Math.floor(instAbs * 2 + overallVel * 1.5)));
+      }
+      // Freshness check: if the last touchmove was >100ms ago, the
+      // finger has effectively stopped — treat velocity as zero
+      // regardless of the rolling average. Without this, a fast
+      // initial flick followed by a pause-and-release would still
+      // trigger momentum from the now-stale samples.
+      var nowRel = Date.now();
+      var staleness = nowRel - _dragLastT;
+      var velAbs = (staleness > 100) ? 0 : Math.abs(avgVel);
+      var FLICK_THRESHOLD = 0.5; // px/ms (~500 px/sec) — gentler bar
+      var hasFlick = (velAbs > FLICK_THRESHOLD);
+      if(hasFlick){
+        // Direction from the rolling-window velocity sign — negative
+        // means finger moved leftward overall = advance to next kit.
+        var dir = (avgVel < 0) ? 1 : -1;
+        // Step count scales with how hard the flick was. Threshold
+        // (0.5 px/ms) is the floor → 1 step. Each additional 0.35
+        // px/ms above that adds another step. Capped at 6 so a hard
+        // swipe carries 4-5 kits past the live-drag landing without
+        // flying across the whole queue.
+        var bonus = Math.min(6, 1 + Math.floor((velAbs - FLICK_THRESHOLD) / 0.35));
         _momentumSwap(dir, bonus);
       } else {
-        // No additional kit change beyond what happened during
-        // drag. The bank already animated each pill crossing
-        // mid-drag (via _bankBounceIn), so we don't need another
-        // bounce here — just settle the strip to natural
-        // position for the current active kit.
+        // No flick — just settle the strip to the natural position
+        // for whichever kit is currently active (the one the live
+        // drag landed on). Run the deferred work that was skipped
+        // during the live drag for performance.
         if(_positionKitsStrip) _positionKitsStrip(true);
+        if(_dragLastActiveIdx !== _dragInitialActiveIdx){
+          if(typeof window.updateBeatDotActivity === 'function'){
+            window.updateBeatDotActivity();
+          }
+          if(typeof window.applyBeatEditHighlights === 'function'){
+            window.applyBeatEditHighlights();
+          }
+          // Run the deferred waveform prewarm now that the swipe
+          // has settled. This was skipped during the live drag
+          // (gated by _inKitSwap inside setSoundStyle) so the
+          // pad waveforms display the active kit's sounds.
+          if(window._padWavesOn && window.prewarmStockWaveforms){
+            window.prewarmStockWaveforms(true);
+          }
+        }
       }
     }
     return true;
@@ -26330,18 +27791,90 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     var maxSteps = (dir > 0) ? (n - 1 - cur) : cur;
     steps = Math.min(steps, maxSteps);
     if(steps < 1) return;
-    // Fast in-between hops, then a final bouncy snap.
-    var hopDur = 90;  // each fast hop
+    var hopDur = 90;  // each fast pill click
     var snapDur = 280; // the final settle
-    function _hop(remaining){
-      if(remaining <= 0){ _swiping = false; return; }
-      var isLast = (remaining === 1);
-      _quickKitSwap(dir, isLast ? snapDur : hopDur, isLast, function(){
-        _hop(remaining - 1);
-      });
+    var finalIdx = cur + dir * steps;
+    // Drive ONE smooth strip transition across the whole momentum
+    // distance. Without this, each hop fired its own 320ms strip
+    // tween and they interrupted each other every 90ms — the
+    // snagging the user noticed after release. Per-hop kit/bank
+    // changes still happen for the audio + bank bounce, but the
+    // strip glides smoothly to its final position independently.
+    var stripEl = document.getElementById('padsBarKitsStrip');
+    var inner = document.getElementById('padsBarKitsInner');
+    if(stripEl && inner){
+      var pills = inner.children;
+      var finalPill = pills[finalIdx];
+      if(finalPill){
+        var stripRect = stripEl.getBoundingClientRect();
+        var stripCenter = stripRect.width / 2;
+        var pillCenter = finalPill.offsetLeft + finalPill.offsetWidth / 2;
+        var finalTx = stripCenter - pillCenter;
+        // Total motion duration: most of the hops run fast, the
+        // final hop slows for the bouncy settle. Match that for
+        // the strip so it arrives at the same time as the bank.
+        var totalDur = hopDur * (steps - 1) + snapDur;
+        // Smooth deceleration with a tiny overshoot at the end so
+        // the strip's settle matches the bank's bouncy landing
+        // visually.
+        inner.style.transition = 'transform ' + totalDur + 'ms cubic-bezier(0.22, 0.9, 0.32, 1.05)';
+        inner.style.transform = 'translateX(' + finalTx + 'px)';
+        window._momentumOwnsStrip = true;
+      }
+    }
+    // Per-hop pill highlight updates + audio cues. The HEAVY work
+    // (setSoundStyle, pad icon updates, color reapplication) is
+    // deferred to the final hop only — intermediate kits never
+    // become visible because the bank flies off-screen between
+    // hops anyway. This was the main CPU spike causing choppiness:
+    // running setSoundStyle on every intermediate hop re-rendered
+    // every visible pad's label/color/waveform 4-6 times per
+    // momentum chain. Now intermediates are pill-highlight + sound
+    // only; the actual pad bank only rebuilds once at the end.
+    function _hopLight(remaining){
+      if(remaining <= 0){
+        // Final hop — apply the actual kit now, with bouncy bank
+        // animation. _quickKitSwap handles the bank fly-off / fly-in
+        // and calls _switchToKit which does the full pad rebuild.
+        _quickKitSwap(dir, snapDur, true, function(){
+          _swiping = false;
+          window._momentumOwnsStrip = false;
+          if(window._padWavesOn && window.prewarmStockWaveforms){
+            window.prewarmStockWaveforms(true);
+          }
+        });
+        return;
+      }
+      // Intermediate hop — bump the active index, update the pill
+      // highlight in place, fire the swipe sound, run a quick bank
+      // bounce. NO setSoundStyle / _applyKit, so no pad icon or
+      // color rebuild.
+      var newIdx = (window._activeKitIdx || 0) + dir;
+      if(newIdx < 0 || newIdx >= n){ return; }
+      window._activeKitIdx = newIdx;
+      // Update pill highlight in place — same fast-path as
+      // _refreshKitsStrip's canFastPath branch but inlined here
+      // since we know the kit list hasn't changed.
+      if(inner){
+        for(var pi = 0; pi < inner.children.length; pi++){
+          var pe = inner.children[pi];
+          var act = (pi === newIdx);
+          pe.style.borderColor = act ? 'var(--cyan)' : 'rgba(0,217,255,0.35)';
+          pe.style.background = act ? 'rgba(0,217,255,0.1)' : 'transparent';
+          pe.style.color = act ? 'var(--cyan)' : 'rgba(0,217,255,0.7)';
+          pe.style.boxShadow = act ? '0 0 8px rgba(0,217,255,0.4)' : '';
+        }
+      }
+      _kitSwipeTone(dir);
+      // Bank fast-slide — gives the visual feedback of the bank
+      // shifting per hop without the bouncy overshoot stacking up.
+      if(typeof _bankBounceIn === 'function'){
+        _bankBounceIn(dir, true); // fast=true
+      }
+      setTimeout(function(){ _hopLight(remaining - 1); }, hopDur);
     }
     _swiping = true;
-    _hop(steps);
+    _hopLight(steps - 1); // intermediate hops; the final one runs in _hopLight(0)
   }
   window._momentumSwap = _momentumSwap;
 
@@ -26387,9 +27920,15 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
       window._inKitSwap = true;
       _switchToKit(nextIdx, true);
       window._inKitSwap = false;
-      requestAnimationFrame(function(){
-        _positionKitsStrip(true);
-      });
+      // Skip the per-hop strip animation if _momentumSwap is
+      // driving its own single smooth strip transition across
+      // the full distance — otherwise these per-hop 320ms tweens
+      // would interrupt each other every 90ms and cause snagging.
+      if(!window._momentumOwnsStrip){
+        requestAnimationFrame(function(){
+          _positionKitsStrip(true);
+        });
+      }
       var bank2 = document.getElementById('bank');
       if(!bank2){ if(done) done(); return; }
       bank2.style.transition = 'none';
@@ -26466,6 +28005,9 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
     _swiping = true;
     _quickKitSwap(dir, 360, true, function(){
       _swiping = false;
+      if(window._padWavesOn && window.prewarmStockWaveforms){
+        window.prewarmStockWaveforms(true);
+      }
     });
   }
   window._animatedKitSwap = _animatedKitSwap;
