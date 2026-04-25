@@ -1,4 +1,4 @@
-<!-- Sequation v8.83 | Built: 2026-04-23 CT | github.com/Spamboni/Sequation -->
+<!-- Sequation v8.85 | Built: 2026-04-23 CT | github.com/Spamboni/Sequation -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -703,7 +703,7 @@ window.onerror=function(msg,src,line,col,err){
   </div>
 
   <button class="sel-play" id="playBtn">▶ PLAY</button>
-  <div id="_seqVersionTag" style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v8.83</div>
+  <div id="_seqVersionTag" style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(0,217,255,0.55);letter-spacing:3px;text-align:center;font-weight:700;">v8.85</div>
 </div>
 
 <!-- GAME SCREEN -->
@@ -7006,6 +7006,8 @@ function applyTileColor(tile, idx){
 function renderBank(){
   // Bank tiles — already sorted ascending from buildPuzzle
   var be=document.getElementById('bank');be.innerHTML='';
+  // v8.84 — keep the condense-tiles toggle visible only in puzzle mode.
+  if(window._syncCondenseBtnVisibility) window._syncCondenseBtnVisibility();
   var bankCount=PZ.bank.length;
   // Base size from count, then scaled by TILE_SCALE (1.0 = full, 0.5 = half)
   var baseSize=bankCount>25?32:bankCount>15?38:44;
@@ -7062,6 +7064,58 @@ function renderBank(){
       renderCount = Math.min(118, Math.floor(window._padLimit));
     }
   }
+  // v8.84 — puzzle-mode tile collapse (opt-in, off by default).
+  //
+  // When window._condensePuzzleTiles is true AND we're in puzzle mode,
+  // repeated values in PZ.bank (e.g. seven 1s) collapse into a single
+  // tile that displays the number with a small cyan "×N" multiplier
+  // showing how many unused copies remain.
+  //
+  // The underlying data model in PZ.bank is unchanged — each duplicate
+  // still has its own slot, its own `used` flag, its own bankIdx, and
+  // its own sample assignment. We just RENDER fewer DOM elements.
+  // Tapping a collapsed tile resolves to the first unused index of
+  // that value via dataset.bankIdx and dispatches into the existing
+  // place()/preview path.
+  //
+  // SEQ mode is untouched — each pad must remain its own DOM element
+  // because each is an independent beat lane, sample slot, color/hold
+  // tag target, etc. Collapsing would break the entire sequencer.
+  //
+  // Min tile size in collapsed mode raised so the small "×N" badge
+  // stays legible. (The slider can still go small in non-collapsed mode.)
+  var condenseOn = !window._seqVisible && !!window._condensePuzzleTiles;
+  var puzzleValueGroups = null;
+  if(condenseOn){
+    // Pre-pass: for each unique value, find the count of unused tiles
+    // and the first unused index (where place() will write).
+    puzzleValueGroups = {};
+    for(var pgI=0; pgI<PZ.bank.length; pgI++){
+      var pgItem = PZ.bank[pgI];
+      if(!pgItem) continue;
+      if(window._padDeleted && window._padDeleted[pgI]) continue;
+      var pgVal = pgItem.value;
+      if(!puzzleValueGroups[pgVal]){
+        puzzleValueGroups[pgVal] = {first: pgI, firstUnused: -1, total: 0, unused: 0};
+      }
+      puzzleValueGroups[pgVal].total++;
+      if(!pgItem.used){
+        puzzleValueGroups[pgVal].unused++;
+        if(puzzleValueGroups[pgVal].firstUnused < 0){
+          puzzleValueGroups[pgVal].firstUnused = pgI;
+        }
+      }
+    }
+    // In collapsed mode, enforce a minimum tile size so the multiplier
+    // text remains readable. 28px gives enough room for the main number
+    // at ~16px font + the small ×N badge at ~9px.
+    if(tileSize < 28){
+      tileSize = 28;
+      tileFontSize = Math.round(baseFontSize * (tileSize/baseSize));
+      tilePad = '0 ' + Math.round(tileSize*0.18) + 'px';
+    }
+  }
+  var puzzleSeen = {};
   for(var i=0;i<renderCount;i++){
     // Deleted pads (via DEL button) are skipped entirely — no tile is
     // rendered. The per-index data (samples/meta/color) is already
@@ -7069,12 +7123,61 @@ function renderBank(){
     // pad back in renderBank's loop since the flag gets cleared.
     if(window._padDeleted && window._padDeleted[i]) continue;
     var item = PZ.bank[i] || {value:(i+1).toString(), used:false, _virtual:true};
+    // Collapsed mode: only the first occurrence of each value renders
+    // a tile; subsequent duplicates skip. The dataset.bankIdx for the
+    // collapsed tile points at the first UNUSED index (or `i` if all
+    // are used) so place()/preview hit the right slot.
+    var renderIdx = i;
+    var collapsedGroup = null;
+    if(condenseOn){
+      if(puzzleSeen[item.value]) continue;
+      puzzleSeen[item.value] = true;
+      collapsedGroup = puzzleValueGroups[item.value];
+      if(collapsedGroup && collapsedGroup.firstUnused >= 0){
+        renderIdx = collapsedGroup.firstUnused;
+        item = PZ.bank[renderIdx] || item;
+      } else if(collapsedGroup){
+        // All used — point at the first slot for visual purposes;
+        // place() guards on .used so the tap won't actually consume.
+        renderIdx = collapsedGroup.first;
+        item = PZ.bank[renderIdx] || item;
+      }
+    }
     var tile=document.createElement('div');tile.className='bt';
     var tileRadius=Math.max(2,Math.min(10,Math.round(tileSize*0.22)));
     tile.style.cssText='min-width:'+tileSize+'px;height:'+tileSize+'px;padding:'+tilePad+';font-size:'+tileFontSize+'px;border-radius:'+tileRadius+'px;';
-    if(item.used)tile.classList.add('used');else if(SEL)tile.classList.add('lit');
-    tile.textContent=item.value;
-    tile.dataset.sndIdx=i; tile.dataset.bankIdx=i;
+    // For collapsed tiles, "used" means ALL instances of this value
+    // are placed (unused count is 0). Otherwise lit if SEL is active.
+    var tileIsUsed = item.used;
+    if(condenseOn && collapsedGroup){
+      tileIsUsed = (collapsedGroup.unused === 0);
+    }
+    if(tileIsUsed) tile.classList.add('used');
+    else if(SEL) tile.classList.add('lit');
+
+    if(condenseOn && collapsedGroup && collapsedGroup.total > 1){
+      // Compose number + cyan ×N multiplier as a flex column. Number on
+      // top in tile's normal color (CSS sets it via .bt). Multiplier
+      // below at ~55% font size in cyan. The multiplier counts UNUSED
+      // copies, so it ticks down as the user places tiles.
+      var numSpan = document.createElement('span');
+      numSpan.textContent = item.value;
+      numSpan.style.cssText = 'display:block;line-height:1;';
+      var mulSpan = document.createElement('span');
+      // Show remaining count, or 0 when all are placed (greyed via .used)
+      mulSpan.textContent = '×' + collapsedGroup.unused;
+      var mulSize = Math.max(7, Math.round(tileFontSize * 0.42));
+      mulSpan.style.cssText = 'display:block;line-height:1;margin-top:2px;font-size:'+mulSize+'px;color:#0093aa;font-weight:600;letter-spacing:0.5px;';
+      // Stack vertically inside the tile
+      tile.style.flexDirection = 'column';
+      tile.style.justifyContent = 'center';
+      tile.style.alignItems = 'center';
+      tile.appendChild(numSpan);
+      tile.appendChild(mulSpan);
+    } else {
+      tile.textContent = item.value;
+    }
+    tile.dataset.sndIdx=renderIdx; tile.dataset.bankIdx=renderIdx;
     (function(idx,sndIdx,el){
       // Sound+flash function — used by both touch and click paths
       function spawnParticles(el){
@@ -7921,18 +8024,18 @@ function renderBank(){
         if(PZ.bank[idx].used) return;
         place(idx);
       });
-    })(i,i,tile);
+    })(renderIdx,renderIdx,tile);
     // Store spawnParticles reference on the tile so swipe handler can call it
     
     // Dot indicator: black=stock edited, red=recorded
-    if(userSamples[i]||((sampleMeta[i])&&sampleMeta[i]._isStock)){
+    if(userSamples[renderIdx]||((sampleMeta[renderIdx])&&sampleMeta[renderIdx]._isStock)){
       tile.style.position='relative';
       var mic=document.createElement('span');
       mic.className='bt-mic';
-      mic.style.background=(sampleMeta[i]&&sampleMeta[i]._isStock)?'rgba(0,217,255,0.4)':'#c400ff';
+      mic.style.background=(sampleMeta[renderIdx]&&sampleMeta[renderIdx]._isStock)?'rgba(0,217,255,0.4)':'#c400ff';
       tile.appendChild(mic);
     }
-    applyTileColor(tile, i);
+    applyTileColor(tile, renderIdx);
     be.appendChild(tile);
   }
   document.getElementById('undo').disabled=HIST.length===0;
@@ -9444,8 +9547,9 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     // it ≥ handleHeight/2 + 2 ensures the handle fits entirely inside
     // the canvas at the extreme positions. Handle is 18px tall (v8.71),
     // so PAD:12 leaves 3px of safety margin above/below the extremes.
-    // Corner radius bumped 3→8 in v8.79 for a noticeably softer pill shape.
-    var PAD=12, R=8;
+    // Track corner radius back to 3 (v8.85) — v8.79 mistakenly bumped
+    // this to 8 when the user had asked for the THUMB to be rounded.
+    var PAD=12, R=3;
     var trackThick=Math.round(cW*0.65);
     var trackX=Math.round((cW-trackThick)/2);
     var trackY=PAD, trackLen=cH-PAD*2;
@@ -9546,12 +9650,14 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     var trackLen=cH-PAD*2;
     var _drawPct=1-pct;
     var handlePos=Math.round(PAD+trackLen*_drawPct);
-    // Handle geometry. Corner radius bumped to 4 (was 2) for a visibly
-    // rounded-rect look. Width extends 2px past each side of the
+    // Handle geometry. Corner radius bumped to 7 (was 4) in v8.85 —
+    // the user wanted the thumb to have noticeably rounded corners
+    // (the previous v8.79 change accidentally rounded the TRACK
+    // instead of the THUMB). Width extends 2px past each side of the
     // canvas so the handle appears to "cap" the full track width.
     ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=3; ctx.shadowOffsetX=0; ctx.shadowOffsetY=1;
     ctx.fillStyle='#1a1a1a';
-    var hH=18, hW=cW+4, hY=handlePos-hH/2, hX=-2, CR=4;
+    var hH=18, hW=cW+4, hY=handlePos-hH/2, hX=-2, CR=7;
     ctx.beginPath();
     ctx.moveTo(hX+CR,hY); ctx.lineTo(hX+hW-CR,hY);
     ctx.arcTo(hX+hW,hY,hX+hW,hY+CR,CR); ctx.lineTo(hX+hW,hY+hH-CR);
@@ -9704,6 +9810,108 @@ document.getElementById('playBtn').addEventListener('click',function(){playUICli
     });
     gapWrap.appendChild(slGap);
     wrap.appendChild(gapWrap);
+
+    // ── Condense-puzzle-tiles toggle (v8.84) ──
+    // A small button under the GAP slider that toggles between the
+    // default "one tile per duplicate" rendering and a condensed view
+    // where repeated values collapse into one tile with a cyan ×N
+    // multiplier showing how many unused copies remain. Only visible
+    // in puzzle mode — hidden whenever SEQ mode is active because
+    // collapsing pads breaks the sequencer's per-pad addressing.
+    //
+    // State persists in localStorage across reloads. Default: off
+    // (matches existing behavior).
+    var condBtn = document.createElement('button');
+    condBtn.id = 'condenseTilesBtn';
+    condBtn.title = 'Condense repeated tiles (e.g. seven 1s → one "1×7" tile)';
+    condBtn.style.cssText = 'margin-top:6px;width:48px;height:24px;font-family:monospace;font-size:9px;font-weight:700;letter-spacing:0.5px;border:1px solid rgba(0,147,170,0.45);border-radius:5px;background:transparent;color:rgba(0,147,170,0.85);cursor:pointer;touch-action:manipulation;padding:0;line-height:1;display:flex;align-items:center;justify-content:center;';
+    condBtn.textContent = '×N';
+    // Read persisted state. Default off.
+    try{
+      var savedCond = localStorage.getItem('seqCondenseTilesV1');
+      window._condensePuzzleTiles = (savedCond === '1');
+    }catch(e){
+      window._condensePuzzleTiles = false;
+    }
+    function _paintCondBtn(){
+      if(window._condensePuzzleTiles){
+        condBtn.style.background = 'rgba(0,147,170,0.28)';
+        condBtn.style.borderColor = '#0093aa';
+        condBtn.style.color = '#7dd3e0';
+        condBtn.style.boxShadow = '0 0 8px rgba(0,147,170,0.45)';
+      } else {
+        condBtn.style.background = 'transparent';
+        condBtn.style.borderColor = 'rgba(0,147,170,0.45)';
+        condBtn.style.color = 'rgba(0,147,170,0.85)';
+        condBtn.style.boxShadow = '';
+      }
+    }
+    _paintCondBtn();
+    function _toggleCondense(){
+      var turningOn = !window._condensePuzzleTiles;
+      // v8.85: when entering condensed mode, save the user's current
+      // slider values then snap to max size + zero gap (best layout for
+      // the collapsed view since each value gets one big tile). On
+      // toggling back off, restore the saved values so the user gets
+      // back exactly the layout they had before.
+      if(turningOn){
+        try{
+          window._condenseSliderSnapshot = {
+            size: parseFloat(sl.value),
+            gap: parseFloat(slGap.value)
+          };
+        }catch(e){
+          window._condenseSliderSnapshot = null;
+        }
+      }
+      window._condensePuzzleTiles = turningOn;
+      try{ localStorage.setItem('seqCondenseTilesV1', turningOn ? '1' : '0'); }catch(e){}
+      _paintCondBtn();
+      // Same SFX as other tool toggles for consistency.
+      if(window._btnFx) window._btnFx(turningOn ? 'tool_on' : 'tool_off');
+      // Apply slider changes. Updating the slider's .value plus calling
+      // the apply helper keeps the visual handle, the live TILE_SCALE/
+      // TILE_GAP_MULT, and the renderBank in sync. _drawVertPair updates
+      // the canvas track + handle position to match.
+      if(turningOn){
+        // Max size, zero gap. Don't trigger the slider's input handler
+        // (which would call applyPctH inside its SEQ-mode branch);
+        // instead drive the apply helpers directly.
+        sl.value = 100;
+        slGap.value = 0;
+        if(window.applyPctH) window.applyPctH(100);
+        if(window.applyGapPct) window.applyGapPct(0);
+        _drawVertPair(cv, hcv, 1.0);
+        _drawVertPair(cvGap, hcvGap, 0.0);
+      } else {
+        // Restore prior slider state. Fall back to defaults if no
+        // snapshot was captured (e.g. user enabled condense via
+        // localStorage on a fresh load).
+        var snap = window._condenseSliderSnapshot;
+        var sizePct = snap ? snap.size : 50;
+        var gapPct  = snap ? snap.gap  : 33;
+        sl.value = sizePct;
+        slGap.value = gapPct;
+        if(window.applyPctH) window.applyPctH(sizePct);
+        if(window.applyGapPct) window.applyGapPct(gapPct);
+        _drawVertPair(cv, hcv, sizePct/100);
+        _drawVertPair(cvGap, hcvGap, gapPct/100);
+      }
+      // Re-render the bank to apply collapse/uncollapse — applyPctH
+      // already does this but call again to be sure ordering is right.
+      renderBank();
+    }
+    condBtn.addEventListener('click', function(e){ e.stopPropagation(); _toggleCondense(); });
+    condBtn.addEventListener('touchend', function(e){ e.stopPropagation(); }, {passive:true});
+    // Hide in SEQ mode. renderBank is called on mode switches, so we
+    // expose a sync function that renderBank invokes at the top of
+    // each call to keep this in step with seqVisible.
+    function _syncCondBtnVisibility(){
+      condBtn.style.display = window._seqVisible ? 'none' : 'flex';
+    }
+    _syncCondBtnVisibility();
+    window._syncCondenseBtnVisibility = _syncCondBtnVisibility;
+    wrap.appendChild(condBtn);
 
     // Insert wrap before .bank
     var bankDiv=bankRow.querySelector('.bank');
@@ -30546,7 +30754,7 @@ document.getElementById('nxt').addEventListener('click',newPuzzle);
   function _buildDebugReport(){
     var lines = [];
     lines.push('=== SEQUATION DEBUG ===');
-    lines.push('Version: v8.83');
+    lines.push('Version: v8.85');
     lines.push('Time: ' + new Date().toLocaleTimeString());
     lines.push('');
     try{
